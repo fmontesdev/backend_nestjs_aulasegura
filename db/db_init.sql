@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS `teacher`;
 DROP TABLE IF EXISTS `subject_course`;
 DROP TABLE IF EXISTS `subject`;
 DROP TABLE IF EXISTS `department`;
+DROP TABLE IF EXISTS `academic_year_course`;
 DROP TABLE IF EXISTS `course`;
 DROP TABLE IF EXISTS `academic_year`;
 DROP TABLE IF EXISTS `notification_user`;
@@ -111,18 +112,24 @@ CREATE TABLE `academic_year` (
   UNIQUE KEY `uq_academic_year_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+/* academic_year_course */
+CREATE TABLE `academic_year_course` (
+  `academic_year_id` INT NOT NULL,
+  `course_id` INT NOT NULL,
+  PRIMARY KEY (`academic_year_id`,`course_id`),
+  KEY `idx_academic_year_course_course` (`course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 /* course */
 CREATE TABLE `course` (
   `course_id` INT NOT NULL AUTO_INCREMENT,
   `course_code` VARCHAR(20) NOT NULL,
   `name` VARCHAR(50) NOT NULL,
-  `academic_year_id` INT NOT NULL,
   `level` ENUM('ESO','bachillerato','FP') NOT NULL,
   `stage` TINYINT NOT NULL,
   `is_active` BOOLEAN DEFAULT TRUE,
   PRIMARY KEY (`course_id`),
-  UNIQUE KEY `uq_course_code` (`course_code`),
-  KEY `idx_course_year` (`academic_year_id`)
+  UNIQUE KEY `uq_course_code` (`course_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* department */
@@ -288,13 +295,14 @@ ALTER TABLE `notification_user`
   ADD CONSTRAINT `fk_notification_user_notification` FOREIGN KEY (`notification_id`) REFERENCES `notification`(`notification_id`);
 
 ALTER TABLE `refresh_token`
-  ADD CONSTRAINT `fk_refresh_token_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
+  ADD CONSTRAINT `fk_refresh_token_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE;
 
 ALTER TABLE `blacklist_token`
-  ADD CONSTRAINT `fk_blacklist_token_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
+  ADD CONSTRAINT `fk_blacklist_token_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE;
 
-ALTER TABLE `course`
-  ADD CONSTRAINT `fk_course_year` FOREIGN KEY (`academic_year_id`) REFERENCES `academic_year`(`academic_year_id`);
+ALTER TABLE `academic_year_course`
+  ADD CONSTRAINT `fk_academic_year_course_academic_year` FOREIGN KEY (`academic_year_id`) REFERENCES `academic_year`(`academic_year_id`),
+  ADD CONSTRAINT `fk_academic_year_course_course` FOREIGN KEY (`course_id`) REFERENCES `course`(`course_id`);
 
 ALTER TABLE `subject`
   ADD CONSTRAINT `fk_subject_department` FOREIGN KEY (`department_id`) REFERENCES `department`(`department_id`);
@@ -304,7 +312,7 @@ ALTER TABLE `subject_course`
   ADD CONSTRAINT `fk_subject_course_course` FOREIGN KEY (`course_id`) REFERENCES `course`(`course_id`);
 
 ALTER TABLE `teacher`
-  ADD CONSTRAINT `fk_teacher_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`),
+  ADD CONSTRAINT `fk_teacher_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_teacher_department` FOREIGN KEY (`department_id`) REFERENCES `department`(`department_id`);
 
 ALTER TABLE `teacher_subject`
@@ -396,9 +404,12 @@ INSERT INTO subject (subject_code, name, department_id, is_active)
 VALUES ('MATES-ESO', 'Matemáticas ESO', @DEPT_MATH, TRUE);
 SET @SUBJ_MATH := LAST_INSERT_ID();
 
-INSERT INTO course (course_code, name, academic_year_id, level, stage, is_active)
-VALUES ('3ESO-A', '3º ESO A', @AY, 'ESO', 3, TRUE);
+INSERT INTO course (course_code, name, level, stage, is_active)
+VALUES ('3ESO-A', '3º ESO A', 'ESO', 3, TRUE);
 SET @COURSE_3ESOA := LAST_INSERT_ID();
+
+INSERT INTO academic_year_course (academic_year_id, course_id)
+VALUES (@AY, @COURSE_3ESOA);
 
 INSERT INTO subject_course (subject_id, course_id) VALUES (@SUBJ_MATH, @COURSE_3ESOA);
 

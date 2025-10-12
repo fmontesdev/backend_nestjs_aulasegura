@@ -1,12 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, ManyToMany } from 'typeorm';
 import { UserEntity } from './user.entity';
-
-export enum RoleName {
-  ADMIN = 'admin',
-  TEACHER = 'teacher',
-  JANITOR = 'janitor',
-  SUPPORT_STAFF = 'support_staff',
-}
+import { RoleName } from '../enums/rolename.enum';
 
 @Entity({ name: 'role' })
 @Unique('uq_role_name', ['name'])

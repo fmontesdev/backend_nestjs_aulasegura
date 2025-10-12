@@ -3,8 +3,8 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { RoleEntity } from './role.entity';
-import { RefreshTokenEntity } from './refresh-token.entity';
-import { BlacklistTokenEntity } from './blacklist-token.entity';
+import { RefreshTokenEntity } from './refreshToken.entity';
+import { BlacklistTokenEntity } from './blacklistToken.entity';
 import { TagEntity } from '../../../entities/tag.entity';
 import { NotificationEntity } from '../../../entities/notification.entity';
 import { PermissionEntity } from '../../../entities/permission.entity';

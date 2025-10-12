@@ -5,8 +5,8 @@ import { UsersService } from './application/services/users.service';
 import { UserEntity } from './domain/entities/user.entity';
 import { TeacherEntity } from './domain/entities/teacher.entity';
 import { RoleEntity } from './domain/entities/role.entity';
-import { RefreshTokenEntity } from './domain/entities/refresh-token.entity';
-import { BlacklistTokenEntity } from './domain/entities/blacklist-token.entity';
+import { RefreshTokenEntity } from './domain/entities/refreshToken.entity';
+import { BlacklistTokenEntity } from './domain/entities/blacklistToken.entity';
 import { UsersRepository } from './domain/repositories/users.repository';
 import { TypeormUsersRepository } from './Infraestructure/persistence/typeorm/typeorm-users.repository';
 

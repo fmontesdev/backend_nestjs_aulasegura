@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 
 @Entity({ name: 'blacklist_token' })
@@ -16,5 +16,6 @@ export class BlacklistTokenEntity {
   expiresAt!: Date;
 
   @ManyToOne(() => UserEntity, (u) => u.blacklistedTokens, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user!: UserEntity;
 }

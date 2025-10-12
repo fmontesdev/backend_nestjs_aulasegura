@@ -4,8 +4,9 @@ import { RoomEntity } from './room.entity';
 import { ScheduleEntity } from './schedule.entity';
 
 @Entity({ name: 'permission' })
-@Index('idx_permission_room', ['roomId'])
 @Index('idx_permission_schedule', ['scheduleId'])
+@Index('idx_permission_room', ['roomId'])
+@Index('idx_permission_user', ['userId'])
 export class PermissionEntity {
   @PrimaryColumn({ name: 'user_id', type: 'char', length: 36 })
   userId!: string;
@@ -26,14 +27,18 @@ export class PermissionEntity {
   isActive!: boolean;
 
   @ManyToOne(() => UserEntity, (u) => u.permissions, { onDelete: 'RESTRICT', eager: true })
+  @JoinColumn({ name: 'user_id' })
   user!: UserEntity;
 
   @ManyToOne(() => RoomEntity, { onDelete: 'RESTRICT', eager: true })
+  @JoinColumn({ name: 'room_id' })
   room!: RoomEntity;
 
   @ManyToOne(() => ScheduleEntity, { onDelete: 'RESTRICT', eager: true })
+  @JoinColumn({ name: 'schedule_id' })
   schedule!: ScheduleEntity;
 
   @ManyToOne(() => UserEntity, { onDelete: 'RESTRICT', eager: true })
+  // @JoinColumn({ name: 'user_id' }) 
   createdBy!: UserEntity;
 }

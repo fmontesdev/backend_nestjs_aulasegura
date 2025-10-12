@@ -1,5 +1,5 @@
 import { 
-    Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany
+    Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany, JoinColumn
 } from 'typeorm';
 import { DepartmentEntity } from './department.entity';
 import { CourseEntity } from './course.entity';
@@ -23,6 +23,7 @@ export class SubjectEntity {
   departmentId!: number;
 
   @ManyToOne(() => DepartmentEntity, (d) => d.subjects, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'department_id' }) 
   department!: DepartmentEntity;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })

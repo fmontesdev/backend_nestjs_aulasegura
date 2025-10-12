@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../users/domain/entities/user.entity';
 import { AccessLogEntity } from './access-log.entity';
 
@@ -21,6 +21,7 @@ export class TagEntity {
   userId!: string;
 
   @ManyToOne(() => UserEntity, (u) => u.tags, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'user_id' })
   user!: UserEntity;
 
   @Column({ name: 'type', type: 'enum', enum: TagType, default: TagType.RFID })

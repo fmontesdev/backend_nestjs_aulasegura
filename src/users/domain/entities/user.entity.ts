@@ -12,7 +12,6 @@ import { TeacherEntity } from './teacher.entity';
 import { AccessLogEntity } from '../../../entities/access-log.entity';
 
 @Entity({ name: 'user' })
-@Unique('uq_user_email', ['email'])
 export class UserEntity {
   @PrimaryColumn({ name: 'user_id', type: 'char', length: 36 })
   userId!: string;

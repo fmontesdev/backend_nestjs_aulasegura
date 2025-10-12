@@ -34,7 +34,7 @@ services:
       - TZ=Europe/Madrid
     volumes:
     - mariadb_data:/var/lib/mysql
-    - ./db:/docker-entrypoint-initdb.d
+    # - ./db:/docker-entrypoint-initdb.d
     ports:
       - "${DB_PORT}:3306"
     networks:

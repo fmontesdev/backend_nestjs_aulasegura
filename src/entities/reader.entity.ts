@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { RoomEntity } from './room.entity';
 import { AccessLogEntity } from './access-log.entity';
 
@@ -16,6 +16,7 @@ export class ReaderEntity {
   roomId!: number;
 
   @ManyToOne(() => RoomEntity, (r) => r.readers, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'room_id' })
   room!: RoomEntity;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })

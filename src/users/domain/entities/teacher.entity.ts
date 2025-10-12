@@ -17,6 +17,7 @@ export class TeacherEntity {
   departmentId!: number;
 
   @ManyToOne(() => DepartmentEntity, (d) => d.teachers, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'department_id' }) 
   department!: DepartmentEntity;
 
   @ManyToMany(() => SubjectEntity, (s) => s.teachers)

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index, UpdateDateColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { AcademicYearEntity } from './academic-year.entity';
 import { PermissionEntity } from './permission.entity';
 
@@ -21,6 +21,7 @@ export class ScheduleEntity {
   academicYearId!: number;
 
   @ManyToOne(() => AcademicYearEntity, (ay) => ay.schedules, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'academic_year_id' })
   academicYear!: AcademicYearEntity;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })

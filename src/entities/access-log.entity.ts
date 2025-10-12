@@ -18,6 +18,8 @@ export enum AccessMethod {
 }
 
 @Entity({ name: 'access_log' })
+@Index('idx_access_log_classroom_code', ['classroomCode'])
+@Index('idx_access_log_subject_code', ['subjectCode'])
 @Index('idx_access_log_user', ['userId'])
 @Index('idx_access_log_reader_code', ['readerCode'])
 @Index('idx_access_log_tag_code', ['tagCode'])

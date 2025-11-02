@@ -1,8 +1,8 @@
 import { UserEntity } from '../../domain/entities/user.entity';
-import { UserOutput } from '../dto/outputs/user.output';
+import { UserResponse } from '../dto/responses/user.response.dto';
 
 export class UserMapper {
-  static toResponse(e: UserEntity): UserOutput {
+  static toResponse(e: UserEntity): UserResponse {
     return {
       userId: e.userId,
       name: e.name,
@@ -15,7 +15,7 @@ export class UserMapper {
     };
   }
 
-  static toResponseList(list: UserEntity[]): UserOutput[] {
+  static toResponseList(list: UserEntity[]): UserResponse[] {
     return list.map(UserMapper.toResponse);
   }
 }

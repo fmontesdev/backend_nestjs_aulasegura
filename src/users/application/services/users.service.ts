@@ -1,9 +1,8 @@
 import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UsersRepository } from '../../domain/repositories/users.repository';
-import { CreateUserInput } from '../dto/inputs/create-user.input';
-import { UpdateUserInput } from '../dto/inputs/update-user.input';
-import { UserOutput } from '../dto/outputs/user.output';
-import { UserMapper } from '../mappers/user.mapper';
+import { UserEntity } from '../../domain/entities/user.entity';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { hash as bcryptHash } from '@node-rs/bcrypt';
 
 @Injectable()
@@ -13,19 +12,19 @@ export class UsersService {
   ) {}
 
 
-  async findAll(): Promise<UserOutput[]> {
-    const entities = await this.usersRepo.findAll();
-    return UserMapper.toResponseList(entities);
+  async findAll(): Promise<UserEntity[]> {
+    return await this.usersRepo.findAll();
   }
 
-  async findOne(userId: string): Promise<UserOutput> {
+
+  async findOne(userId: string): Promise<UserEntity> {
     const entity = await this.usersRepo.findOneById(userId);
     if (!entity) throw new NotFoundException('Usuario no encontrado');
-    return UserMapper.toResponse(entity);
+    return entity;
   }
 
 
-  async create(dto: CreateUserInput): Promise<UserOutput> {
+  async create(dto: CreateUserDto): Promise<UserEntity> {
     // Comprueba que el email sea único
     const exists = await this.usersRepo.findOneByEmail(dto.email);
     if (exists) {
@@ -45,12 +44,11 @@ export class UsersService {
       validTo: dto.validTo ? new Date(dto.validTo) : null,
     });
 
-    const saved = await this.usersRepo.save(entity);
-    return UserMapper.toResponse(saved);
+    return await this.usersRepo.save(entity);
   }
 
 
-  async update(userId: string, dto: UpdateUserInput): Promise<UserOutput> {
+  async update(userId: string, dto: UpdateUserDto): Promise<UserEntity> {
     // Verifica que el usuario exista
     const user = await this.usersRepo.findOneById(userId);
     if (!user) throw new NotFoundException('Usuario no encontrado');
@@ -71,8 +69,7 @@ export class UsersService {
     if (dto.avatar !== undefined) user.avatar = dto.avatar ?? null;
     if (dto.validTo !== undefined) user.validTo = dto.validTo ? new Date(dto.validTo) : null;
 
-    const updated = await this.usersRepo.save(user);
-    return UserMapper.toResponse(updated);
+    return await this.usersRepo.save(user);
   }
 
 
@@ -98,13 +95,12 @@ export class UsersService {
 
 
   // Desactiva usuario poniendo valid_to a fecha actual
-  async softRemove(userId: string): Promise<UserOutput> {
+  async softRemove(userId: string): Promise<UserEntity> {
     // Verifica que el usuario exista
     const user = await this.usersRepo.findOneById(userId);
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     user.validTo = new Date();
-    const updated = await this.usersRepo.save(user);
-    return UserMapper.toResponse(updated);
+    return await this.usersRepo.save(user);
   }
 }

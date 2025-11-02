@@ -3,6 +3,7 @@ import { UsersService } from '../../application/services/users.service';
 import { CreateUserRequest } from '../dto/requests/create-user.request.dto';
 import { UpdateUserRequest } from '../dto/requests/update-user.request.dto';
 import { UserResponse } from '../dto/responses/user.response.dto';
+import { UserMapper } from '../mappers/user.mapper';
 import { ApiBearerAuth, ApiOkResponse, ApiCreatedResponse, ApiNoContentResponse,
   ApiNotFoundResponse, ApiConflictResponse, ApiTags, ApiOperation
 } from '@nestjs/swagger';
@@ -13,27 +14,30 @@ import { ApiBearerAuth, ApiOkResponse, ApiCreatedResponse, ApiNoContentResponse,
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Lista de usuarios' })
-  @ApiOkResponse({ type: UserResponse, isArray: true })
+  // @ApiOperation({ summary: 'Lista de usuarios' })
+  // @ApiOkResponse({ type: UserResponse, isArray: true })
   @Get()
-  getUsers(): Promise<UserResponse[]> {
-    return this.usersService.findAll();
+  async getUsers(): Promise<UserResponse[]> {
+    const entities = await this.usersService.findAll();
+    return UserMapper.toResponseList(entities);
   }
 
   @ApiOperation({ summary: 'Detalle de usuario por ID' })
   @ApiOkResponse({ type: UserResponse })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
   @Get(':id')
-  getUser(@Param('id') id: string): Promise<UserResponse> {
-    return this.usersService.findOne(id);
+  async getUser(@Param('id') id: string): Promise<UserResponse> {
+    const entity = await this.usersService.findOne(id);
+    return UserMapper.toResponse(entity);
   }
 
   @ApiOperation({ summary: 'Crear usuario' })
   @ApiCreatedResponse({ type: UserResponse })
   @ApiConflictResponse({ description: 'El email ya está registrado' })
   @Post()
-  createUser(@Body() dto: CreateUserRequest): Promise<UserResponse> {
-    return this.usersService.create(dto);
+  async createUser(@Body() dto: CreateUserRequest): Promise<UserResponse> {
+    const entity = await this.usersService.create(dto);
+    return UserMapper.toResponse(entity);
   }
 
   @ApiOperation({ summary: 'Actualizar usuario' })
@@ -41,8 +45,9 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
   @ApiConflictResponse({ description: 'El email ya está registrado' })
   @Patch(':id')
-  updateUser(@Param('id') id: string, @Body() dto: UpdateUserRequest): Promise<UserResponse> {
-    return this.usersService.update(id, dto);
+  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserRequest): Promise<UserResponse> {
+    const entity = await this.usersService.update(id, dto);
+    return UserMapper.toResponse(entity);
   }
 
   @ApiOperation({ summary: 'Eliminar usuario' })
@@ -56,7 +61,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Desactivar usuario' })
   @ApiOkResponse({ type: UserResponse })
   @Patch('deactivate/:id')
-  deactivate(@Param('id') id: string): Promise<UserResponse> {
-    return this.usersService.softRemove(id);
+  async deactivate(@Param('id') id: string): Promise<UserResponse> {
+    const entity = await this.usersService.softRemove(id);
+    return UserMapper.toResponse(entity);
   }
 }

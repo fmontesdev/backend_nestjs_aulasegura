@@ -1,13 +1,13 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { UserEntity } from './user.entity';
+import { UserEntity } from '../../../users/domain/entities/user.entity';
 
-@Entity({ name: 'refresh_token' })
-export class RefreshTokenEntity {
+@Entity({ name: 'blacklist_token' })
+export class BlacklistTokenEntity {
   @PrimaryColumn({ name: 'user_id', type: 'char', length: 36 })
   userId!: string;
 
-  @PrimaryColumn({ name: 'refresh_token', type: 'varchar', length: 500 })
-  refreshToken!: string;
+  @PrimaryColumn({ name: 'token', type: 'varchar', length: 500 })
+  token!: string;
 
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
@@ -15,7 +15,7 @@ export class RefreshTokenEntity {
   @Column({ name: 'expires_at', type: 'timestamp' })
   expiresAt!: Date;
 
-  @ManyToOne(() => UserEntity, (u) => u.refreshTokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (u) => u.blacklistedTokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user!: UserEntity;
 }

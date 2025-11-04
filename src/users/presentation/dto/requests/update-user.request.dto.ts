@@ -3,32 +3,32 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateUserRequest {
   @ApiPropertyOptional({ maxLength: 50, description: 'Nombre del usuario' })
-  @IsString()
-  @MaxLength(50)
+  @IsString({ message: 'Name must be a string' })
+  @MaxLength(50, { message: 'Name cannot exceed 50 characters' })
   @IsOptional() 
   name?: string;
 
   @ApiPropertyOptional({ maxLength: 100, description: 'Apellidos' })
-  @IsString()
-  @MaxLength(100)
+  @IsString({ message: 'Lastname must be a string' })
+  @MaxLength(100, { message: 'Lastname cannot exceed 100 characters' })
   @IsOptional()
   lastname?: string;
 
   @ApiPropertyOptional({ maxLength: 100, format: 'email', description: 'Email del usuario' })
-  @IsEmail()
-  @MaxLength(100)
+  @IsEmail({}, { message: 'Invalid email' })
+  @MaxLength(100, { message: 'Email cannot exceed 100 characters' })
   @IsOptional()
   email?: string;
 
   @ApiPropertyOptional({ minLength: 8, description: 'Contraseña en texto plano (se hashea en servidor)' })
-  @IsString()
-  @MinLength(8)
+  @IsString({ message: 'Password must be a string' })
+  @MinLength(8, { message: 'The password must be at least 8 characters long' })
   @IsOptional()
   password?: string;
 
   @ApiPropertyOptional({ maxLength: 255, nullable: true, description: 'Archivo de imagen del usuario, o null' })
-  @IsString()
-  @MaxLength(255)
+  @IsString({ message: 'Avatar must be a string' })
+  @MaxLength(255, { message: 'Avatar cannot exceed 255 characters' })
   @IsOptional()
   avatar?: string | null;
 
@@ -39,7 +39,7 @@ export class UpdateUserRequest {
     type: String,
     format: 'date-time',
   })
-  @IsDate()
+  @IsDate({ message: 'ValidTo must be a valid date' })
   @IsOptional()
   validTo?: Date | null;
 }

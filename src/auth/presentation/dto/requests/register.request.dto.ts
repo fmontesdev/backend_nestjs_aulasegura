@@ -1,35 +1,38 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, IsEnum, IsInt } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, IsEnum, IsInt, Matches } from 'class-validator';
 import { RoleName } from '../../../../users/domain/enums/rolename.enum';
 
 export class RegisterRequest {
   @ApiProperty({ maxLength: 50, description: 'Nombre del usuario' })
-  @IsString()
-  @MaxLength(50)
-  @IsNotEmpty()
+  @IsString({ message: 'Name must be a string' })
+  @MaxLength(50, { message: 'Name cannot exceed 50 characters' })
+  @IsNotEmpty({ message: 'Name is required' })
   name!: string;
 
   @ApiProperty({ maxLength: 100, description: 'Apellidos del usuario' })
-  @IsString()
-  @MaxLength(100)
-  @IsNotEmpty()
+  @IsString({ message: 'Lastname must be a string' })
+  @MaxLength(100, { message: 'Lastname cannot exceed 100 characters' })
+  @IsNotEmpty({ message: 'Lastname is required' })
   lastname!: string;
 
   @ApiProperty({ format: 'email', maxLength: 100, description: 'Email del usuario' })
-  @IsEmail()
-  @MaxLength(100)
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'Invalid email' })
+  @MaxLength(100, { message: 'Email cannot exceed 100 characters' })
+  @IsNotEmpty({ message: 'Email is required' })
   email!: string;
 
   @ApiProperty({ minLength: 8, description: 'Contraseña en texto plano (se hashea en servidor)' })
-  @IsString()
-  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
-  @IsNotEmpty()
+  @IsString({ message: 'Password must be a string' })
+  @MinLength(8, { message: 'The password must be at least 8 characters long' })
+  @IsNotEmpty({ message: 'Password is required' })
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
+    message: 'The password must contain at least one letter and one number',
+  })
   password!: string;
 
   @ApiPropertyOptional({ maxLength: 255, description: 'Archivo de imagen del usuario, o null' })
-  @IsString()
-  @MaxLength(255)
+  @IsString({ message: 'Avatar must be a string' })
+  @MaxLength(255, { message: 'Avatar cannot exceed 255 characters' })
   @IsOptional()
   avatar?: string;
 
@@ -38,14 +41,14 @@ export class RegisterRequest {
     description: 'Rol del usuario',
     example: RoleName.TEACHER
   })
-  @IsEnum(RoleName)
+  @IsEnum(RoleName, { message: `RoleName must be one of: ${Object.values(RoleName).join(', ')}` })
   roleName!: RoleName;
 
   @ApiPropertyOptional({ 
     type: 'integer',
     description: 'ID del departamento (obligatorio si el rol es teacher)' 
   })
-  @IsInt()
+  @IsInt({ message: 'Department ID must be an integer' })
   @IsOptional()
   departmentId?: number;
 }

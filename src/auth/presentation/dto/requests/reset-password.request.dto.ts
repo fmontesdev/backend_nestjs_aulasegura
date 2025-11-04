@@ -6,8 +6,8 @@ export class ResetPasswordRequest {
     description: 'Email del usuario',
     example: 'usuario@example.com' 
   })
-  @IsEmail({}, { message: 'Email inválido' })
-  @IsNotEmpty({ message: 'El email es obligatorio' })
+  @IsEmail({}, { message: 'Invalid email' })
+  @IsNotEmpty({ message: 'Email is required' })
   email!: string;
 
   @ApiProperty({ 
@@ -16,21 +16,21 @@ export class ResetPasswordRequest {
     minLength: 6,
     maxLength: 6
   })
-  @IsString({ message: 'El código debe ser una cadena de texto' })
-  @IsNotEmpty({ message: 'El código es obligatorio' })
-  @Matches(/^[A-Z0-9]{6}$/, { message: 'El código debe ser de 6 caracteres alfanuméricos. Solo admite letras mayúsculas y números' })
+  @IsString({ message: 'The code must be a text string' })
+  @IsNotEmpty({ message: 'The code is required' })
+  @Matches(/^[A-Z0-9]{6}$/, { message: 'The code must be 6 alphanumeric characters long and can only contain uppercase letters and numbers' })
   resetToken!: string;
 
   @ApiProperty({ 
     description: 'Nueva contraseña',
-    example: 'NuevaContraseña123!',
+    example: 'ABcd1234',
     minLength: 8
   })
-  @IsString({ message: 'La contraseña debe ser una cadena de texto' })
-  @IsNotEmpty({ message: 'La contraseña es obligatoria' })
-  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
+  @IsString({ message: 'The password must be a text string' })
+  @IsNotEmpty({ message: 'The password is required' })
+  @MinLength(8, { message: 'The password must be at least 8 characters long' })
   @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
-    message: 'La contraseña debe contener al menos una letra y un número',
+    message: 'The password must contain at least one letter and one number',
   })
   newPassword!: string;
 }

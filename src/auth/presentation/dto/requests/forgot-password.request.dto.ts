@@ -6,7 +6,7 @@ export class ForgotPasswordRequest {
     description: 'Email del usuario',
     example: 'usuario@example.com' 
   })
-  @IsEmail({}, { message: 'Email inválido' })
-  @IsNotEmpty({ message: 'El email es obligatorio' })
+  @IsEmail({}, { message: 'Invalid email' })
+  @IsNotEmpty({ message: 'Email is required' })
   email!: string;
 }

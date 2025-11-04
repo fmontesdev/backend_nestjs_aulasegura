@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';
 import { BlacklistTokenEntity } from './domain/entities/blacklist-token.entity';
+import { PasswordResetTokenEntity } from './domain/entities/password-reset-token.entity';
 import { AuthController } from './presentation/controllers/auth.controller';
 import { AuthService } from './application/services/auth.service';
 import { JwtTokenService } from './application/services/jwt-token.service';
@@ -27,7 +28,7 @@ import { TypeormAuthRepository } from './infrastructure/persistence/typeorm/type
         },
       }),
     }),
-    TypeOrmModule.forFeature([BlacklistTokenEntity]),
+    TypeOrmModule.forFeature([BlacklistTokenEntity, PasswordResetTokenEntity]),
   ],
   controllers: [AuthController],
   providers: [

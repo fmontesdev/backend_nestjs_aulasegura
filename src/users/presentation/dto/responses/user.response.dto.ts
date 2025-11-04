@@ -1,28 +1,23 @@
-import { IsEmail, IsOptional, IsString, IsDate, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserResponse {
   @ApiProperty({
     description: 'Identificador del usuario (UUID v4)',
     format: 'uuid',
-    example: '00000000-0000-0000-0000-000000000000',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
   userId!: string;
 
-  @ApiProperty({ maxLength: 50, description: 'Nombre' })
-  @IsString() @MaxLength(50)
+  @ApiProperty({ description: 'Nombre del usuario' })
   name!: string;
 
-  @ApiProperty({ maxLength: 100, description: 'Apellidos' })
-  @IsString() @MaxLength(100)
+  @ApiProperty({ description: 'Apellidos del usuario' })
   lastname!: string;
 
-  @ApiProperty({ maxLength: 100, format: 'email', description: 'Correo electrónico' })
-  @IsEmail() @MaxLength(100)
+  @ApiProperty({ format: 'email', description: 'Email del usuario' })
   email!: string;
 
-  @ApiPropertyOptional({ maxLength: 255, nullable: true, description: 'URL del avatar o null' })
-  @IsOptional() @IsString() @MaxLength(255)
+  @ApiPropertyOptional({ nullable: true, description: 'Archivo de imagen del avatar o null' })
   avatar!: string | null;
 
   @ApiProperty({
@@ -31,7 +26,6 @@ export class UserResponse {
     type: String,
     format: 'date-time',
   })
-  @IsDate()
   validFrom!: Date;
 
   @ApiPropertyOptional({
@@ -41,7 +35,6 @@ export class UserResponse {
     type: String,
     format: 'date-time',
   })
-  @IsOptional() @IsDate()
   validTo!: Date | null;
 
   @ApiProperty({
@@ -50,6 +43,5 @@ export class UserResponse {
     type: String,
     format: 'date-time',
   })
-  @IsDate()
   createdAt!: Date;
 }

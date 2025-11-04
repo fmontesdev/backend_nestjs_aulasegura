@@ -3,8 +3,7 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { RoleEntity } from './role.entity';
-import { RefreshTokenEntity } from './refreshToken.entity';
-import { BlacklistTokenEntity } from './blacklistToken.entity';
+import { BlacklistTokenEntity } from '../../../auth/domain/entities/blacklist-token.entity';
 import { TagEntity } from '../../../entities/tag.entity';
 import { NotificationEntity } from '../../../entities/notification.entity';
 import { PermissionEntity } from '../../../entities/permission.entity';
@@ -18,9 +17,7 @@ export class UserEntity {
 
   @BeforeInsert()
   setId() {
-      if (!this.userId) {
-          this.userId = randomUUID(); // genera UUID v4
-      }
+    if (!this.userId) this.userId = randomUUID(); // genera UUID v4
   }
 
   @Column({ name: 'name', type: 'varchar', length: 50 })
@@ -47,6 +44,10 @@ export class UserEntity {
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
+  // Para invalidar tokens JWT (1 por cada dispositivo del usuario) emitidos después de un cambio de contraseña o una revocación manual
+  @Column({ name: 'token_version', type: 'int', default: 1 })
+  tokenVersion!: number;
+
   // --- Relations ---
 
   @ManyToMany(() => RoleEntity, (r) => r.users, { cascade: false })
@@ -56,9 +57,6 @@ export class UserEntity {
     inverseJoinColumn: { name: 'role_id', referencedColumnName: 'roleId' },
   })
   roles!: RoleEntity[];
-
-  @OneToMany(() => RefreshTokenEntity, (rt) => rt.user, { onDelete: 'CASCADE' })
-  refreshTokens!: RefreshTokenEntity[];
 
   @OneToMany(() => BlacklistTokenEntity, (bt) => bt.user, { onDelete: 'CASCADE' })
   blacklistedTokens!: BlacklistTokenEntity[];

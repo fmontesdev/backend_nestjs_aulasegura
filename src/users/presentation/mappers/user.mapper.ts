@@ -2,16 +2,16 @@ import { UserEntity } from '../../domain/entities/user.entity';
 import { UserResponse } from '../dto/responses/user.response.dto';
 
 export class UserMapper {
-  static toResponse(e: UserEntity): UserResponse {
+  static toResponse(user: UserEntity): UserResponse {
     return {
-      userId: e.userId,
-      name: e.name,
-      lastname: e.lastname,
-      email: e.email,
-      avatar: e.avatar ?? null,
-      validFrom: e.validFrom,
-      validTo: e.validTo ?? null,
-      createdAt: e.createdAt,
+      userId: user.userId,
+      name: user.name,
+      lastname: user.lastname,
+      email: user.email,
+      avatar: user.avatar ?? null,
+      validFrom: user.validFrom,
+      validTo: user.validTo ?? null,
+      createdAt: user.createdAt,
     };
   }
 

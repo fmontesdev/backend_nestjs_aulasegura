@@ -1,12 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { UsersService } from '../../application/services/users.service';
-import { CreateUserRequest } from '../dto/requests/create-user.request.dto';
 import { UpdateUserRequest } from '../dto/requests/update-user.request.dto';
 import { UserResponse } from '../dto/responses/user.response.dto';
 import { UserMapper } from '../mappers/user.mapper';
-import { ApiBearerAuth, ApiOkResponse, ApiCreatedResponse, ApiNoContentResponse,
-  ApiNotFoundResponse, ApiConflictResponse, ApiTags, ApiOperation
-} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
+import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
+import { RoleName } from '../../domain/enums/rolename.enum';
+import { ApiBearerAuth, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse, ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('users')
 @ApiBearerAuth() // porque usamos auth tipo Bearer
@@ -14,8 +15,10 @@ import { ApiBearerAuth, ApiOkResponse, ApiCreatedResponse, ApiNoContentResponse,
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // @ApiOperation({ summary: 'Lista de usuarios' })
-  // @ApiOkResponse({ type: UserResponse, isArray: true })
+  @ApiOperation({ summary: 'Lista de usuarios' })
+  @ApiOkResponse({ type: UserResponse, isArray: true })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
   @Get()
   async getUsers(): Promise<UserResponse[]> {
     const entities = await this.usersService.findAll();
@@ -25,25 +28,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Detalle de usuario por ID' })
   @ApiOkResponse({ type: UserResponse })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
   @Get(':id')
   async getUser(@Param('id') id: string): Promise<UserResponse> {
     const entity = await this.usersService.findOne(id);
     return UserMapper.toResponse(entity);
   }
 
-  @ApiOperation({ summary: 'Crear usuario' })
-  @ApiCreatedResponse({ type: UserResponse })
-  @ApiConflictResponse({ description: 'El email ya está registrado' })
-  @Post()
-  async createUser(@Body() dto: CreateUserRequest): Promise<UserResponse> {
-    const entity = await this.usersService.create(dto);
-    return UserMapper.toResponse(entity);
-  }
-
   @ApiOperation({ summary: 'Actualizar usuario' })
+  @ApiBody({ type: UpdateUserRequest })
   @ApiOkResponse({ type: UserResponse })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
   @ApiConflictResponse({ description: 'El email ya está registrado' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
   @Patch(':id')
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserRequest): Promise<UserResponse> {
     const entity = await this.usersService.update(id, dto);
@@ -51,18 +50,13 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'Eliminar usuario' })
-  @ApiNoContentResponse()
+  @ApiOkResponse({ description: 'Usuario eliminado' })
+  @HttpCode(200) // Responde al eliminado con "200"
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
   @Delete(':id')
-  @HttpCode(204) // Responde al eliminado con "204 No Content"
-  async deleteUser(@Param('id') id: string): Promise<void> {
+  async deleteUser(@Param('id') id: string): Promise<{ message: string }> {
     await this.usersService.remove(id);
-  }
-
-  @ApiOperation({ summary: 'Desactivar usuario' })
-  @ApiOkResponse({ type: UserResponse })
-  @Patch('deactivate/:id')
-  async deactivate(@Param('id') id: string): Promise<UserResponse> {
-    const entity = await this.usersService.softRemove(id);
-    return UserMapper.toResponse(entity);
+    return { message: 'Usuario eliminado' };
   }
 }

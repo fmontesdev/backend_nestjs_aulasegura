@@ -1,6 +1,8 @@
 import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UsersRepository } from '../../domain/repositories/users.repository';
 import { UserEntity } from '../../domain/entities/user.entity';
+import { TeacherEntity } from '../../domain/entities/teacher.entity';
+import { RoleName } from '../../domain/enums/rolename.enum';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { hash as bcryptHash } from '@node-rs/bcrypt';
@@ -11,73 +13,90 @@ export class UsersService {
     private readonly usersRepo: UsersRepository,
   ) {}
 
-
+  /// Obtiene todos los usuarios
   async findAll(): Promise<UserEntity[]> {
     return await this.usersRepo.findAll();
   }
 
-
+  /// Obtiene un usuario por su ID
   async findOne(userId: string): Promise<UserEntity> {
-    const entity = await this.usersRepo.findOneById(userId);
-    if (!entity) throw new NotFoundException('Usuario no encontrado');
-    return entity;
+    return this.findUserByIdOrFail(userId);
   }
 
+  /// Registra un nuevo usuario con rol y departamento (si es teacher)
+  async createUser(dto: CreateUserDto): Promise<UserEntity> {
+    // Validaciones
+    await this.ensureEmailIsUnique(dto.email);
+    this.validateTeacherDepartment(dto.roleName, dto.departmentId);
 
-  async create(dto: CreateUserDto): Promise<UserEntity> {
-    // Comprueba que el email sea único
-    const exists = await this.usersRepo.findOneByEmail(dto.email);
-    if (exists) {
-      throw new ConflictException('El email ya está registrado');
+    // Hash de la contraseña
+    const passwordHash = await this.hashPassword(dto.password);
+
+    // Crea usuario
+    const user = new UserEntity();
+    user.name = dto.name;
+    user.lastname = dto.lastname;
+    user.email = dto.email;
+    user.passwordHash = passwordHash;
+    user.avatar = dto.avatar || null;
+    user.validFrom = new Date();
+    user.validTo = null;
+    user.createdAt = new Date();
+    user.tokenVersion = 1;
+
+    // Asigna rol
+    const role = await this.findRoleByNameOrFail(dto.roleName);
+    user.roles = [role];
+
+    // Guarda usuario
+    const savedUser = await this.saveUser(user);
+
+    // Si es teacher, crea la entrada en teacher
+    if (dto.roleName === RoleName.TEACHER && dto.departmentId) {
+      const teacher = new TeacherEntity();
+      teacher.userId = savedUser.userId;
+      teacher.departmentId = dto.departmentId;
+      
+      await this.usersRepo.saveTeacher(teacher);
+      
+      // Recarga usuario con la relación teacher
+      const userWithTeacher = await this.usersRepo.findOneById(savedUser.userId);
+      return userWithTeacher!;
     }
 
-    // Hashea la contraseña (@node-rs/bcrypt)
-    const hashStr = await bcryptHash(dto.password, 12); // cost 12 recomendado
-    
-    // Crea la entidad
-    const entity = this.usersRepo.create({
-      name: dto.name,
-      lastname: dto.lastname,
-      email: dto.email,
-      passwordHash: hashStr,
-      avatar: dto.avatar ?? null,
-      validTo: dto.validTo ? new Date(dto.validTo) : null,
-    });
-
-    return await this.usersRepo.save(entity);
+    return savedUser;
   }
 
+  /// Guarda los cambios de un usuario
+  async saveUser(user: UserEntity): Promise<UserEntity> {
+    return await this.usersRepo.save(user);
+  }
 
+  /// Actualiza un usuario existente
   async update(userId: string, dto: UpdateUserDto): Promise<UserEntity> {
     // Verifica que el usuario exista
-    const user = await this.usersRepo.findOneById(userId);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const user = await this.findUserByIdOrFail(userId);
 
     // Si cambia el email, comprueba unicidad
     if (dto.email) {
-      const other = await this.usersRepo.findOneByEmail(dto.email);
-      if (other && other.userId !== userId) {
-        throw new ConflictException('El email ya está registrado por otro usuario');
-      }
+      await this.ensureEmailIsUniqueForUpdate(dto.email, userId);
     }
 
     // Asignamos campos permitidos
     if (dto.name !== undefined) user.name = dto.name;
     if (dto.lastname !== undefined) user.lastname = dto.lastname;
     if (dto.email !== undefined) user.email = dto.email;
-    if (dto.password !== undefined) user.passwordHash = await bcryptHash(dto.password, 12);
+    if (dto.password !== undefined) user.passwordHash = await this.hashPassword(dto.password);
     if (dto.avatar !== undefined) user.avatar = dto.avatar ?? null;
     if (dto.validTo !== undefined) user.validTo = dto.validTo ? new Date(dto.validTo) : null;
 
-    return await this.usersRepo.save(user);
+    return await this.saveUser(user);
   }
 
-
-  // Elimina un usuario de la base de datos
+  /// Elimina un usuario de la base de datos
   async remove(userId: string): Promise<void> {
     // Verifica que el usuario exista
-    const exists = await this.usersRepo.existsById(userId);
-    if (!exists) throw new NotFoundException('Usuario no encontrado');
+    await this.findUserByIdOrFail(userId);
 
     try {
       await this.usersRepo.deleteById(userId);
@@ -93,14 +112,60 @@ export class UsersService {
     }
   }
 
+  // ============ Métodos auxiliares ============
 
-  // Desactiva usuario poniendo valid_to a fecha actual
-  async softRemove(userId: string): Promise<UserEntity> {
-    // Verifica que el usuario exista
+  //? Busca un usuario por ID o lanza NotFoundException
+  async findUserByIdOrFail(userId: string): Promise<UserEntity> {
     const user = await this.usersRepo.findOneById(userId);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return user;
+  }
 
-    user.validTo = new Date();
-    return await this.usersRepo.save(user);
+  //? Busca un usuario por email o lanza NotFoundException
+  async findUserByEmailOrFail(email: string): Promise<UserEntity> {
+    const user = await this.usersRepo.findOneByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return user;
+  }
+
+  //? Verifica que el email no esté en uso
+  private async ensureEmailIsUnique(email: string): Promise<void> {
+    const existingUser = await this.usersRepo.findOneByEmail(email);
+    if (existingUser) {
+      throw new ConflictException('El email ya está registrado');
+    }
+  }
+
+  //? Verifica que el email no esté en uso por otro usuario
+  private async ensureEmailIsUniqueForUpdate(email: string, currentUserId: string): Promise<void> {
+    const existingUser = await this.usersRepo.findOneByEmail(email);
+    if (existingUser && existingUser.userId !== currentUserId) {
+      throw new ConflictException('El email ya está registrado por otro usuario');
+    }
+  }
+
+  //? Busca un rol por nombre o lanza BadRequestException
+  private async findRoleByNameOrFail(roleName: RoleName): Promise<any> {
+    const role = await this.usersRepo.findRoleByName(roleName);
+    if (!role) {
+      throw new BadRequestException(`Rol "${roleName}" no encontrado en la base de datos`);
+    }
+    return role;
+  }
+
+  //? Valida que si es teacher, tenga departmentId
+  private validateTeacherDepartment(roleName: RoleName, departmentId?: number): void {
+    if (roleName === RoleName.TEACHER && !departmentId) {
+      throw new BadRequestException('El departmentId es obligatorio para profesores');
+    }
+  }
+
+  //? Hash de contraseña con bcrypt
+  private async hashPassword(password: string): Promise<string> {
+    return bcryptHash(password, 12);
   }
 }

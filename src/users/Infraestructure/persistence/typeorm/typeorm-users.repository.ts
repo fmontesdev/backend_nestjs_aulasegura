@@ -3,40 +3,63 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersRepository } from '../../../domain/repositories/users.repository';
 import { UserEntity } from '../../../domain/entities/user.entity';
+import { RoleEntity } from '../../../domain/entities/role.entity';
+import { TeacherEntity } from '../../../domain/entities/teacher.entity';
 
 @Injectable()
 export class TypeormUsersRepository implements UsersRepository {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly repo: Repository<UserEntity>,
+    private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(RoleEntity)
+    private readonly roleRepo: Repository<RoleEntity>,
+    @InjectRepository(TeacherEntity)
+    private readonly teacherRepo: Repository<TeacherEntity>,
   ) {}
 
-  findAll(): Promise<UserEntity[]> {
-    return this.repo.find({ order: { createdAt: 'DESC' } });
+  async findAll(): Promise<UserEntity[]> {
+    return await this.userRepo.find({ 
+      relations: ['roles', 'teacher', 'teacher.department'],
+      order: { createdAt: 'DESC' } 
+    });
   }
 
-  findOneById(userId: string): Promise<UserEntity | null> {
-    return this.repo.findOne({ where: { userId } });
+  async findOneById(userId: string): Promise<UserEntity | null> {
+    return await this.userRepo.findOne({ 
+      where: { userId },
+      relations: ['roles', 'teacher', 'teacher.department'] 
+    });
   }
 
-  findOneByEmail(email: string): Promise<UserEntity | null> {
-    return this.repo.findOne({ where: { email } });
+  async findOneByEmail(email: string): Promise<UserEntity | null> {
+    return await this.userRepo.findOne({ 
+      where: { email },
+      relations: ['roles', 'teacher', 'teacher.department'] 
+    });
   }
 
   create(data: Partial<UserEntity>): UserEntity {
-    return this.repo.create(data);
+    return this.userRepo.create(data);
   }
 
-  save(user: UserEntity): Promise<UserEntity> {
-    return this.repo.save(user);
+  async save(user: UserEntity): Promise<UserEntity> {
+    return await this.userRepo.save(user);
   }
 
   async deleteById(userId: string): Promise<void> {
-    await this.repo.delete(userId);
+    await this.userRepo.delete(userId);
   }
 
   async existsById(userId: string): Promise<boolean> {
-    const count = await this.repo.count({ where: { userId } });
+    const count = await this.userRepo.count({ where: { userId } });
     return count > 0;
+  }
+
+  async findRoleByName(name: string): Promise<RoleEntity | null> {
+    return await this.roleRepo.findOne({ where: { name: name as any } });
+  }
+
+  async saveTeacher(teacher: TeacherEntity): Promise<TeacherEntity> {
+    return await this.teacherRepo.save(teacher);
   }
 }

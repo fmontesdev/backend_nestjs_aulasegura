@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import { DepartmentEntity } from './entities/department.entity';
 import { SubjectEntity } from './entities/subject.entity';
 import { CourseEntity } from './entities/course.entity';
@@ -17,24 +19,31 @@ import { AccessLogEntity } from './entities/access-log.entity';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     TypeOrmModule.forRootAsync({
-      useFactory: () => ({
-        type: 'mysql',
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
-        username: process.env.DB_USER || 'user',
-        password: process.env.DB_PASSWORD || 'password',
-        database: process.env.DB_DATABASE || 'db',
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql' as const,
+        host: configService.get<string>('DB_HOST', 'localhost'),
+        port: configService.get<number>('DB_PORT', 3306),
+        username: configService.get<string>('DB_USER', 'user'),
+        password: configService.get<string>('DB_PASSWORD', 'password'),
+        database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
           DepartmentEntity, SubjectEntity, CourseEntity, RoomEntity, AcademicYearEntity,
           ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity, TagEntity,
           NotificationEntity, PermissionEntity, ReaderEntity, AccessLogEntity
         ],
-        synchronize: true, // Solo para desarrollo
+        synchronize: configService.get<string>('NODE_ENV') !== 'production', // Solo en desarrollo
         autoLoadEntities: true, // Carga automáticamente las entidades
       }),
     }),
     UsersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

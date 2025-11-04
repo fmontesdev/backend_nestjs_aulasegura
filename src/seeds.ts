@@ -5,8 +5,7 @@ import { UserSeeder } from './db/seeding/seeds/user.seeder';
 import { TeacherEntity } from './users/domain/entities/teacher.entity';
 import { RoleEntity } from './users/domain/entities/role.entity';
 import { RoleSeeder } from './db/seeding/seeds/role.seeder';
-import { RefreshTokenEntity } from './users/domain/entities/refreshToken.entity';
-import { BlacklistTokenEntity } from './users/domain/entities/blacklistToken.entity';
+import { BlacklistTokenEntity } from './auth/domain/entities/blacklist-token.entity';
 import { TagEntity } from './entities/tag.entity';
 import { NotificationEntity } from './entities/notification.entity';
 import { PermissionEntity } from './entities/permission.entity';
@@ -37,7 +36,6 @@ const options: DataSourceOptions & SeederOptions = {
     UserEntity,
     TeacherEntity,
     RoleEntity,
-    RefreshTokenEntity,
     BlacklistTokenEntity,
     TagEntity,
     NotificationEntity,

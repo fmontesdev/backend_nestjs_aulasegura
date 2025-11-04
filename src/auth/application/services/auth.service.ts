@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, Inject } from '@nestjs/common';
 import { compare as bcryptCompare, hash as bcryptHash } from '@node-rs/bcrypt';
 import { UsersService } from '../../../users/application/services/users.service';
 import { CreateUserDto } from '../../../users/application/dto/create-user.dto';
@@ -6,6 +6,7 @@ import { RegisterDto } from '../dto/register.dto';
 import { AuthRepository } from '../../domain/repositories/auth.repository';
 import { UserEntity } from '../../../users/domain/entities/user.entity';
 import { BlacklistTokenEntity } from '../../domain/entities/blacklist-token.entity';
+import { PasswordResetTokenEntity } from '../../domain/entities/password-reset-token.entity';
 import type { JwtPayload } from '../types/jwt-payload';
 import type { AuthTokens } from '../types/auth-tokens';
 import { JwtTokenService } from './jwt-token.service';
@@ -170,6 +171,69 @@ export class AuthService {
     }
   }
 
+  /// Genera un código de recuperación y lo guarda (invalidando tokens anteriores)
+  async requestPasswordReset(email: string): Promise<string> {
+    // Obtiene usuario por su email
+    const user = await this.usersService.findUserByEmail(email);
+    
+    // Por seguridad, no revelamos si el email existe o no
+    if (!user) {
+      return 'Si el email existe, recibirás un código de recuperación';
+    }
+
+    // Invalida tokens anteriores del usuario
+    await this.authRepo.invalidateUserPasswordResetTokens(user.userId);
+
+    // Genera código alfanumérico de 6 caracteres
+    const token = this.generateResetToken();
+    
+    // Expira en 20 minutos
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 20);
+
+    // Crea el token de recuperación
+    const resetToken = new PasswordResetTokenEntity();
+    resetToken.token = token;
+    resetToken.userId = user.userId;
+    resetToken.expiresAt = expiresAt;
+    resetToken.attempts = 0;
+    resetToken.isUsed = false;
+    resetToken.createdAt = new Date();
+
+    await this.authRepo.savePasswordResetToken(resetToken);
+
+    return 'Si el email existe, recibirás un código de recuperación';
+  }
+
+  /// Valida el código de recuperación y cambia la contraseña
+  async resetPassword(email: string, token: string, newPassword: string): Promise<void> {
+    // Obtiene usuario por su email
+    const user = await this.usersService.findUserByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    // Busca el token de recuperación comprobando que sea válido (isUsed: false, expiresAt > now)
+    const resetToken = await this.authRepo.findPasswordResetToken(token, user.userId);
+    if (!resetToken) {
+      await this.incrementPasswordResetAttempts(user.userId);
+      throw new UnauthorizedException('Código inválido o expirado');
+    }
+
+    // Cambia la contraseña
+    user.passwordHash = await bcryptHash(newPassword, 12);
+    
+    // Incrementa tokenVersion para invalidar todos los tokens JWT
+    user.tokenVersion++;
+
+    await this.usersService.saveUser(user);
+
+    // Marca el token como usado e incrementa intentos
+    resetToken.isUsed = true;
+    resetToken.attempts++;
+    await this.authRepo.savePasswordResetToken(resetToken);
+  }
+
   /// Suspender cuenta de usuario
   async suspendUser(email: string): Promise<void> {
     // Obtiene usuario por su email
@@ -196,5 +260,35 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  //? ================= Métodos auxiliares =================
+
+  //? Genera un código alfanumérico aleatorio de 6 caracteres
+  private generateResetToken(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let token = '';
+    for (let i = 0; i < 6; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return token;
+  }
+
+  //? Incrementa el contador de intentos fallidos para un token de recuperación
+  private async incrementPasswordResetAttempts(userId: string): Promise<void> {
+    // Obtiene el token de recuperación activo del usuario
+    const resetToken = await this.authRepo.findPasswordResetTokenByUserId(userId);
+
+    // Verifica intentos (máximo 5)
+    if (resetToken != null && resetToken.attempts >= 5) {
+      resetToken.isUsed = true; // Marca como usado para bloquearlo
+      await this.authRepo.savePasswordResetToken(resetToken);
+      throw new UnauthorizedException('Demasiados intentos. Solicita un nuevo código');
+    }
+
+    if (resetToken) {
+      resetToken.attempts++;
+      await this.authRepo.savePasswordResetToken(resetToken);
+    }
   }
 }

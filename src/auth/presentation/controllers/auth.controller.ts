@@ -4,6 +4,8 @@ import { AuthService } from '../../application/services/auth.service';
 import { JwtTokenService } from '../../application/services/jwt-token.service';
 import { RegisterRequest } from '../dto/requests/register.request.dto';
 import { LoginRequest } from '../dto/requests/login.request.dto';
+import { ForgotPasswordRequest } from '../dto/requests/forgot-password.request.dto';
+import { ResetPasswordRequest } from '../dto/requests/reset-password.request.dto';
 import type { AuthenticatedRequest } from '../types/authenticated-request';
 import type { AuthenticatedUser } from '../types/authenticated-user';
 import { RefreshTokenRequest } from '../dto/requests/refresh-token.request.dto';
@@ -123,6 +125,31 @@ export class AuthController {
   async changePassword(@CurrentUser() user: AuthenticatedUser, @Body() body: { oldPassword: string; newPassword: string }): Promise<{ message: string }> {
     await this.authService.changePassword(user.userId, body.oldPassword, body.newPassword);
     return { message: 'Contraseña actualizada. Inicia sesión nuevamente en todos tus dispositivos' };
+  }
+
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña', description: 'Genera un código de recuperación y lo envía por email (futuro)' })
+  @ApiOkResponse({ description: 'Código de recuperación generado' })
+  @ApiBadRequestResponse({ description: 'Email inválido' })
+  @ApiBody({ type: ForgotPasswordRequest })
+  @HttpCode(200)
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordRequest): Promise<{ message: string }> {
+    const message = await this.authService.requestPasswordReset(dto.email);
+    return { message };
+  }
+
+  @ApiOperation({ summary: 'Restablecer contraseña', description: 'Valida el código de recuperación y cambia la contraseña' })
+  @ApiOkResponse({ description: 'Contraseña restablecida correctamente' })
+  @ApiUnauthorizedResponse({ description: 'Código inválido o expirado' })
+  @ApiBadRequestResponse({ description: 'Datos inválidos' })
+  @ApiBody({ type: ResetPasswordRequest })
+  @HttpCode(200)
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordRequest): Promise<{ message: string }> {
+    await this.authService.resetPassword(dto.email, dto.resetToken, dto.newPassword);
+    return { message: 'Contraseña restablecida correctamente' };
   }
 
   @ApiBearerAuth()

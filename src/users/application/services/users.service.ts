@@ -112,7 +112,7 @@ export class UsersService {
     }
   }
 
-  // ============ Métodos auxiliares ============
+  //? ================= Métodos auxiliares =================
 
   //? Busca un usuario por ID o lanza NotFoundException
   async findUserByIdOrFail(userId: string): Promise<UserEntity> {
@@ -130,6 +130,11 @@ export class UsersService {
       throw new NotFoundException('Usuario no encontrado');
     }
     return user;
+  }
+
+  //? Busca un usuario por email sin lanzar excepción
+  async findUserByEmail(email: string): Promise<UserEntity | null> {
+    return this.usersRepo.findOneByEmail(email);
   }
 
   //? Verifica que el email no esté en uso

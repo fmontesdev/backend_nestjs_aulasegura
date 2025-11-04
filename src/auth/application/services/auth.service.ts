@@ -46,7 +46,7 @@ export class AuthService {
 
     // Verificar si el usuario está activo (validTo)
     if (user.validTo && user.validTo < new Date()) {
-      throw new UnauthorizedException('Usuario desactivado');
+      throw new UnauthorizedException('Usuario suspendido');
     }
 
     return user;
@@ -138,8 +138,12 @@ export class AuthService {
   /// Invalida todos los tokens del usuario incrementando tokenVersion para los casos de: robo de dispositivo, cambio de contraseña, suspensión
   async revokeAllUserTokens(userId: string): Promise<void> {
     const user = await this.usersService.findUserByIdOrFail(userId); // Obtiene usuario
-    user.tokenVersion++; // Incrementa tokenVersion para invalidar todos los tokens
-    await this.usersService.saveUser(user);
+    try {
+      user.tokenVersion++; // Incrementa tokenVersion para invalidar todos los tokens
+      await this.usersService.saveUser(user);
+    } catch (error) {
+      throw new UnauthorizedException('Error al revocar los tokens');
+    }
   }
 
   /// Cambio de contraseña con revocación de todos los tokens
@@ -153,24 +157,32 @@ export class AuthService {
       throw new UnauthorizedException('Contraseña actual incorrecta');
     }
 
-    // Actualiza contraseña
-    user.passwordHash = await bcryptHash(newPassword, 12);
-    
-    // Incrementa tokenVersion para invalidar todos los tokens
-    user.tokenVersion++;
-    
-    await this.usersService.saveUser(user);
+    try {
+      // Actualiza contraseña
+      user.passwordHash = await bcryptHash(newPassword, 12);
+      
+      // Incrementa tokenVersion para invalidar todos los tokens
+      user.tokenVersion++;
+      
+      await this.usersService.saveUser(user);
+    } catch (error) {
+      throw new UnauthorizedException('Error al cambiar la contraseña');
+    }
   }
 
   /// Suspender cuenta de usuario
-  async suspendUser(userId: string): Promise<void> {
-    // Obtiene usuario por su ID
-    const user = await this.usersService.findUserByIdOrFail(userId);
+  async suspendUser(email: string): Promise<void> {
+    // Obtiene usuario por su email
+    const user = await this.usersService.findUserByEmailOrFail(email);
 
-    user.validTo = new Date(); // Desactiva cuenta
-    user.tokenVersion++; // Invalida todos los tokens
-    
-    await this.usersService.saveUser(user);
+    try {
+      user.validTo = new Date(); // Desactiva cuenta
+      user.tokenVersion++; // Invalida todos los tokens
+      
+      await this.usersService.saveUser(user);
+    } catch (error) {
+      throw new UnauthorizedException('Error al suspender el usuario');
+    }
   }
 
   /// Obtiene el usuario actual basado en el payload del JWT

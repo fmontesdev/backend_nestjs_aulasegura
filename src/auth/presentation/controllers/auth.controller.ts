@@ -13,6 +13,9 @@ import { Public } from '../../infrastructure/decorators/public.decorator';
 import { CurrentUser } from '../../infrastructure/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../infrastructure/guards/jwt-auth.guard';
 import { LocalAuthGuard } from '../../infrastructure/guards/local-auth.guard';
+import { RolesGuard } from '../../infrastructure/guards/roles.guard';
+import { Roles } from '../../infrastructure/decorators/roles.decorator';
+import { RoleName } from '../../../users/domain/enums/rolename.enum';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -120,6 +123,19 @@ export class AuthController {
   async changePassword(@CurrentUser() user: AuthenticatedUser, @Body() body: { oldPassword: string; newPassword: string }): Promise<{ message: string }> {
     await this.authService.changePassword(user.userId, body.oldPassword, body.newPassword);
     return { message: 'Contraseña actualizada. Inicia sesión nuevamente en todos tus dispositivos' };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Suspende cuenta de usuario', description: 'Suspende la cuenta del usuario y revoca todos los tokens' })
+  @ApiOkResponse({ description: 'Cuenta suspendida' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
+  @Post('suspend')
+  async suspendUser(@Body() body: { email: string }): Promise<{ message: string }> {
+    await this.authService.suspendUser(body.email);
+    return { message: `Cuenta suspendida del usuario con email: ${body.email}` };
   }
 
   @ApiBearerAuth()

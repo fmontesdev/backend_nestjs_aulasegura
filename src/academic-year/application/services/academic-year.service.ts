@@ -19,6 +19,11 @@ export class AcademicYearService {
     return await this.findAcademicYearByIdOrFail(academicYearId);
   }
 
+  /// Busca un año académico por código o lanza una excepción si no se encuentra
+  async findByCode(code: string): Promise<AcademicYearEntity> {
+    return await this.findAcademicYearByCodeOrFail(code);
+  }
+
   /// Crea un nuevo año académico después de verificar que el código es único
   async create(createDto: CreateAcademicYearDto): Promise<AcademicYearEntity> {
     // Verifica que en el código del año académico con formato YYYY-YYYY, el segundo año sea el primero + 1
@@ -63,6 +68,18 @@ export class AcademicYearService {
     const academicYear = await this.academicYearRepository.findOneActiveById(academicYearId);
     if (!academicYear) {
       throw new NotFoundException(`Active academic year with ID ${academicYearId} not found`);
+    }
+    return academicYear;
+  }
+
+  //? Busca un año académico por código o lanza una excepción si no se encuentra
+  private async findAcademicYearByCodeOrFail(code: string): Promise<AcademicYearEntity> {
+    const academicYear = await this.academicYearRepository.findOneByCode(code);
+    if (!academicYear) {
+      throw new NotFoundException(`Academic year with code ${code} not found`);
+    }
+    if (!academicYear.isActive) {
+      throw new NotFoundException(`Academic year with code ${code} is not active`);
     }
     return academicYear;
   }

@@ -4,11 +4,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AcademicYearModule } from './academic-year/academic-year.module';
+import { CourseModule } from './courses/course.module';
 import { DepartmentEntity } from './entities/department.entity';
 import { SubjectEntity } from './entities/subject.entity';
-import { CourseEntity } from './entities/course.entity';
 import { RoomEntity } from './entities/room.entity';
-import { AcademicYearEntity } from './entities/academic-year.entity';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
 import { EventScheduleEntity } from './entities/event-schedule.entity';
@@ -35,7 +34,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
-          DepartmentEntity, SubjectEntity, CourseEntity, RoomEntity, AcademicYearEntity,
+          DepartmentEntity, SubjectEntity, RoomEntity,
           ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity, TagEntity,
           NotificationEntity, PermissionEntity, ReaderEntity, AccessLogEntity
         ],
@@ -46,6 +45,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     UsersModule,
     AuthModule,
     AcademicYearModule,
+    CourseModule,
   ],
   controllers: [],
   providers: [],

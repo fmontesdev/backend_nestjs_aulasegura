@@ -13,6 +13,7 @@ async function bootstrap() {
       whitelist: true,            // quita propiedades no definidas en el DTO
       forbidNonWhitelisted: true, // lanza error si llega una propiedad extra
       transform: true,            // transforma tipos (string -> number/date, etc.)
+      transformOptions: { enableImplicitConversion: true }, // permite conversiones implícitas
     }),
   );
 

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { AcademicYearModule } from './academic-year/academic-year.module';
 import { DepartmentEntity } from './entities/department.entity';
 import { SubjectEntity } from './entities/subject.entity';
 import { CourseEntity } from './entities/course.entity';
@@ -44,6 +45,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     }),
     UsersModule,
     AuthModule,
+    AcademicYearModule,
   ],
   controllers: [],
   providers: [],

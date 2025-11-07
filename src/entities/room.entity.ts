@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, OneToMany, JoinColumn  } from 'typeorm';
-import { CourseEntity } from './course.entity';
+import { CourseEntity } from 'src/courses/domain/entities/course.entity';
 import { PermissionEntity } from './permission.entity';
 import { ReaderEntity } from './reader.entity';
 import { AccessLogEntity } from './access-log.entity';

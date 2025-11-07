@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { AcademicYearEntity } from './academic-year.entity';
+import { AcademicYearEntity } from 'src/academic-year/domain/entities/academic-year.entity';
 import { PermissionEntity } from './permission.entity';
 
 export enum ScheduleType {

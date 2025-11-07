@@ -2,7 +2,7 @@ import {
     Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany, JoinColumn
 } from 'typeorm';
 import { DepartmentEntity } from './department.entity';
-import { CourseEntity } from './course.entity';
+import { CourseEntity } from 'src/courses/domain/entities/course.entity';
 import { TeacherEntity } from '../users/domain/entities/teacher.entity';
 import { AccessLogEntity } from './access-log.entity';
 

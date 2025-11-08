@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryColumn, Index, OneToOne, ManyToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { DepartmentEntity } from '../../../entities/department.entity';
-import { SubjectEntity } from '../../../entities/subject.entity';
+import { SubjectEntity } from 'src/subjects/domain/entities/subject.entity';
 
 @Entity({ name: 'teacher' })
 @Index('idx_teacher_department', ['departmentId'])

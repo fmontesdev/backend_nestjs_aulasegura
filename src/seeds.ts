@@ -19,7 +19,7 @@ import { AcademicYearEntity } from './academic-year/domain/entities/academic-yea
 import { CourseEntity } from './courses/domain/entities/course.entity';
 import { DepartmentEntity } from './entities/department.entity';
 import { DepartmentSeeder } from './db/seeding/seeds/department.seeder';
-import { SubjectEntity } from './entities/subject.entity';
+import { SubjectEntity } from './subjects/domain/entities/subject.entity';
 import { ReaderEntity } from './entities/reader.entity';
 import { config } from 'dotenv';
 

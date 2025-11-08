@@ -1,17 +1,17 @@
 import { 
-    Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany, JoinColumn
+  Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany, JoinColumn
 } from 'typeorm';
-import { DepartmentEntity } from './department.entity';
-import { CourseEntity } from 'src/courses/domain/entities/course.entity';
-import { TeacherEntity } from '../users/domain/entities/teacher.entity';
-import { AccessLogEntity } from './access-log.entity';
+import { DepartmentEntity } from '../../../entities/department.entity';
+import { CourseEntity } from '../../../courses/domain/entities/course.entity';
+import { TeacherEntity } from '../../../users/domain/entities/teacher.entity';
+import { AccessLogEntity } from '../../../entities/access-log.entity';
 
 @Entity({ name: 'subject' })
 @Unique('uq_subject_code', ['subjectCode'])
 @Index('idx_subject_department', ['departmentId'])
 export class SubjectEntity {
   @PrimaryGeneratedColumn({ name: 'subject_id', type: 'bigint' })
-  subjectId!: string;
+  subjectId!: number;
 
   @Column({ name: 'subject_code', type: 'varchar', length: 50 })
   subjectCode!: string;

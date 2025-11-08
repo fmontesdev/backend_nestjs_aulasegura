@@ -3,7 +3,7 @@ import { UserEntity } from '../users/domain/entities/user.entity';
 import { TagEntity } from './tag.entity';
 import { ReaderEntity } from './reader.entity';
 import { RoomEntity } from './room.entity';
-import { SubjectEntity } from './subject.entity';
+import { SubjectEntity } from 'src/subjects/domain/entities/subject.entity';
 
 export enum AccessStatus {
   ALLOWED = 'allowed',

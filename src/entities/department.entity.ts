@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { SubjectEntity } from './subject.entity';
+import { SubjectEntity } from '../subjects/domain/entities/subject.entity';
 import { TeacherEntity } from '../users/domain/entities/teacher.entity';
 
 @Entity({ name: 'department' })

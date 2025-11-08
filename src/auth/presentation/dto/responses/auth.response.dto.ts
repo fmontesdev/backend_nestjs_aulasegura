@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DepartmentEntity } from '../../../../entities/department.entity';
+import { DepartmentEntity } from 'src/departments/domain/entities/department.entity';
 
 export class AuthResponse {
   @ApiProperty({ description: 'Access token JWT' })

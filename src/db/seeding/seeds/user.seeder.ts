@@ -3,7 +3,7 @@ import { Seeder } from 'typeorm-extension';
 import userData from '../../../data/user';
 import { UserEntity } from '../../../users/domain/entities/user.entity';
 import { TeacherEntity } from '../../../users/domain/entities/teacher.entity';
-import { DepartmentEntity } from '../../../entities/department.entity';
+import { DepartmentEntity } from 'src/departments/domain/entities/department.entity';
 import { RoleEntity } from '../../../users/domain/entities/role.entity';
 import { hash as bcryptHash } from '@node-rs/bcrypt';
 

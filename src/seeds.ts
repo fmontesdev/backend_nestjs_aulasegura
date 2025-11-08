@@ -17,7 +17,7 @@ import { EventScheduleEntity } from './entities/event-schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
 import { AcademicYearEntity } from './academic-year/domain/entities/academic-year.entity';
 import { CourseEntity } from './courses/domain/entities/course.entity';
-import { DepartmentEntity } from './entities/department.entity';
+import { DepartmentEntity } from './departments/domain/entities/department.entity';
 import { DepartmentSeeder } from './db/seeding/seeds/department.seeder';
 import { SubjectEntity } from './subjects/domain/entities/subject.entity';
 import { ReaderEntity } from './entities/reader.entity';

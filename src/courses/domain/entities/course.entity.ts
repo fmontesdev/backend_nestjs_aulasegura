@@ -1,8 +1,6 @@
-import { 
-  Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, ManyToMany, JoinTable
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, ManyToMany, JoinTable } from 'typeorm';
 import { AcademicYearEntity } from '../../../academic-years/domain/entities/academic-year.entity';
-import { RoomEntity } from '../../../entities/room.entity';
+import { RoomEntity } from '../../../rooms/domain/entities/room.entity';
 import { SubjectEntity } from '../../../subjects/domain/entities/subject.entity';
 import { EducationStage } from '../enums/education-stage.enum';
 import { CFLevel } from '../enums/cf-level.enum';

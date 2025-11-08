@@ -1,13 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, OneToMany, JoinColumn  } from 'typeorm';
-import { CourseEntity } from 'src/courses/domain/entities/course.entity';
-import { PermissionEntity } from './permission.entity';
-import { ReaderEntity } from './reader.entity';
-import { AccessLogEntity } from './access-log.entity';
-
-export enum RoomFloor {
-  P1 = 'P1',
-  P2 = 'P2',
-}
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { CourseEntity } from '../../../courses/domain/entities/course.entity';
+import { PermissionEntity } from '../../../entities/permission.entity';
+import { ReaderEntity } from '../../../entities/reader.entity';
+import { AccessLogEntity } from '../../../entities/access-log.entity';
 
 @Entity({ name: 'room' })
 @Unique('uq_room_code', ['roomCode'])
@@ -25,15 +20,21 @@ export class RoomEntity {
   @Column({ name: 'course_id', type: 'int', nullable: true, unique: true })
   courseId!: number | null;
 
-  @OneToOne(() => CourseEntity, (c) => c.room, { onDelete: 'RESTRICT', eager: true })
+  @OneToOne(() => CourseEntity, (c) => c.room, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'course_id', referencedColumnName: 'courseId' })
   course!: CourseEntity | null;
 
   @Column({ name: 'capacity', type: 'smallint' })
   capacity!: number;
 
-  @Column({ name: 'floor', type: 'enum', enum: RoomFloor })
-  floor!: RoomFloor;
+  @Column({ name: 'building', type: 'smallint' })
+  building!: number;
+
+  @Column({ name: 'floor', type: 'smallint' })
+  floor!: number;
+
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive!: boolean;
 
   @OneToMany(() => PermissionEntity, (p) => p.room)
   permissions!: PermissionEntity[];
@@ -43,4 +44,10 @@ export class RoomEntity {
 
   @OneToMany(() => AccessLogEntity, (al) => al.room)
   accessLogs!: AccessLogEntity[];
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updatedAt!: Date;
 }

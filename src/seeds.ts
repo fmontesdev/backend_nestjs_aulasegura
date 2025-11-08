@@ -11,7 +11,7 @@ import { TagEntity } from './tags/domain/entities/tag.entity';
 import { NotificationEntity } from './entities/notification.entity';
 import { PermissionEntity } from './entities/permission.entity';
 import { AccessLogEntity } from './entities/access-log.entity';
-import { RoomEntity } from './entities/room.entity';
+import { RoomEntity } from './rooms/domain/entities/room.entity';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { EventScheduleEntity } from './entities/event-schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';

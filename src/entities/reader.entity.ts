@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { RoomEntity } from './room.entity';
+import { RoomEntity } from '../rooms/domain/entities/room.entity';
 import { AccessLogEntity } from './access-log.entity';
 
 @Entity({ name: 'reader' })

@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } 
 import { UserEntity } from '../users/domain/entities/user.entity';
 import { TagEntity } from '../tags/domain/entities/tag.entity';
 import { ReaderEntity } from './reader.entity';
-import { RoomEntity } from './room.entity';
+import { RoomEntity } from '../rooms/domain/entities/room.entity';
 import { SubjectEntity } from 'src/subjects/domain/entities/subject.entity';
 
 export enum AccessStatus {

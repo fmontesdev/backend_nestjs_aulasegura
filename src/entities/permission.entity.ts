@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../users/domain/entities/user.entity';
-import { RoomEntity } from './room.entity';
+import { RoomEntity } from '../rooms/domain/entities/room.entity';
 import { ScheduleEntity } from './schedule.entity';
 
 @Entity({ name: 'permission' })

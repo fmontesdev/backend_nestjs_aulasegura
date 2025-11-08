@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { AcademicYearModule } from './academic-year/academic-year.module';
 import { CourseModule } from './courses/course.module';
 import { SubjectModule } from './subjects/subject.module';
-import { DepartmentEntity } from './entities/department.entity';
+import { DepartmentModule } from './departments/department.module';
 import { RoomEntity } from './entities/room.entity';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
@@ -34,7 +34,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
-          DepartmentEntity, RoomEntity,
+          RoomEntity,
           ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity, TagEntity,
           NotificationEntity, PermissionEntity, ReaderEntity, AccessLogEntity
         ],
@@ -47,6 +47,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     AcademicYearModule,
     CourseModule,
     SubjectModule,
+    DepartmentModule,
   ],
   controllers: [],
   providers: [],

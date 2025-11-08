@@ -15,7 +15,7 @@ export class UserMapper {
     };
   }
 
-  static toResponseList(list: UserEntity[]): UserResponse[] {
-    return list.map(UserMapper.toResponse);
+  static toResponseList(entities: UserEntity[]): UserResponse[] {
+    return entities.map((entity) => this.toResponse(entity));
   }
 }

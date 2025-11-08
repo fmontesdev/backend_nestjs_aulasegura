@@ -13,7 +13,7 @@ export class TypeOrmSubjectRepository implements SubjectRepository {
 
   async findAll(): Promise<SubjectEntity[]> {
     return this.repository.find({
-      where: { isActive: true, courses: { academicYears: { isActive: true } } },
+      where: { isActive: true },
       relations: ['department', 'courses', 'courses.academicYears'],
       order: { subjectId: 'ASC' },
     });
@@ -21,14 +21,14 @@ export class TypeOrmSubjectRepository implements SubjectRepository {
 
   async findOneById(subjectId: number): Promise<SubjectEntity | null> {
     return this.repository.findOne({
-      where: { subjectId, courses: { academicYears: { isActive: true } } },
+      where: { subjectId },
       relations: ['department', 'courses', 'courses.academicYears'],
     });
   }
 
   async findOneActiveById(subjectId: number): Promise<SubjectEntity | null> {
     return this.repository.findOne({
-      where: { subjectId, isActive: true, courses: { academicYears: { isActive: true } } },
+      where: { subjectId, isActive: true },
       relations: ['department', 'courses', 'courses.academicYears'],
     });
   }

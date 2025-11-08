@@ -1,15 +1,20 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Inject, forwardRef } from '@nestjs/common';
 import { SubjectEntity } from '../../domain/entities/subject.entity';
 import { SubjectRepository } from '../../domain/repositories/subject.repository';
 import { CreateSubjectDto } from '../dto/create-subject.dto';
 import { UpdateSubjectDto } from '../dto/update-subject.dto';
 import { CourseService } from '../../../courses/application/services/course.service';
+import { DepartmentService } from '../../../departments/application/services/department.service';
+import { DepartmentEntity } from 'src/departments/domain/entities/department.entity';
+import { CourseEntity } from 'src/courses/domain/entities/course.entity';
 
 @Injectable()
 export class SubjectService {
   constructor(
     private readonly subjectRepository: SubjectRepository,
     private readonly courseService: CourseService,
+    @Inject(forwardRef(() => DepartmentService)) // Resuelve la dependencia circular
+    private readonly departmentService: DepartmentService,
   ) {}
 
   /// Busca todas las asignaturas activas
@@ -27,6 +32,9 @@ export class SubjectService {
     // Verificar que el código de la asignatura sea único
     await this.ensureSubjectCodeIsUnique(createDto.subjectCode);
 
+    // Verificar que el departamento exista
+    const department = await this.validateDepartment(createDto.departmentId);
+
     // Verificar que los cursos existan
     const courses = await this.validateCourses(createDto.courseIds);
 
@@ -34,8 +42,7 @@ export class SubjectService {
     const subject = new SubjectEntity();
     subject.subjectCode = createDto.subjectCode;
     subject.name = createDto.name;
-    //! FALTA MÓDULO DE DEPARTAMENTOS PARA VALIDARLO
-    subject.departmentId = createDto.departmentId;
+    subject.department = department;
     subject.isActive = true;
     subject.courses = courses;
 
@@ -63,17 +70,23 @@ export class SubjectService {
     }
 
     if (updateDto.departmentId !== undefined) {
-      //! FALTA MÓDULO DE DEPARTAMENTOS PARA VALIDARLO
-      subject.departmentId = updateDto.departmentId;
+      // Verifica que el departamento existaateDto.departmentId);
+      const department = await this.validateDepartment(updateDto.departmentId);
+      subject.department = department;
     }
 
     // Si se quieren cambiar los cursos
     if (updateDto.courseIds !== undefined) {
+      // Verifica que los cursos existan
       const courses = await this.validateCourses(updateDto.courseIds);
       subject.courses = courses;
     }
 
-    return await this.subjectRepository.save(subject);
+    try {
+      return await this.subjectRepository.save(subject);
+    } catch (error) {
+      throw new ConflictException(`Subject with code ${updateDto.subjectCode} could not be updated`);
+    }
   }
 
   /// Desactiva una asignatura (soft delete)
@@ -111,8 +124,13 @@ export class SubjectService {
     }
   }
 
+  //? Valida que el departamento exista
+  private async validateDepartment(departmentId: number): Promise<DepartmentEntity> {
+    return await this.departmentService.findOne(departmentId);
+  }
+
   //? Valida que todos los cursos existan
-  private async validateCourses(courseIds: number[]): Promise<any[]> {
+  private async validateCourses(courseIds: number[]): Promise<CourseEntity[]> {
     if (!courseIds || courseIds.length === 0) {
       throw new ConflictException('At least one course must be assigned');
     }

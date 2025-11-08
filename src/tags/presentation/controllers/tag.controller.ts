@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { TagService } from '../../application/services/tag.service';
@@ -26,8 +26,7 @@ export class TagController {
   @ApiOkResponse({ type: [TagResponse] })
   @Roles(RoleName.ADMIN)
   @Get()
-  async findAll(): Promise<TagResponse[]> {
-    const tags = await this.tagService.findAll();
+  async findAll(): Promise<TagResponse[]> {const tags = await this.tagService.findAll();
     return TagMapper.toResponseList(tags);
   }
 

@@ -8,7 +8,7 @@ import { CourseModule } from './courses/course.module';
 import { SubjectModule } from './subjects/subject.module';
 import { DepartmentModule } from './departments/department.module';
 import { TagModule } from './tags/tag.module';
-import { RoomEntity } from './entities/room.entity';
+import { RoomModule } from './rooms/room.module';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
 import { EventScheduleEntity } from './entities/event-schedule.entity';
@@ -34,7 +34,6 @@ import { AccessLogEntity } from './entities/access-log.entity';
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
-          RoomEntity,
           ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity,
           NotificationEntity, PermissionEntity, ReaderEntity, AccessLogEntity
         ],
@@ -49,6 +48,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     SubjectModule,
     DepartmentModule,
     TagModule,
+    RoomModule,
   ],
   controllers: [],
   providers: [],

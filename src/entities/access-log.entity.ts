@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../users/domain/entities/user.entity';
 import { TagEntity } from '../tags/domain/entities/tag.entity';
-import { ReaderEntity } from './reader.entity';
+import { ReaderEntity } from '../readers/domain/entities/reader.entity';
 import { RoomEntity } from '../rooms/domain/entities/room.entity';
 import { SubjectEntity } from 'src/subjects/domain/entities/subject.entity';
 

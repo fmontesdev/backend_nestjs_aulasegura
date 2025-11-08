@@ -20,7 +20,7 @@ import { CourseEntity } from './courses/domain/entities/course.entity';
 import { DepartmentEntity } from './departments/domain/entities/department.entity';
 import { DepartmentSeeder } from './db/seeding/seeds/department.seeder';
 import { SubjectEntity } from './subjects/domain/entities/subject.entity';
-import { ReaderEntity } from './entities/reader.entity';
+import { ReaderEntity } from './readers/domain/entities/reader.entity';
 import { config } from 'dotenv';
 
 config();

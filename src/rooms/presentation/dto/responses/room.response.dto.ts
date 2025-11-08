@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ReaderResponse } from '../../../../readers/presentation/dto/responses/reader.response.dto';
 
 export class RoomResponse {
   @ApiProperty({ description: 'Identificador único de la sala', example: 1 })
@@ -22,6 +23,6 @@ export class RoomResponse {
   @ApiProperty({ description: 'Número del piso', example: 2 })
   floor: number;
 
-  @ApiProperty({ description: 'Lista de lectores asignados a esta sala', example: [], type: [Object] })
-  readers: any[];
+  @ApiProperty({ description: 'Lista de lectores asignados a esta sala', type: [ReaderResponse] })
+  readers: ReaderResponse[];
 }

@@ -13,7 +13,7 @@ export class TypeOrmRoomRepository implements RoomRepository {
 
   async findAll(): Promise<RoomEntity[]> {
     return this.repository.find({
-      relations: ['course'],
+      relations: ['course', 'readers'],
       order: { roomId: 'ASC' },
     });
   }
@@ -21,7 +21,7 @@ export class TypeOrmRoomRepository implements RoomRepository {
   async findOneById(roomId: number): Promise<RoomEntity | null> {
     return this.repository.findOne({
       where: { roomId },
-      relations: ['course'],
+      relations: ['course', 'readers'],
     });
   }
 

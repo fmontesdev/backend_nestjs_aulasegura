@@ -1,6 +1,6 @@
 import { CourseEntity } from '../../domain/entities/course.entity';
 import { CourseResponse } from '../dto/responses/course.response.dto';
-import { AcademicYearMapper } from '../../../academic-year/presentation/mappers/academic-year.mapper';
+import { AcademicYearMapper } from '../../../academic-years/presentation/mappers/academic-year.mapper';
 
 export class CourseMapper {
   static toResponse(entity: CourseEntity): CourseResponse {

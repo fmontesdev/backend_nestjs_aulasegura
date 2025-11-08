@@ -1,7 +1,7 @@
 import { 
   Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, ManyToMany, JoinTable
 } from 'typeorm';
-import { AcademicYearEntity } from '../../../academic-year/domain/entities/academic-year.entity';
+import { AcademicYearEntity } from '../../../academic-years/domain/entities/academic-year.entity';
 import { RoomEntity } from '../../../entities/room.entity';
 import { SubjectEntity } from '../../../subjects/domain/entities/subject.entity';
 import { EducationStage } from '../enums/education-stage.enum';

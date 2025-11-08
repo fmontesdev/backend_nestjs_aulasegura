@@ -3,7 +3,7 @@ import { CourseEntity } from '../../domain/entities/course.entity';
 import { CourseRepository } from '../../domain/repositories/course.repository';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
-import { AcademicYearService } from '../../../academic-year/application/services/academic-year.service';
+import { AcademicYearService } from '../../../academic-years/application/services/academic-year.service';
 
 @Injectable()
 export class CourseService {

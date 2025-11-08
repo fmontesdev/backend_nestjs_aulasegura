@@ -15,7 +15,7 @@ import { RoomEntity } from './entities/room.entity';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { EventScheduleEntity } from './entities/event-schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
-import { AcademicYearEntity } from './academic-year/domain/entities/academic-year.entity';
+import { AcademicYearEntity } from './academic-years/domain/entities/academic-year.entity';
 import { CourseEntity } from './courses/domain/entities/course.entity';
 import { DepartmentEntity } from './departments/domain/entities/department.entity';
 import { DepartmentSeeder } from './db/seeding/seeds/department.seeder';

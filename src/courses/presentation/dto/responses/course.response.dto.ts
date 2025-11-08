@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EducationStage } from '../../../domain/enums/education-stage.enum';
 import { CFLevel } from '../../../domain/enums/cf-level.enum';
-import { AcademicYearResponse } from '../../../../academic-year/presentation/dto/responses/academic-year.response.dto';
+import { AcademicYearResponse } from '../../../../academic-years/presentation/dto/responses/academic-year.response.dto';
 
 export class CourseResponse {
   @ApiProperty({ description: 'Identificador único del curso', example: 1 })

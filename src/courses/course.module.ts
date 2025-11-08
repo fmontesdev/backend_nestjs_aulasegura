@@ -5,7 +5,7 @@ import { CourseRepository } from './domain/repositories/course.repository';
 import { TypeOrmCourseRepository } from './infrastructure/persistence/typeorm/typeorm-course.repository';
 import { CourseService } from './application/services/course.service';
 import { CourseController } from './presentation/controllers/course.controller';
-import { AcademicYearModule } from '../academic-year/academic-year.module';
+import { AcademicYearModule } from '../academic-years/academic-year.module';
 
 @Module({
   imports: [

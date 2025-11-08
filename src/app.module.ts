@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { AcademicYearModule } from './academic-year/academic-year.module';
+import { AcademicYearModule } from './academic-years/academic-year.module';
 import { CourseModule } from './courses/course.module';
 import { SubjectModule } from './subjects/subject.module';
 import { DepartmentModule } from './departments/department.module';

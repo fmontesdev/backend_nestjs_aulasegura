@@ -9,12 +9,12 @@ import { SubjectModule } from './subjects/subject.module';
 import { DepartmentModule } from './departments/department.module';
 import { TagModule } from './tags/tag.module';
 import { RoomModule } from './rooms/room.module';
+import { ReaderModule } from './readers/reader.module';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
 import { EventScheduleEntity } from './entities/event-schedule.entity';
 import { NotificationEntity } from './entities/notification.entity';
 import { PermissionEntity } from './entities/permission.entity';
-import { ReaderEntity } from './entities/reader.entity';
 import { AccessLogEntity } from './entities/access-log.entity';
 
 @Module({
@@ -35,7 +35,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
         database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
           ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity,
-          NotificationEntity, PermissionEntity, ReaderEntity, AccessLogEntity
+          NotificationEntity, PermissionEntity, AccessLogEntity
         ],
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Solo en desarrollo
         autoLoadEntities: true, // Carga automáticamente las entidades
@@ -49,6 +49,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     DepartmentModule,
     TagModule,
     RoomModule,
+    ReaderModule,
   ],
   controllers: [],
   providers: [],

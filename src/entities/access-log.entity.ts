@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../users/domain/entities/user.entity';
-import { TagEntity } from './tag.entity';
+import { TagEntity } from '../tags/domain/entities/tag.entity';
 import { ReaderEntity } from './reader.entity';
 import { RoomEntity } from './room.entity';
 import { SubjectEntity } from 'src/subjects/domain/entities/subject.entity';

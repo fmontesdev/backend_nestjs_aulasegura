@@ -1,18 +1,14 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { UserEntity } from '../users/domain/entities/user.entity';
-import { AccessLogEntity } from './access-log.entity';
-
-export enum TagType {
-  RFID = 'rfid',
-  NFC_MOBILE = 'nfc_mobile',
-}
+import { UserEntity } from '../../../users/domain/entities/user.entity';
+import { AccessLogEntity } from '../../../entities/access-log.entity';
+import { TagType } from '../enums/tag-type.enum';
 
 @Entity({ name: 'tag' })
 @Unique('uq_tag_code', ['tagCode'])
 @Index('idx_tag_user', ['userId'])
 export class TagEntity {
-  @PrimaryGeneratedColumn({ name: 'tag_id', type: 'bigint' })
-  tagId!: string;
+  @PrimaryGeneratedColumn({ name: 'tag_id', type: 'int' })
+  tagId!: number;
 
   @Column({ name: 'tag_code', type: 'varchar', length: 64 })
   tagCode!: string;
@@ -26,9 +22,6 @@ export class TagEntity {
 
   @Column({ name: 'type', type: 'enum', enum: TagType, default: TagType.RFID })
   type!: TagType;
-
-  @Column({ name: 'device_id', type: 'varchar', length: 100, nullable: true })
-  deviceId!: string | null;
 
   @Column({ name: 'issued_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   issuedAt!: Date;

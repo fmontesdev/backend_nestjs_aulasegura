@@ -10,9 +10,7 @@ import { DepartmentModule } from './departments/department.module';
 import { TagModule } from './tags/tag.module';
 import { RoomModule } from './rooms/room.module';
 import { ReaderModule } from './readers/reader.module';
-import { ScheduleEntity } from './entities/schedule.entity';
-import { WeeklyScheduleEntity } from './entities/weekly-schedule.entity';
-import { EventScheduleEntity } from './entities/event-schedule.entity';
+import { ScheduleModule } from './schedules/schedule.module';
 import { NotificationEntity } from './entities/notification.entity';
 import { PermissionEntity } from './entities/permission.entity';
 import { AccessLogEntity } from './entities/access-log.entity';
@@ -34,7 +32,6 @@ import { AccessLogEntity } from './entities/access-log.entity';
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
-          ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity,
           NotificationEntity, PermissionEntity, AccessLogEntity
         ],
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Solo en desarrollo
@@ -50,6 +47,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     TagModule,
     RoomModule,
     ReaderModule,
+    ScheduleModule,
   ],
   controllers: [],
   providers: [],

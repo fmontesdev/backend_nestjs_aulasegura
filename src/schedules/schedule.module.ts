@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleEntity } from './domain/entities/schedule.entity';
 import { WeeklyScheduleEntity } from './domain/entities/weekly-schedule.entity';
 import { EventScheduleEntity } from './domain/entities/event-schedule.entity';
+import { PermissionEntity } from './domain/entities/permission.entity';
 import { WeeklyScheduleRepository } from './domain/repositories/weekly-schedule.repository';
 import { TypeOrmWeeklyScheduleRepository } from './infrastructure/persistence/typeorm/typeorm-weekly-schedule.repository';
 import { WeeklyScheduleService } from './application/services/weekly-schedule.service';
@@ -11,7 +12,7 @@ import { AcademicYearModule } from '../academic-years/academic-year.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity]),
+    TypeOrmModule.forFeature([ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity, PermissionEntity]),
     AcademicYearModule,
   ],
   controllers: [WeeklyScheduleController],

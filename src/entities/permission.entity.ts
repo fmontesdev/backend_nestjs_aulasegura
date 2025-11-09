@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../users/domain/entities/user.entity';
 import { RoomEntity } from '../rooms/domain/entities/room.entity';
-import { ScheduleEntity } from './schedule.entity';
+import { ScheduleEntity } from '../schedules/domain/entities/schedule.entity';
 
 @Entity({ name: 'permission' })
 @Index('idx_permission_schedule', ['scheduleId'])

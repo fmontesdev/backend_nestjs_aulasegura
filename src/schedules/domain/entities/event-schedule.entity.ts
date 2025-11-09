@@ -1,25 +1,15 @@
 import { Entity, Column, PrimaryColumn, Index, OneToOne, JoinColumn } from 'typeorm';
 import { ScheduleEntity } from './schedule.entity';
-
-export enum EventScheduleType {
-  RESERVATION = 'reservation',
-  TEMP_PASS = 'temp_pass',
-}
-export enum EventStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REVOKED = 'revoked',
-  ACTIVE = 'active',
-  EXPIRED = 'expired',
-}
+import { EventScheduleType } from '../enums/event-schedule-type.enum';
+import { EventStatus } from '../enums/event-status.enum';
 
 @Entity({ name: 'event_schedule' })
 @Index('idx_event_time', ['startAt', 'endAt'])
 export class EventScheduleEntity {
-  @PrimaryColumn({ name: 'schedule_id', type: 'bigint' })
-  scheduleId!: string;
+  @PrimaryColumn({ name: 'schedule_id', type: 'int' })
+  scheduleId!: number;
 
-  @OneToOne(() => ScheduleEntity, { onDelete: 'CASCADE', eager: true })
+  @OneToOne(() => ScheduleEntity, (s) => s.eventSchedule, { onDelete: 'CASCADE', eager: true, cascade: true })
   @JoinColumn({ name: 'schedule_id', referencedColumnName: 'scheduleId' })
   schedule!: ScheduleEntity;
 

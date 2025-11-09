@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { CourseEntity } from 'src/courses/domain/entities/course.entity';
-import { ScheduleEntity } from '../../../entities/schedule.entity';
+import { ScheduleEntity } from '../../../schedules/domain/entities/schedule.entity';
 
 @Entity({ name: 'academic_year' })
 @Unique('uq_academic_year_code', ['code'])

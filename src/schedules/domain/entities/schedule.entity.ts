@@ -1,18 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { AcademicYearEntity } from 'src/academic-years/domain/entities/academic-year.entity';
-import { PermissionEntity } from './permission.entity';
-
-export enum ScheduleType {
-  WEEKLY = 'weekly',
-  EVENT = 'event',
-}
+import { Entity, Column, PrimaryGeneratedColumn, Index, UpdateDateColumn, OneToMany, OneToOne, ManyToOne, JoinColumn } from 'typeorm';
+import { AcademicYearEntity } from '../../../academic-years/domain/entities/academic-year.entity';
+import { PermissionEntity } from '../../../entities/permission.entity';
+import { WeeklyScheduleEntity } from './weekly-schedule.entity';
+import { EventScheduleEntity } from './event-schedule.entity';
+import { ScheduleType } from '../enums/schedule-type.enum';
 
 @Entity({ name: 'schedule' })
 @Index('idx_schedule_year', ['academicYearId'])
 @Index('idx_schedule_type', ['type'])
 export class ScheduleEntity {
-  @PrimaryGeneratedColumn({ name: 'schedule_id', type: 'bigint' })
-  scheduleId!: string;
+  @PrimaryGeneratedColumn({ name: 'schedule_id', type: 'int' })
+  scheduleId!: number;
 
   @Column({ name: 'type', type: 'enum', enum: ScheduleType })
   type!: ScheduleType;
@@ -36,5 +34,9 @@ export class ScheduleEntity {
   @OneToMany(() => PermissionEntity, (p) => p.schedule)
   permissions!: PermissionEntity[];
 
-  //! Añadir relación con WeeklyScheduleEntity y EventScheduleEntity si es necesario
+  @OneToOne(() => WeeklyScheduleEntity, (ws) => ws.schedule)
+  weeklySchedule?: WeeklyScheduleEntity;
+
+  @OneToOne(() => EventScheduleEntity, (es) => es.schedule)
+  eventSchedule?: EventScheduleEntity;
 }

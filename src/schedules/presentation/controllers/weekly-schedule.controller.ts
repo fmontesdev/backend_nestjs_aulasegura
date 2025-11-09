@@ -1,8 +1,9 @@
-import { Controller, Get, Patch, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
-  ApiForbiddenResponse, ApiNotFoundResponse, ApiBadRequestResponse
+  ApiForbiddenResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiCreatedResponse, ApiConflictResponse
 } from '@nestjs/swagger';
 import { WeeklyScheduleService } from '../../application/services/weekly-schedule.service';
+import { CreateWeeklyScheduleRequest } from '../dto/requests/create-weekly-schedule.request.dto';
 import { UpdateWeeklyScheduleRequest } from '../dto/requests/update-weekly-schedule.request.dto';
 import { WeeklyScheduleResponse } from '../dto/responses/weekly-schedule.response.dto';
 import { WeeklyScheduleMapper } from '../mappers/weekly-schedule.mapper';
@@ -38,6 +39,21 @@ export class WeeklyScheduleController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<WeeklyScheduleResponse> {
     const weeklySchedule = await this.weeklyScheduleService.findOne(id);
+    return WeeklyScheduleMapper.toResponse(weeklySchedule);
+  }
+
+  @ApiOperation({ 
+    summary: 'Crea un nuevo horario semanal',
+    description: 'Crea un horario semanal asociado al año académico activo. Valida que no existan solapamientos de horarios en el mismo día de la semana.'
+  })
+  @ApiBody({ type: CreateWeeklyScheduleRequest })
+  @ApiCreatedResponse({ description: 'Horario semanal creado con éxito', type: WeeklyScheduleResponse })
+  @ApiConflictResponse({ description: 'Ya existe un horario que se solapa con el proporcionado' })
+  @ApiBadRequestResponse({ description: 'Datos inválidos o no hay año académico activo' })
+  @Roles(RoleName.ADMIN)
+  @Post()
+  async create(@Body() requestDto: CreateWeeklyScheduleRequest): Promise<WeeklyScheduleResponse> {
+    const weeklySchedule = await this.weeklyScheduleService.create(requestDto);
     return WeeklyScheduleMapper.toResponse(weeklySchedule);
   }
 

@@ -69,34 +69,4 @@ export class WeeklyScheduleController {
   //   const weeklySchedule = await this.weeklyScheduleService.update(id, requestDto);
   //   return WeeklyScheduleMapper.toResponse(weeklySchedule);
   // }
-
-  @ApiOperation({ summary: 'Desactiva un horario semanal (soft delete)', description: 'Establece isActive en false para el curso especificado' })
-  @ApiParam({ name: 'id', type: 'integer', description: 'ID del horario a desactivar', example: 1 })
-  @ApiOkResponse({
-    description: 'Horario desactivado con éxito',
-    schema: { type: 'object', properties: { message: { type: 'string', example: 'Horario desactivado con éxito' } } },
-  })
-  @ApiNotFoundResponse({ description: 'Horario no encontrado' })
-  @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
-  @Roles(RoleName.ADMIN)
-  @Delete(':id')
-  async softRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
-    await this.weeklyScheduleService.softRemove(id);
-    return { message: 'Weekly schedule deactivated successfully' };
-  }
-
-  @ApiOperation({ summary: 'Elimina un horario semanal junto sus permisos (hard delete)', description: 'Elimina un horario semanal de forma permanente' })
-  @ApiParam({ name: 'id', type: 'integer', description: 'ID del horario a eliminar', example: 1 })
-  @ApiOkResponse({
-    description: 'Horario eliminado con éxito',
-    schema: { type: 'object', properties: { message: { type: 'string', example: 'Horario eliminado con éxito' } } },
-  })
-  @ApiNotFoundResponse({ description: 'Horario no encontrado' })
-  @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
-  @Roles(RoleName.ADMIN)
-  @Delete('delete/:id')
-  async hardRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
-    await this.weeklyScheduleService.hardRemove(id);
-    return { message: 'Weekly schedule deleted successfully' };
-  }
 }

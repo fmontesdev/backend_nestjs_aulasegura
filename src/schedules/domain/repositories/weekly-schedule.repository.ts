@@ -6,5 +6,4 @@ export abstract class WeeklyScheduleRepository {
   abstract findOneById(scheduleId: number): Promise<WeeklyScheduleEntity | null>;
   abstract findOneActiveById(scheduleId: number, currentDate: string): Promise<WeeklyScheduleEntity | null>;
   abstract save(weeklySchedule: WeeklyScheduleEntity): Promise<WeeklyScheduleEntity>;
-  abstract deleteById(scheduleId: number): Promise<void>;
 }

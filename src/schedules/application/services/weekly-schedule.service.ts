@@ -88,19 +88,6 @@ export class WeeklyScheduleService {
     }
   }
 
-  /// Desactiva un horario semanal (soft delete)
-  async softRemove(scheduleId: number): Promise<void> {
-    const weeklySchedule = await this.findWeeklyScheduleByIdOrFail(scheduleId);
-    weeklySchedule.schedule.isActive = false;
-    await this.weeklyScheduleRepository.save(weeklySchedule);
-  }
-
-  /// Desactiva un horario semanal (soft delete)
-  async hardRemove(scheduleId: number): Promise<void> {
-    const weeklySchedule = await this.findWeeklyScheduleByIdOrFail(scheduleId);
-    await this.weeklyScheduleRepository.deleteById(weeklySchedule.scheduleId);
-  }
-
   //? ================= Métodos auxiliares =================
 
   //? Busca un horario semanal por ID o lanza una excepción

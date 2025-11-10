@@ -63,8 +63,4 @@ export class TypeOrmWeeklyScheduleRepository implements WeeklyScheduleRepository
   async save(weeklySchedule: WeeklyScheduleEntity): Promise<WeeklyScheduleEntity> {
     return await this.weeklyScheduleRepository.save(weeklySchedule);
   }
-
-  async deleteById(scheduleId: number): Promise<void> {
-    await this.scheduleRepository.delete(scheduleId);
-  }
 }

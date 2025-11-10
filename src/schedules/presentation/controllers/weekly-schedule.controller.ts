@@ -3,8 +3,8 @@ import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiParam, ApiBody,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiCreatedResponse, ApiConflictResponse
 } from '@nestjs/swagger';
 import { WeeklyScheduleService } from '../../application/services/weekly-schedule.service';
-import { CreateWeeklyScheduleRequest } from '../dto/requests/create-weekly-schedule.request.dto';
-import { UpdateWeeklyScheduleRequest } from '../dto/requests/update-weekly-schedule.request.dto';
+// import { CreateWeeklyScheduleRequest } from '../dto/requests/create-weekly-schedule.request.dto';
+// import { UpdateWeeklyScheduleRequest } from '../dto/requests/update-weekly-schedule.request.dto';
 import { WeeklyScheduleResponse } from '../dto/responses/weekly-schedule.response.dto';
 import { WeeklyScheduleMapper } from '../mappers/weekly-schedule.mapper';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
@@ -42,33 +42,33 @@ export class WeeklyScheduleController {
     return WeeklyScheduleMapper.toResponse(weeklySchedule);
   }
 
-  @ApiOperation({ 
-    summary: 'Crea un nuevo horario semanal',
-    description: 'Crea un horario semanal asociado al año académico activo. Valida que no existan solapamientos de horarios en el mismo día de la semana.'
-  })
-  @ApiBody({ type: CreateWeeklyScheduleRequest })
-  @ApiCreatedResponse({ description: 'Horario semanal creado con éxito', type: WeeklyScheduleResponse })
-  @ApiConflictResponse({ description: 'Ya existe un horario que se solapa con el proporcionado' })
-  @ApiBadRequestResponse({ description: 'Datos inválidos o no hay año académico activo' })
-  @Roles(RoleName.ADMIN)
-  @Post()
-  async create(@Body() requestDto: CreateWeeklyScheduleRequest): Promise<WeeklyScheduleResponse> {
-    const weeklySchedule = await this.weeklyScheduleService.create(requestDto);
-    return WeeklyScheduleMapper.toResponse(weeklySchedule);
-  }
+  // @ApiOperation({ 
+  //   summary: 'Crea un nuevo horario semanal',
+  //   description: 'Crea un horario semanal asociado al año académico activo. Valida que no existan solapamientos de horarios en el mismo día de la semana.'
+  // })
+  // @ApiBody({ type: CreateWeeklyScheduleRequest })
+  // @ApiCreatedResponse({ description: 'Horario semanal creado con éxito', type: WeeklyScheduleResponse })
+  // @ApiConflictResponse({ description: 'Ya existe un horario que se solapa con el proporcionado' })
+  // @ApiBadRequestResponse({ description: 'Datos inválidos o no hay año académico activo' })
+  // @Roles(RoleName.ADMIN)
+  // @Post()
+  // async create(@Body() requestDto: CreateWeeklyScheduleRequest): Promise<WeeklyScheduleResponse> {
+  //   const weeklySchedule = await this.weeklyScheduleService.create(requestDto);
+  //   return WeeklyScheduleMapper.toResponse(weeklySchedule);
+  // }
 
-  @ApiOperation({ summary: 'Actualiza un horario semanal (solo validFrom, validTo)' })
-  @ApiParam({ name: 'id', type: 'integer', description: 'ID del horario a actualizar', example: 1 })
-  @ApiBody({ type: UpdateWeeklyScheduleRequest })
-  @ApiOkResponse({ description: 'Horario actualizado con éxito', type: WeeklyScheduleResponse })
-  @ApiNotFoundResponse({ description: 'Horario no encontrado' })
-  @ApiBadRequestResponse({ description: 'Datos inválidos o el parámetro id debe ser un entero' })
-  @Roles(RoleName.ADMIN)
-  @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() requestDto: UpdateWeeklyScheduleRequest): Promise<WeeklyScheduleResponse> {
-    const weeklySchedule = await this.weeklyScheduleService.update(id, requestDto);
-    return WeeklyScheduleMapper.toResponse(weeklySchedule);
-  }
+  // @ApiOperation({ summary: 'Actualiza un horario semanal (solo validFrom, validTo)' })
+  // @ApiParam({ name: 'id', type: 'integer', description: 'ID del horario a actualizar', example: 1 })
+  // @ApiBody({ type: UpdateWeeklyScheduleRequest })
+  // @ApiOkResponse({ description: 'Horario actualizado con éxito', type: WeeklyScheduleResponse })
+  // @ApiNotFoundResponse({ description: 'Horario no encontrado' })
+  // @ApiBadRequestResponse({ description: 'Datos inválidos o el parámetro id debe ser un entero' })
+  // @Roles(RoleName.ADMIN)
+  // @Patch(':id')
+  // async update(@Param('id', ParseIntPipe) id: number, @Body() requestDto: UpdateWeeklyScheduleRequest): Promise<WeeklyScheduleResponse> {
+  //   const weeklySchedule = await this.weeklyScheduleService.update(id, requestDto);
+  //   return WeeklyScheduleMapper.toResponse(weeklySchedule);
+  // }
 
   @ApiOperation({ summary: 'Desactiva un horario semanal (soft delete)', description: 'Establece isActive en false para el curso especificado' })
   @ApiParam({ name: 'id', type: 'integer', description: 'ID del horario a desactivar', example: 1 })
@@ -83,5 +83,20 @@ export class WeeklyScheduleController {
   async softRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.weeklyScheduleService.softRemove(id);
     return { message: 'Weekly schedule deactivated successfully' };
+  }
+
+  @ApiOperation({ summary: 'Elimina un horario semanal junto sus permisos (hard delete)', description: 'Elimina un horario semanal de forma permanente' })
+  @ApiParam({ name: 'id', type: 'integer', description: 'ID del horario a eliminar', example: 1 })
+  @ApiOkResponse({
+    description: 'Horario eliminado con éxito',
+    schema: { type: 'object', properties: { message: { type: 'string', example: 'Horario eliminado con éxito' } } },
+  })
+  @ApiNotFoundResponse({ description: 'Horario no encontrado' })
+  @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
+  @Roles(RoleName.ADMIN)
+  @Delete('delete/:id')
+  async hardRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
+    await this.weeklyScheduleService.hardRemove(id);
+    return { message: 'Weekly schedule deleted successfully' };
   }
 }

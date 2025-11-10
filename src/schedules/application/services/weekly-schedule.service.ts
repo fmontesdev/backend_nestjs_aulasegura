@@ -3,7 +3,6 @@ import { WeeklyScheduleEntity } from '../../domain/entities/weekly-schedule.enti
 import { WeeklyScheduleRepository } from '../../domain/repositories/weekly-schedule.repository';
 import { UpdateWeeklyScheduleDto } from '../dto/update-weekly-schedule.dto';
 import { CreateWeeklyScheduleDto } from '../dto/create-weekly-schedule.dto';
-import { ValidateScheduleOverlapDto } from '../dto/validate-schedule-overlap.dto';
 import { ScheduleEntity } from '../../domain/entities/schedule.entity';
 import { ScheduleType } from '../../domain/enums/schedule-type.enum';
 import { AcademicYearService } from '../../../academic-years/application/services/academic-year.service';
@@ -32,22 +31,10 @@ export class WeeklyScheduleService {
     // Valida que startTime < endTime
     this.startEndTimeValidate(createDto.startTime, createDto.endTime);
 
-    // Obtiene el año académico activo
-    const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
-
-    // // Valida que no exista solapamiento de horarios en el año académico activo
-    // await this.validateNoScheduleOverlap({
-    //   academicYearId: activeAcademicYear.academicYearId,
-    //   dayOfWeek: createDto.dayOfWeek,
-    //   startTime: createDto.startTime,
-    //   endTime: createDto.endTime,
-    //   currentDate: this.getCurrentDate(),
-    // });
-
     // Crea el Schedule (parent)
     const schedule = new ScheduleEntity();
     schedule.type = ScheduleType.WEEKLY;
-    schedule.academicYear = activeAcademicYear;
+    schedule.academicYear = createDto.academicYear;
     schedule.isActive = true;
 
     // Crea el WeeklySchedule (child)
@@ -72,18 +59,6 @@ export class WeeklyScheduleService {
     const newStartTime = updateDto.startTime ?? weeklySchedule.startTime;
     const newEndTime = updateDto.endTime ?? weeklySchedule.endTime;
     this.startEndTimeValidate(newStartTime, newEndTime);
-
-    // // Valida que no exista solapamiento si se modifican campos críticos
-    // if (updateDto.dayOfWeek !== undefined || updateDto.startTime !== undefined || updateDto.endTime !== undefined) {
-    //   await this.validateNoScheduleOverlap({
-    //     academicYearId: weeklySchedule.schedule.academicYearId,
-    //     dayOfWeek: updateDto.dayOfWeek ?? weeklySchedule.dayOfWeek,
-    //     startTime: newStartTime,
-    //     endTime: newEndTime,
-    //     currentDate: this.getCurrentDate(),
-    //     excludeScheduleId: scheduleId,
-    //   });
-    // }
 
     // Actualiza campos permitidos
     if (updateDto.dayOfWeek !== undefined) {
@@ -120,6 +95,12 @@ export class WeeklyScheduleService {
     await this.weeklyScheduleRepository.save(weeklySchedule);
   }
 
+  /// Desactiva un horario semanal (soft delete)
+  async hardRemove(scheduleId: number): Promise<void> {
+    const weeklySchedule = await this.findWeeklyScheduleByIdOrFail(scheduleId);
+    await this.weeklyScheduleRepository.deleteById(weeklySchedule.scheduleId);
+  }
+
   //? ================= Métodos auxiliares =================
 
   //? Busca un horario semanal por ID o lanza una excepción
@@ -131,24 +112,14 @@ export class WeeklyScheduleService {
     return weeklySchedule;
   }
 
-  // //? Valida que no exista solapamiento de horarios en el año académico
-  // private async validateNoScheduleOverlap(dto: ValidateScheduleOverlapDto): Promise<void> {
-  //   const overlapping = await this.weeklyScheduleRepository.findOverlapping(dto);
-
-  //   if (overlapping.length > 0) {
-  //     throw new ConflictException(
-  //       `Ya existe un horario semanal en el año académico que se solapa con el día y franja horaria proporcionados`,
-  //     );
-  //   }
-  // }
-
   //? Obtiene la fecha actual en formato YYYY-MM-DD
   private getCurrentDate(): string {
     const now = new Date();
     return now.toISOString().split('T')[0];
   }
 
-  private startEndTimeValidate(startTime: string, endTime: string): void {
+  //? Valida que startTime sea menor que endTime
+  startEndTimeValidate(startTime: string, endTime: string): void {
     if (startTime >= endTime) {
       throw new BadRequestException('Start time must be before end time');
     }

@@ -6,10 +6,11 @@ export class EventScheduleMapper {
   static toResponse(entity: EventScheduleEntity): EventScheduleResponse {
     return {
       eventType: entity.type,
+      description: entity.description,
       startAt: entity.startAt,
       endAt: entity.endAt,
       status: entity.status,
-      reason: entity.reason,
+      reservationStatusReason: entity.reservationStatusReason,
     };
   }
 

@@ -2,9 +2,9 @@ import { EventScheduleType } from 'src/schedules/domain/enums/event-schedule-typ
 import { EventStatus } from 'src/schedules/domain/enums/event-status.enum';
 
 export class UpdateEventScheduleDto {
-  type?: EventScheduleType;
+  description?: string;
   startAt?: Date;
   endAt?: Date;
   status?: EventStatus;
-  reason?: string;
+  reservationStatusReason?: string;
 }

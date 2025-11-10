@@ -4,7 +4,7 @@ import { EventScheduleType } from 'src/schedules/domain/enums/event-schedule-typ
 export class CreateEventScheduleDto {
   academicYear!: AcademicYearEntity;
   type!: EventScheduleType;
+  description!: string;
   startAt!: Date;
   endAt!: Date;
-  reason!: string;
 }

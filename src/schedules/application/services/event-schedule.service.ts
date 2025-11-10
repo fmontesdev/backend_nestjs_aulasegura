@@ -41,10 +41,10 @@ export class EventScheduleService {
     const eventSchedule = new EventScheduleEntity();
     eventSchedule.schedule = schedule;
     eventSchedule.type = createDto.type;
+    eventSchedule.description = createDto.description;
     eventSchedule.startAt = createDto.startAt;
     eventSchedule.endAt = createDto.endAt;
     eventSchedule.status = EventStatus.PENDING;
-    eventSchedule.reason = createDto.reason;
 
     // Guarda (gracias a cascade, guardará ambos)
     try {
@@ -65,8 +65,8 @@ export class EventScheduleService {
     this.startEndTimeValidate(newStartAt, newEndAt);
 
     // Actualiza campos permitidos
-    if (updateDto.type !== undefined) {
-      eventSchedule.type = updateDto.type;
+    if (updateDto.description !== undefined) {
+      eventSchedule.description = updateDto.description;
     }
 
     if (updateDto.startAt !== undefined) {
@@ -81,8 +81,8 @@ export class EventScheduleService {
       eventSchedule.status = updateDto.status;
     }
 
-    if (updateDto.reason !== undefined) {
-      eventSchedule.reason = updateDto.reason;
+    if (updateDto.reservationStatusReason !== undefined) {
+      eventSchedule.reservationStatusReason = updateDto.reservationStatusReason;
     }
 
     try {

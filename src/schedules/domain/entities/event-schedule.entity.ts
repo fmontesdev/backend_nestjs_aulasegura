@@ -16,6 +16,9 @@ export class EventScheduleEntity {
   @Column({ name: 'type', type: 'enum', enum: EventScheduleType })
   type!: EventScheduleType;
 
+  @Column({ name: 'description', type: 'varchar', length: 100 })
+  description!: string;
+
   @Column({ name: 'start_at', type: 'datetime' })
   startAt!: Date;
 
@@ -25,6 +28,6 @@ export class EventScheduleEntity {
   @Column({ name: 'status', type: 'enum', enum: EventStatus, default: EventStatus.PENDING })
   status!: EventStatus;
 
-  @Column({ name: 'reason', type: 'varchar', length: 100 })
-  reason!: string;
+  @Column({ name: 'reservation_status_reason', type: 'varchar', length: 100, default: null })
+  reservationStatusReason!: string;
 }

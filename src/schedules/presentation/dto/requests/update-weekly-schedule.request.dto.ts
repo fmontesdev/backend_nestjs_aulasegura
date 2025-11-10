@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsString, Matches, IsDateString } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString, Matches } from 'class-validator';
 
 export class UpdateWeeklyScheduleRequest {
   @ApiPropertyOptional({ description: 'Día de la semana (1=Lunes, 7=Domingo)', example: 1, minimum: 1, maximum: 7 })
@@ -24,14 +24,4 @@ export class UpdateWeeklyScheduleRequest {
     message: 'endTime debe tener formato HH:MM:SS',
   })
   endTime?: string;
-
-  @ApiPropertyOptional({ description: 'Fecha de inicio de validez (YYYY-MM-DD)', example: '2024-09-01' })
-  @IsOptional()
-  @IsDateString()
-  validFrom?: string;
-
-  @ApiPropertyOptional({ description: 'Fecha de fin de validez (YYYY-MM-DD)', example: '2025-06-30', nullable: true })
-  @IsOptional()
-  @IsDateString()
-  validTo?: string | null;
 }

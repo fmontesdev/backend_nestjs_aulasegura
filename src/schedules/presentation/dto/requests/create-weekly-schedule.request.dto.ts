@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsInt, Min, Max, IsString, Matches, IsDateString, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsInt, Min, Max, IsString, Matches } from 'class-validator';
 import { AcademicYearEntity } from '../../../../academic-years/domain/entities/academic-year.entity';
 
 export class CreateWeeklyScheduleRequest {
@@ -29,14 +29,4 @@ export class CreateWeeklyScheduleRequest {
     message: 'endTime debe tener formato HH:MM:SS',
   })
   endTime: string;
-
-  @ApiProperty({ description: 'Fecha de inicio de validez (YYYY-MM-DD)', example: '2024-09-01' })
-  @IsNotEmpty()
-  @IsDateString()
-  validFrom: string;
-
-  @ApiPropertyOptional({ description: 'Fecha de fin de validez (YYYY-MM-DD)', example: '2025-06-30', nullable: true })
-  @IsOptional()
-  @IsDateString()
-  validTo?: string | null;
 }

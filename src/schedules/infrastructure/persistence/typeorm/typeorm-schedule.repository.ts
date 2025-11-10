@@ -13,7 +13,7 @@ export class TypeOrmScheduleRepository implements ScheduleRepository {
   ) {}
 
   /// Busca todos los schedules activos del año académico activo
-  async findAllActive(currentDate: string): Promise<ScheduleEntity[]> {
+  async findAllActive(): Promise<ScheduleEntity[]> {
     return this.scheduleRepo
       .createQueryBuilder('schedule')
       .leftJoinAndSelect('schedule.academicYear', 'academicYear')
@@ -21,14 +21,6 @@ export class TypeOrmScheduleRepository implements ScheduleRepository {
       .leftJoinAndSelect('schedule.eventSchedule', 'eventSchedule')
       .where('schedule.isActive = :isActive', { isActive: true })
       .andWhere('academicYear.isActive = :isActive', { isActive: true })
-      // Para WEEKLY, validar también que esté dentro del periodo válido
-      .andWhere(
-        '((schedule.type = :weeklyType AND ' +
-        'weeklySchedule.validFrom <= :currentDate AND ' +
-        '(weeklySchedule.validTo >= :currentDate OR weeklySchedule.validTo IS NULL)) ' +
-        'OR (schedule.type != :weeklyType))',
-        { weeklyType: ScheduleType.WEEKLY, currentDate },
-      )
       .orderBy('schedule.scheduleId', 'ASC')
       .getMany();
   }

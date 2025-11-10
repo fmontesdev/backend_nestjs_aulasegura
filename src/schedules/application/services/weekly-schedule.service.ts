@@ -16,8 +16,7 @@ export class WeeklyScheduleService {
 
   /// Busca todos los horarios semanales activos
   async findAll(): Promise<WeeklyScheduleEntity[]> {
-    const currentDate = this.getCurrentDate();
-    return await this.weeklyScheduleRepository.findAllActive(currentDate);
+    return await this.weeklyScheduleRepository.findAllActive();
   }
 
   /// Busca un horario semanal por ID
@@ -43,8 +42,6 @@ export class WeeklyScheduleService {
     weeklySchedule.dayOfWeek = createDto.dayOfWeek;
     weeklySchedule.startTime = createDto.startTime;
     weeklySchedule.endTime = createDto.endTime;
-    weeklySchedule.validFrom = createDto.validFrom;
-    weeklySchedule.validTo = createDto.validTo ?? null;
 
     // Guarda (gracias a cascade, guardará ambos)
     return await this.weeklyScheduleRepository.save(weeklySchedule);
@@ -64,21 +61,11 @@ export class WeeklyScheduleService {
     if (updateDto.dayOfWeek !== undefined) {
       weeklySchedule.dayOfWeek = updateDto.dayOfWeek;
     }
-
     if (updateDto.startTime !== undefined) {
       weeklySchedule.startTime = updateDto.startTime;
     }
-
     if (updateDto.endTime !== undefined) {
       weeklySchedule.endTime = updateDto.endTime;
-    }
-
-    if (updateDto.validFrom !== undefined) {
-      weeklySchedule.validFrom = updateDto.validFrom;
-    }
-
-    if (updateDto.validTo !== undefined) {
-      weeklySchedule.validTo = updateDto.validTo;
     }
 
     try {
@@ -99,16 +86,16 @@ export class WeeklyScheduleService {
     return weeklySchedule;
   }
 
-  //? Obtiene la fecha actual en formato YYYY-MM-DD
-  private getCurrentDate(): string {
-    const now = new Date();
-    return now.toISOString().split('T')[0];
-  }
-
   //? Valida que startTime sea menor que endTime
   startEndTimeValidate(startTime: string, endTime: string): void {
     if (startTime >= endTime) {
       throw new BadRequestException('Start time must be before end time');
     }
   }
+
+  // //? Obtiene la fecha actual en formato YYYY-MM-DD
+  // private getCurrentDate(): string {
+  //   const now = new Date();
+  //   return now.toISOString().split('T')[0];
+  // }
 }

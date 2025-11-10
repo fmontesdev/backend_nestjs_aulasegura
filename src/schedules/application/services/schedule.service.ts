@@ -8,8 +8,7 @@ export class ScheduleService {
 
   /// Busca todos los schedules activos (weekly y event) del año académico activo
   async findAll(): Promise<ScheduleEntity[]> {
-    const currentDate = this.getCurrentDate();
-    return await this.scheduleRepository.findAllActive(currentDate);
+    return await this.scheduleRepository.findAllActive();
   }
 
   /// Busca un schedule por ID del año académico activo

@@ -1,15 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ScheduleEntity } from 'src/schedules/domain/entities/schedule.entity';
 import { WeeklyScheduleEntity } from '../../../domain/entities/weekly-schedule.entity';
 import { WeeklyScheduleRepository } from '../../../domain/repositories/weekly-schedule.repository';
 
 @Injectable()
 export class TypeOrmWeeklyScheduleRepository implements WeeklyScheduleRepository {
   constructor(
-    @InjectRepository(ScheduleEntity)
-    private readonly scheduleRepository: Repository<ScheduleEntity>,
     @InjectRepository(WeeklyScheduleEntity)
     private readonly weeklyScheduleRepository: Repository<WeeklyScheduleEntity>,
   ) {}
@@ -24,15 +21,13 @@ export class TypeOrmWeeklyScheduleRepository implements WeeklyScheduleRepository
   }
 
   /// Busca todos los horarios semanales activos del actual año académico
-  async findAllActive(currentDate: string): Promise<WeeklyScheduleEntity[]> {
+  async findAllActive(): Promise<WeeklyScheduleEntity[]> {
     return await this.weeklyScheduleRepository
       .createQueryBuilder('ws')
       .leftJoinAndSelect('ws.schedule', 'schedule')
       .leftJoinAndSelect('schedule.academicYear', 'academicYear')
       .where('schedule.isActive = :isActive', { isActive: true })
       .andWhere('academicYear.isActive = :isActive', { isActive: true })
-      .andWhere('ws.validFrom <= :currentDate', { currentDate })
-      .andWhere('(ws.validTo >= :currentDate OR ws.validTo IS NULL)', { currentDate })
       .orderBy('ws.scheduleId', 'ASC')
       .getMany();
   }
@@ -46,7 +41,7 @@ export class TypeOrmWeeklyScheduleRepository implements WeeklyScheduleRepository
   }
 
   /// Busca un horario semanal activo por ID del actual año académico
-  async findOneActiveById(scheduleId: number, currentDate: string): Promise<WeeklyScheduleEntity | null> {
+  async findOneActiveById(scheduleId: number): Promise<WeeklyScheduleEntity | null> {
     return await this.weeklyScheduleRepository
       .createQueryBuilder('ws')
       .leftJoinAndSelect('ws.schedule', 'schedule')
@@ -54,8 +49,6 @@ export class TypeOrmWeeklyScheduleRepository implements WeeklyScheduleRepository
       .where('ws.scheduleId = :scheduleId', { scheduleId })
       .andWhere('schedule.isActive = :isActive', { isActive: true })
       .andWhere('academicYear.isActive = :isActive', { isActive: true })
-      .andWhere('ws.validFrom <= :currentDate', { currentDate })
-      .andWhere('ws.validTo >= :currentDate OR ws.validTo IS NULL', { currentDate })
       .getOne();
   }
 

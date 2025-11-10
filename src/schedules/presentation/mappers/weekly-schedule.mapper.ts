@@ -7,9 +7,7 @@ export class WeeklyScheduleMapper {
     return {
       dayOfWeek: entity.dayOfWeek,
       startTime: entity.startTime,
-      endTime: entity.endTime,
-      validFrom: entity.validFrom,
-      validTo: entity.validTo,
+      endTime: entity.endTime
     };
   }
 

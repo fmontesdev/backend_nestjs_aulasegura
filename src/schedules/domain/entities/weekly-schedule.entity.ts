@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryColumn, Index, OneToOne, JoinColumn } from 'type
 import { ScheduleEntity } from './schedule.entity';
 
 @Entity({ name: 'weekly_schedule' })
-@Index('idx_weekly_dow', ['dayOfWeek', 'validFrom', 'validTo'])
+@Index('idx_weekly_dow', ['dayOfWeek'])
 export class WeeklyScheduleEntity {
   @PrimaryColumn({ name: 'schedule_id', type: 'int' })
   scheduleId!: number;
@@ -19,10 +19,4 @@ export class WeeklyScheduleEntity {
 
   @Column({ name: 'end_time', type: 'time' })
   endTime!: string;
-
-  @Column({ name: 'valid_from', type: 'date' })
-  validFrom!: string; // 'YYYY-MM-DD'
-
-  @Column({ name: 'valid_to', type: 'date', nullable: true })
-  validTo!: string | null;
 }

@@ -6,7 +6,7 @@ import { RoleEntity } from './role.entity';
 import { BlacklistTokenEntity } from '../../../auth/domain/entities/blacklist-token.entity';
 import { TagEntity } from '../../../tags/domain/entities/tag.entity';
 import { NotificationEntity } from '../../../entities/notification.entity';
-import { PermissionEntity } from '../../../schedules/domain/entities/permission.entity';
+import { PermissionEntity } from '../../../permissions/domain/entities/permission.entity';
 import { TeacherEntity } from './teacher.entity';
 import { AccessLogEntity } from '../../../entities/access-log.entity';
 

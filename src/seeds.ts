@@ -9,7 +9,7 @@ import { BlacklistTokenEntity } from './auth/domain/entities/blacklist-token.ent
 import { PasswordResetTokenEntity } from './auth/domain/entities/password-reset-token.entity';
 import { TagEntity } from './tags/domain/entities/tag.entity';
 import { NotificationEntity } from './entities/notification.entity';
-import { PermissionEntity } from './schedules/domain/entities/permission.entity';
+import { PermissionEntity } from './permissions/domain/entities/permission.entity';
 import { AccessLogEntity } from './entities/access-log.entity';
 import { RoomEntity } from './rooms/domain/entities/room.entity';
 import { ScheduleEntity } from './schedules/domain/entities/schedule.entity';

@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { CourseEntity } from '../../../courses/domain/entities/course.entity';
-import { PermissionEntity } from '../../../schedules/domain/entities/permission.entity';
+import { PermissionEntity } from '../../../permissions/domain/entities/permission.entity';
 import { ReaderEntity } from '../../../readers/domain/entities/reader.entity';
 import { AccessLogEntity } from '../../../entities/access-log.entity';
 

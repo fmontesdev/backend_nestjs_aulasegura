@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../../../users/domain/entities/user.entity';
 import { RoomEntity } from '../../../rooms/domain/entities/room.entity';
-import { ScheduleEntity } from './schedule.entity';
+import { ScheduleEntity } from '../../../schedules/domain/entities/schedule.entity';
 
 @Entity({ name: 'permission' })
 @Index('idx_permission_schedule', ['scheduleId'])
@@ -30,16 +30,15 @@ export class PermissionEntity {
   @JoinColumn({ name: 'user_id' })
   user!: UserEntity;
 
-  @ManyToOne(() => RoomEntity, { onDelete: 'RESTRICT', eager: true })
+  @ManyToOne(() => RoomEntity, (r) => r.permissions, { onDelete: 'RESTRICT', eager: true })
   @JoinColumn({ name: 'room_id' })
   room!: RoomEntity;
 
-  @ManyToOne(() => ScheduleEntity, (s) => s.permissions, { onDelete: 'RESTRICT', eager: true })
+  @ManyToOne(() => ScheduleEntity, (s) => s.permissions, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'schedule_id' })
   schedule!: ScheduleEntity;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'RESTRICT', eager: true })
+  @ManyToOne(() => UserEntity, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'created_by' })
-  // @JoinColumn({ name: 'user_id' }) 
   createdBy!: UserEntity;
 }

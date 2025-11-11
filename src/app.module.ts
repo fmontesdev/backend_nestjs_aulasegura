@@ -11,6 +11,7 @@ import { TagModule } from './tags/tag.module';
 import { RoomModule } from './rooms/room.module';
 import { ReaderModule } from './readers/reader.module';
 import { ScheduleModule } from './schedules/schedule.module';
+import { PermissionModule } from './permissions/permission.module';
 import { NotificationEntity } from './entities/notification.entity';
 import { AccessLogEntity } from './entities/access-log.entity';
 
@@ -47,6 +48,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     RoomModule,
     ReaderModule,
     ScheduleModule,
+    PermissionModule,
   ],
   controllers: [],
   providers: [],

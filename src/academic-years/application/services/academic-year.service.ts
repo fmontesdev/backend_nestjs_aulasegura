@@ -47,7 +47,7 @@ export class AcademicYearService {
 
   /// Desactiva un año académico (soft delete)
   async softRemove(academicYearId: number): Promise<void> {
-    const academicYear = await this.findActiveAcademicYearByIdOrFail(academicYearId);
+    const academicYear = await this.findActiveAcademicYear();
     academicYear.isActive = false;
     await this.academicYearRepository.save(academicYear);
   }
@@ -63,15 +63,6 @@ export class AcademicYearService {
     return academicYear;
   }
 
-  //? Busca un año académico por ID o lanza una excepción si no se encuentra
-  private async findActiveAcademicYearByIdOrFail(academicYearId: number): Promise<AcademicYearEntity> {
-    const academicYear = await this.academicYearRepository.findOneActiveById(academicYearId);
-    if (!academicYear) {
-      throw new NotFoundException(`Active academic year with ID ${academicYearId} not found`);
-    }
-    return academicYear;
-  }
-
   //? Busca un año académico por código o lanza una excepción si no se encuentra
   private async findAcademicYearByCodeOrFail(code: string): Promise<AcademicYearEntity> {
     const academicYear = await this.academicYearRepository.findOneByCode(code);
@@ -80,6 +71,15 @@ export class AcademicYearService {
     }
     if (!academicYear.isActive) {
       throw new NotFoundException(`Academic year with code ${code} is not active`);
+    }
+    return academicYear;
+  }
+
+  //? Busca el año académico activo o lanza una excepción
+  async findActiveAcademicYear(): Promise<AcademicYearEntity> {
+    const academicYear = await this.academicYearRepository.findActive();
+    if (!academicYear) {
+      throw new NotFoundException('No hay ningún año académico activo');
     }
     return academicYear;
   }

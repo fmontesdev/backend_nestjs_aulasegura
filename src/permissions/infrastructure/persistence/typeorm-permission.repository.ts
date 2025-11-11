@@ -1,0 +1,110 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PermissionEntity } from '../../domain/entities/permission.entity';
+import { PermissionRepository } from '../../domain/repositories/permission.repository';
+import { ScheduleType } from '../../../schedules/domain/enums/schedule-type.enum';
+import { ValidateWeeklySchedulePermissionOverlapDto } from '../../application/dto/validate-weekly-schedule-permission-overlap.dto';
+import { ValidateWeeklyScheduleOverlapDto } from '../../application/dto/validate-weekly-schedule-overlap.dto';
+import { ValidateEventScheduleOverlapDto } from '../../application/dto/validate-event-schedule-overlap.dto';
+
+@Injectable()
+export class TypeOrmPermissionRepository implements PermissionRepository {
+  constructor(
+    @InjectRepository(PermissionEntity)
+    private readonly permissionRepo: Repository<PermissionEntity>,
+  ) {}
+
+  async findAll(): Promise<PermissionEntity[]> {
+    return await this.permissionRepo.find({
+      where: { isActive: true },
+      relations: ['schedule', 'schedule.academicYear', 'schedule.weeklySchedule', 'schedule.eventSchedule'],
+      order: { userId: 'ASC', roomId: 'ASC', scheduleId: 'ASC' },
+    });
+  }
+
+  async findOne(userId: string, roomId: number, scheduleId: number): Promise<PermissionEntity | null> {
+    return await this.permissionRepo.findOne({
+      where: { userId, roomId, scheduleId },
+      relations: ['schedule', 'schedule.academicYear', 'schedule.weeklySchedule', 'schedule.eventSchedule'],
+    });
+  }
+
+  async findWeeklySchedulePermissionOverlappingForRoom(overlapDto: ValidateWeeklySchedulePermissionOverlapDto): Promise<PermissionEntity[]> {
+    return await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.weeklySchedule', 'weeklySchedule')
+      .where('permission.roomId = :roomId', { roomId: overlapDto.roomId })
+      .andWhere('permission.scheduleId = :scheduleId', { scheduleId: overlapDto.scheduleId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.WEEKLY })
+      // .andWhere('schedule.academicYearId.isActive = :isActive', { isActive: true })
+      .getMany();
+  }
+
+  async findWeeklyScheduleOverlappingForRoom(overlapDto: ValidateWeeklyScheduleOverlapDto): Promise<PermissionEntity[]> {
+    return await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.weeklySchedule', 'weeklySchedule')
+      .where('permission.roomId = :roomId', { roomId: overlapDto.roomId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.WEEKLY })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId: overlapDto.academicYearId })
+      .andWhere('weeklySchedule.dayOfWeek = :dayOfWeek', { dayOfWeek: overlapDto.dayOfWeek })
+      // Validación de solapamiento horario: (start1 < end2) AND (start2 < end1)
+      .andWhere('weeklySchedule.startTime < :endTime', { endTime: overlapDto.endTime })
+      .andWhere(':startTime < weeklySchedule.endTime', { startTime: overlapDto.startTime })
+      .getMany();
+  }
+
+  async findEventScheduleOverlappingForRoom(overlapDto: ValidateEventScheduleOverlapDto): Promise<PermissionEntity[]> {
+    return await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.eventSchedule', 'eventSchedule')
+      .where('permission.roomId = :roomId', { roomId: overlapDto.roomId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.EVENT })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId: overlapDto.academicYearId })
+      // Validación de solapamiento de fechas/horas: (start1 < end2) AND (start2 < end1)
+      .andWhere('eventSchedule.startAt < :endAt', { endAt: overlapDto.endAt })
+      .andWhere(':startAt < eventSchedule.endAt', { startAt: overlapDto.startAt })
+      .getMany();
+  }
+
+  async save(permission: PermissionEntity): Promise<PermissionEntity> {
+    return await this.permissionRepo.save(permission);
+  }
+
+  async updatePrimaryKeys(oldUserId: string, oldRoomId: number, oldScheduleId: number, newUserId: string, newRoomId: number, newScheduleId: number): Promise<void> {
+    // Usar queryRunner para transacción manual porque TypeORM no puede actualizar PKs directamente
+    const queryRunner = this.permissionRepo.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Actualizar las claves primarias usando SQL directo
+      await queryRunner.query(
+        `UPDATE permission 
+        SET user_id = ?, room_id = ?, schedule_id = ? 
+        WHERE user_id = ? AND room_id = ? AND schedule_id = ?`,
+        [newUserId, newRoomId, newScheduleId, oldUserId, oldRoomId, oldScheduleId],
+      );
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async hardRemove(userId: string, roomId: number, scheduleId: number): Promise<void> {
+    await this.permissionRepo.delete({ userId, roomId, scheduleId });
+  }
+}

@@ -24,15 +24,15 @@ export class TypeOrmAcademicYearRepository implements AcademicYearRepository {
     });
   }
 
-  async findOneActiveById(academicYearId: number): Promise<AcademicYearEntity | null> {
-    return this.repository.findOne({
-      where: { academicYearId, isActive: true },
-    });
-  }
-
   async findOneByCode(code: string): Promise<AcademicYearEntity | null> {
     return this.repository.findOne({
       where: { code },
+    });
+  }
+
+  async findActive(): Promise<AcademicYearEntity | null> {
+    return this.repository.findOne({
+      where: { isActive: true },
     });
   }
 

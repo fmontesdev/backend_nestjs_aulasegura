@@ -5,8 +5,8 @@ import { UpdateEventScheduleDto } from '../dto/update-event-schedule.dto';
 import { CreateEventScheduleDto } from '../dto/create-event-schedule.dto';
 import { ScheduleEntity } from '../../domain/entities/schedule.entity';
 import { ScheduleType } from '../../domain/enums/schedule-type.enum';
-import { EventStatus } from 'src/schedules/domain/enums/event-status.enum';
 import { AcademicYearService } from '../../../academic-years/application/services/academic-year.service';
+import { RoleName } from 'src/users/domain/enums/rolename.enum';
 
 @Injectable()
 export class EventScheduleService {
@@ -44,7 +44,7 @@ export class EventScheduleService {
     eventSchedule.description = createDto.description;
     eventSchedule.startAt = createDto.startAt;
     eventSchedule.endAt = createDto.endAt;
-    eventSchedule.status = EventStatus.PENDING;
+    eventSchedule.status = createDto.status;
 
     // Guarda (gracias a cascade, guardará ambos)
     try {
@@ -55,33 +55,22 @@ export class EventScheduleService {
   }
 
   /// Actualiza un horario de evento
-  async update(scheduleId: number, updateDto: UpdateEventScheduleDto): Promise<EventScheduleEntity> {
+  async update(scheduleId: number, updateDto: UpdateEventScheduleDto, currentUser: any): Promise<EventScheduleEntity> {
     // Verifica que el horario de evento existe
     const eventSchedule = await this.findEventScheduleByIdOrFail(scheduleId);
 
-    // Valida startAt < endAt si ambos están presentes
-    const newStartAt = updateDto.startAt ?? eventSchedule.startAt;
-    const newEndAt = updateDto.endAt ?? eventSchedule.endAt;
-    this.startEndTimeValidate(newStartAt, newEndAt);
-
     // Actualiza campos permitidos
-    if (updateDto.description !== undefined) {
+    if (updateDto.description !== undefined &&
+      (currentUser.roles.includes(RoleName.TEACHER) || currentUser.roles.includes(RoleName.JANITOR)))
+    {
       eventSchedule.description = updateDto.description;
     }
 
-    if (updateDto.startAt !== undefined) {
-      eventSchedule.startAt = updateDto.startAt;
-    }
-
-    if (updateDto.endAt !== undefined) {
-      eventSchedule.endAt = updateDto.endAt;
-    }
-
-    if (updateDto.status !== undefined) {
+    if (updateDto.status !== undefined && currentUser.roles.includes(RoleName.ADMIN)) {
       eventSchedule.status = updateDto.status;
     }
 
-    if (updateDto.reservationStatusReason !== undefined) {
+    if (updateDto.reservationStatusReason !== undefined && currentUser.roles.includes(RoleName.ADMIN)) {
       eventSchedule.reservationStatusReason = updateDto.reservationStatusReason;
     }
 

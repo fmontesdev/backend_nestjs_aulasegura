@@ -1,4 +1,4 @@
-export class CreateWeeklyScheduleDto {
+export class ValidateWeeklyScheduleOverlapDto {
   dayOfWeek!: number;
   startTime!: string;
   endTime!: string;

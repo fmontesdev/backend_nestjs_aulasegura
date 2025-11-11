@@ -1,17 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsInt, Min, Max, IsString, Matches } from 'class-validator';
-import { AcademicYearEntity } from '../../../../academic-years/domain/entities/academic-year.entity';
 
 export class CreateWeeklyScheduleRequest {
-  @ApiProperty({ description: 'Año académico', type: () => AcademicYearEntity })
-  @IsNotEmpty()
-  academicYear: AcademicYearEntity;
-
-  @ApiProperty({ description: 'Día de la semana (1=Lunes, 7=Domingo)', example: 1, minimum: 1, maximum: 7 })
+  @ApiProperty({ description: 'Día de la semana (1=Lunes, 7=Domingo)', example: 1, minimum: 1, maximum: 5 })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  @Max(7)
+  @Max(5)
   dayOfWeek: number;
 
   @ApiProperty({ description: 'Hora de inicio (HH:MM:SS)', example: '08:00:00' })

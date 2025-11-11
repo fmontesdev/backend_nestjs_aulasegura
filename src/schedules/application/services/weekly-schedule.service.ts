@@ -6,6 +6,7 @@ import { CreateWeeklyScheduleDto } from '../dto/create-weekly-schedule.dto';
 import { ScheduleEntity } from '../../domain/entities/schedule.entity';
 import { ScheduleType } from '../../domain/enums/schedule-type.enum';
 import { AcademicYearService } from '../../../academic-years/application/services/academic-year.service';
+import { ValidateWeeklyScheduleOverlapDto } from 'src/schedules/application/dto/validate-weekly-schedule-overlap.dto';
 
 @Injectable()
 export class WeeklyScheduleService {
@@ -30,10 +31,20 @@ export class WeeklyScheduleService {
     // Valida que startTime < endTime
     this.startEndTimeValidate(createDto.startTime, createDto.endTime);
 
+    // Valida que no exista solapamiento de horarios semanales en el mismo dia de la semana
+    await this.weeklyScheduleOverlapping({
+      dayOfWeek: createDto.dayOfWeek,
+      startTime: createDto.startTime,
+      endTime: createDto.endTime,
+    });
+
+    // Obtiene el año académico activo
+    const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
+
     // Crea el Schedule (parent)
     const schedule = new ScheduleEntity();
     schedule.type = ScheduleType.WEEKLY;
-    schedule.academicYear = createDto.academicYear;
+    schedule.academicYear = activeAcademicYear;
     schedule.isActive = true;
 
     // Crea el WeeklySchedule (child)
@@ -44,9 +55,13 @@ export class WeeklyScheduleService {
     weeklySchedule.endTime = createDto.endTime;
 
     // Guarda (gracias a cascade, guardará ambos)
-    return await this.weeklyScheduleRepository.save(weeklySchedule);
+    try {
+      return await this.weeklyScheduleRepository.save(weeklySchedule);
+    } catch (error) {
+      throw new ConflictException('Weekly schedule could not be created');
+    }
   }
-
+  
   /// Actualiza un horario semanal
   async update(scheduleId: number, updateDto: UpdateWeeklyScheduleDto): Promise<WeeklyScheduleEntity> {
     // Verifica que el horario semanal existe
@@ -55,7 +70,17 @@ export class WeeklyScheduleService {
     // Valida startTime < endTime si ambos están presentes
     const newStartTime = updateDto.startTime ?? weeklySchedule.startTime;
     const newEndTime = updateDto.endTime ?? weeklySchedule.endTime;
-    this.startEndTimeValidate(newStartTime, newEndTime);
+    if (updateDto.startTime !== undefined || updateDto.endTime !== undefined) {
+      this.startEndTimeValidate(newStartTime, newEndTime);
+    }
+
+    // Valida que no exista solapamiento de horarios semanales en el mismo dia de la semana
+    const newDayOfWeek = updateDto.dayOfWeek ?? weeklySchedule.dayOfWeek;
+    await this.weeklyScheduleOverlapping({
+      dayOfWeek: newDayOfWeek,
+      startTime: newStartTime,
+      endTime: newEndTime,
+    });
 
     // Actualiza campos permitidos
     if (updateDto.dayOfWeek !== undefined) {
@@ -90,6 +115,15 @@ export class WeeklyScheduleService {
   startEndTimeValidate(startTime: string, endTime: string): void {
     if (startTime >= endTime) {
       throw new BadRequestException('Start time must be before end time');
+    }
+  }
+
+  //? Valida que no exista solapamiento de horarios semanales en el mismo dia de la semana
+  private async weeklyScheduleOverlapping(overlapDto: ValidateWeeklyScheduleOverlapDto): Promise<void> {
+    const overlapping = await this.weeklyScheduleRepository.findWeeklyScheduleOverlapping(overlapDto);
+
+    if (overlapping.length > 0) {
+      throw new ConflictException('A weekly schedule for this day overlaps with the provided schedule.');
     }
   }
 

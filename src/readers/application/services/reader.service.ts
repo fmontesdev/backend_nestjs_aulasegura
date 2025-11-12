@@ -23,6 +23,11 @@ export class ReaderService {
     return await this.findReaderByIdOrFail(readerId);
   }
 
+  /// Busca un lector por readerCode o lanza una excepción si no se encuentra
+  async findOneByReaderCode(readerCode: string): Promise<ReaderEntity> {
+    return await this.findReaderByCodeOrFail(readerCode);
+  }
+
   /// Crea un nuevo lector
   async create(createDto: CreateReaderDto): Promise<ReaderEntity> {
     // Verifica que el código del lector sea único
@@ -83,6 +88,15 @@ export class ReaderService {
     const reader = await this.readerRepository.findOneById(readerId);
     if (!reader) {
       throw new NotFoundException(`Reader with ID ${readerId} not found`);
+    }
+    return reader;
+  }
+
+  //? Buscar un lector por readerCode o lanza una excepción si no se encuentra
+  private async findReaderByCodeOrFail(readerCode: string): Promise<ReaderEntity> {
+    const reader = await this.readerRepository.findOneByReaderCode(readerCode);
+    if (!reader) {
+      throw new NotFoundException(`Reader with code ${readerCode} not found`);
     }
     return reader;
   }

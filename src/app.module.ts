@@ -12,8 +12,8 @@ import { RoomModule } from './rooms/room.module';
 import { ReaderModule } from './readers/reader.module';
 import { ScheduleModule } from './schedules/schedule.module';
 import { PermissionModule } from './permissions/permission.module';
+import { AccessModule } from './access/access.module';
 import { NotificationEntity } from './entities/notification.entity';
-import { AccessLogEntity } from './entities/access-log.entity';
 
 @Module({
   imports: [
@@ -32,7 +32,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
         entities: [
-          NotificationEntity, AccessLogEntity
+          NotificationEntity,
         ],
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Solo en desarrollo
         autoLoadEntities: true, // Carga automáticamente las entidades
@@ -49,6 +49,7 @@ import { AccessLogEntity } from './entities/access-log.entity';
     ReaderModule,
     ScheduleModule,
     PermissionModule,
+    AccessModule,
   ],
   controllers: [],
   providers: [],

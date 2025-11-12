@@ -9,6 +9,19 @@ export abstract class PermissionRepository {
   abstract findWeeklySchedulePermissionOverlappingForRoom(overlapDto: ValidateWeeklySchedulePermissionOverlapDto): Promise<PermissionEntity[]>;
   abstract findWeeklyScheduleOverlappingForRoom(overlapDto: ValidateWeeklyScheduleOverlapDto): Promise<PermissionEntity[]>;
   abstract findEventScheduleOverlappingForRoom(overlapDto: ValidateEventScheduleOverlapDto): Promise<PermissionEntity[]>;
+  abstract findActiveWeeklyPermissionForUserAtCurrentTime(
+    userId: string,
+    roomId: number,
+    academicYearId: number,
+    dayOfWeek: number,
+    currentTime: string,
+  ): Promise<PermissionEntity | null>;
+  abstract findActiveEventPermissionForUserAtCurrentTime(
+    userId: string,
+    roomId: number,
+    academicYearId: number,
+    currentDate: Date,
+  ): Promise<PermissionEntity | null>;
   abstract save(permission: PermissionEntity): Promise<PermissionEntity>;
   abstract updatePrimaryKeys(
     oldUserId: string,

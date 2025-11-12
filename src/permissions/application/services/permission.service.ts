@@ -232,6 +232,37 @@ export class PermissionService {
     }
   }
 
+  /// Valida si existe algún permiso activo para el usuario en el aula en el momento actual
+  async activePermissionAtCurrentTime(userId: string, roomId: number): Promise<PermissionEntity | null> {
+    const currentDate = new Date();
+    const currentDayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay(); // 1=Lunes, 7=Domingo
+    const currentTime = currentDate.toTimeString().slice(0, 8); // HH:MM:SS
+
+    // Obtiene año académico activo
+    const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
+
+    // Busca permiso activo con horarios semanales
+    const weeklyPermission = await this.permissionRepository.findActiveWeeklyPermissionForUserAtCurrentTime(
+      userId,
+      roomId,
+      activeAcademicYear.academicYearId,
+      currentDayOfWeek,
+      currentTime,
+    );
+    if (weeklyPermission !=  null) return weeklyPermission;
+
+    // Busca permiso activo con eventos
+    const eventPermission = await this.permissionRepository.findActiveEventPermissionForUserAtCurrentTime(
+      userId,
+      roomId,
+      activeAcademicYear.academicYearId,
+      currentDate,
+    );
+    if (eventPermission != null) return eventPermission;
+
+    return null;
+  }
+
   //? ================= Métodos auxiliares =================
 
   //? Busca un permiso o lanza NotFoundException

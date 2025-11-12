@@ -33,6 +33,11 @@ export class TagService {
     return await this.findTagByIdOrFail(tagId);
   }
 
+  /// Busca un tag por tagCode o lanza una excepción si no se encuentra
+  async findOneByTagCode(tagCode: string): Promise<TagEntity> {
+    return await this.findTagByCodeOrFail(tagCode);
+  }
+
   /// Crea un nuevo tag generando el tagCode según el tipo
   async create(createDto: CreateTagDto): Promise<TagEntity> {
     // Verificar que el usuario exista
@@ -113,6 +118,7 @@ export class TagService {
       // randomBuffer: Genera 16 bytes aleatorios
       // NFC: tag_code = base64url( HMAC_SHA256(PEPPER, randomBuffer) )[0:16B] → ~22 char
       baseCode = randomBytes(16);
+      console.log('Generated random buffer for NFC tag:', baseCode.toString('hex'));
     }
 
     hmac.update(baseCode);
@@ -128,6 +134,15 @@ export class TagService {
     const tag = await this.tagRepository.findOneById(tagId);
     if (!tag) {
       throw new NotFoundException(`Tag with ID ${tagId} not found`);
+    }
+    return tag;
+  }
+
+  //? Busca un tag por tagCode o lanza una excepción si no se encuentra
+  private async findTagByCodeOrFail(tagCode: string): Promise<TagEntity> {
+    const tag = await this.tagRepository.findOneByTagCode(tagCode);
+    if (!tag) {
+      throw new NotFoundException(`Tag with code ${tagCode} not found`);
     }
     return tag;
   }

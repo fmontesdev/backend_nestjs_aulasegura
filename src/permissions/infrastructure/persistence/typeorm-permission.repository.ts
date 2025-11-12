@@ -77,6 +77,60 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .getMany();
   }
 
+  async findActiveWeeklyPermissionForUserAtCurrentTime(
+    userId: string,
+    roomId: number,
+    academicYearId: number,
+    dayOfWeek: number,
+    currentTime: string,
+  ): Promise<PermissionEntity | null> {
+    const result = await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.weeklySchedule', 'weeklySchedule')
+      .innerJoinAndSelect('schedule.academicYear', 'academicYear')
+      .innerJoinAndSelect('permission.user', 'user')
+      .innerJoinAndSelect('permission.room', 'room')
+      .where('permission.userId = :userId', { userId })
+      .andWhere('permission.roomId = :roomId', { roomId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.WEEKLY })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId })
+      .andWhere('weeklySchedule.dayOfWeek = :dayOfWeek', { dayOfWeek })
+      .andWhere('weeklySchedule.startTime <= :currentTime', { currentTime })
+      .andWhere('weeklySchedule.endTime >= :currentTime', { currentTime })
+      .getMany();
+
+    return result.length > 0 ? result[0] : null;
+  }
+
+  async findActiveEventPermissionForUserAtCurrentTime(
+    userId: string,
+    roomId: number,
+    academicYearId: number,
+    currentDate: Date,
+  ): Promise<PermissionEntity | null> {
+    const result = await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.eventSchedule', 'eventSchedule')
+      .innerJoinAndSelect('schedule.academicYear', 'academicYear')
+      .innerJoinAndSelect('permission.user', 'user')
+      .innerJoinAndSelect('permission.room', 'room')
+      .where('permission.userId = :userId', { userId })
+      .andWhere('permission.roomId = :roomId', { roomId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.EVENT })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId })
+      .andWhere('eventSchedule.startAt <= :currentDate', { currentDate })
+      .andWhere('eventSchedule.endAt >= :currentDate', { currentDate })
+      .getMany();
+
+    return result.length > 0 ? result[0] : null;
+  }
+
   async save(permission: PermissionEntity): Promise<PermissionEntity> {
     return await this.permissionRepo.save(permission);
   }

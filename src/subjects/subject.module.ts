@@ -22,6 +22,6 @@ import { DepartmentModule } from '../departments/department.module';
       useClass: TypeOrmSubjectRepository,
     },
   ],
-  exports: [SubjectService, SubjectRepository],
+  exports: [SubjectService],
 })
 export class SubjectModule {}

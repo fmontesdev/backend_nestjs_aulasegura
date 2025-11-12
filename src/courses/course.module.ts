@@ -20,6 +20,6 @@ import { AcademicYearModule } from '../academic-years/academic-year.module';
       useClass: TypeOrmCourseRepository,
     },
   ],
-  exports: [CourseService, CourseRepository],
+  exports: [CourseService],
 })
 export class CourseModule {}

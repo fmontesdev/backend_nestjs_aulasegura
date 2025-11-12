@@ -22,6 +22,6 @@ import { UsersModule } from '../users/users.module';
       useClass: TypeOrmDepartmentRepository,
     },
   ],
-  exports: [DepartmentService, DepartmentRepository],
+  exports: [DepartmentService],
 })
 export class DepartmentModule {}

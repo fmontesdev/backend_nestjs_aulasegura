@@ -22,6 +22,6 @@ import { UsersModule } from '../users/users.module';
       useClass: TypeOrmTagRepository,
     },
   ],
-  exports: [TagService, TagRepository],
+  exports: [TagService],
 })
 export class TagModule {}

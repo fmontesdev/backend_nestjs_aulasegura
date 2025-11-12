@@ -16,6 +16,6 @@ import { AcademicYearController } from './presentation/controllers/academic-year
       useClass: TypeOrmAcademicYearRepository,
     },
   ],
-  exports: [AcademicYearService, AcademicYearRepository],
+  exports: [AcademicYearService],
 })
 export class AcademicYearModule {}

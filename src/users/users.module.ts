@@ -15,6 +15,6 @@ import { TypeormUsersRepository } from './Infraestructure/persistence/typeorm/ty
     UsersService,
     { provide: UsersRepository, useClass: TypeormUsersRepository }, // binding
   ],
-  exports: [UsersService, UsersRepository],
+  exports: [UsersService],
 })
 export class UsersModule {}

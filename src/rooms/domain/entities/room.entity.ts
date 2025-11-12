@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToOne, OneToM
 import { CourseEntity } from '../../../courses/domain/entities/course.entity';
 import { PermissionEntity } from '../../../permissions/domain/entities/permission.entity';
 import { ReaderEntity } from '../../../readers/domain/entities/reader.entity';
-import { AccessLogEntity } from '../../../entities/access-log.entity';
+import { AccessLogEntity } from 'src/access/domain/entities/access-log.entity';
 
 @Entity({ name: 'room' })
 @Unique('uq_room_code', ['roomCode'])

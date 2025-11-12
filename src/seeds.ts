@@ -10,7 +10,7 @@ import { PasswordResetTokenEntity } from './auth/domain/entities/password-reset-
 import { TagEntity } from './tags/domain/entities/tag.entity';
 import { NotificationEntity } from './entities/notification.entity';
 import { PermissionEntity } from './permissions/domain/entities/permission.entity';
-import { AccessLogEntity } from './entities/access-log.entity';
+import { AccessLogEntity } from './access/domain/entities/access-log.entity';
 import { RoomEntity } from './rooms/domain/entities/room.entity';
 import { ScheduleEntity } from './schedules/domain/entities/schedule.entity';
 import { EventScheduleEntity } from './schedules/domain/entities/event-schedule.entity';

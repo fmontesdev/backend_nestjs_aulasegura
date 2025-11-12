@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../../../users/domain/entities/user.entity';
-import { AccessLogEntity } from '../../../entities/access-log.entity';
+import { AccessLogEntity } from '../../../access/domain/entities/access-log.entity';
 import { TagType } from '../enums/tag-type.enum';
 
 @Entity({ name: 'tag' })

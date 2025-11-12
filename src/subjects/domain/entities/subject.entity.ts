@@ -4,7 +4,7 @@ import {
 import { DepartmentEntity } from '../../../departments/domain/entities/department.entity';
 import { CourseEntity } from '../../../courses/domain/entities/course.entity';
 import { TeacherEntity } from '../../../users/domain/entities/teacher.entity';
-import { AccessLogEntity } from '../../../entities/access-log.entity';
+import { AccessLogEntity } from 'src/access/domain/entities/access-log.entity';
 
 @Entity({ name: 'subject' })
 @Unique('uq_subject_code', ['subjectCode'])

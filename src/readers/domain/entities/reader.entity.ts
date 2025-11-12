@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { RoomEntity } from '../../../rooms/domain/entities/room.entity';
-import { AccessLogEntity } from '../../../entities/access-log.entity';
+import { AccessLogEntity } from '../../../access/domain/entities/access-log.entity';
 
 @Entity({ name: 'reader' })
 @Unique('uq_reader_code', ['readerCode'])

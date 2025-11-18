@@ -1,10 +1,8 @@
-import { 
-  Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany, JoinColumn
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, OneToMany, ManyToOne, ManyToMany, JoinColumn } from 'typeorm';
 import { DepartmentEntity } from '../../../departments/domain/entities/department.entity';
 import { CourseEntity } from '../../../courses/domain/entities/course.entity';
 import { TeacherEntity } from '../../../users/domain/entities/teacher.entity';
-import { AccessLogEntity } from 'src/access/domain/entities/access-log.entity';
+import { AccessLogEntity } from '../../../access/domain/entities/access-log.entity';
 
 @Entity({ name: 'subject' })
 @Unique('uq_subject_code', ['subjectCode'])

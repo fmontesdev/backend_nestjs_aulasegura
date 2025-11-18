@@ -117,8 +117,8 @@ export class TagService {
     } else {
       // randomBuffer: Genera 16 bytes aleatorios
       // NFC: tag_code = base64url( HMAC_SHA256(PEPPER, randomBuffer) )[0:16B] → ~22 char
-      baseCode = randomBytes(16);
-      console.log('Generated random buffer for NFC tag:', baseCode.toString('hex'));
+      baseCode = randomBytes(16).toString('hex');
+      console.log('Generated random buffer for NFC tag:', baseCode);
     }
 
     hmac.update(baseCode);

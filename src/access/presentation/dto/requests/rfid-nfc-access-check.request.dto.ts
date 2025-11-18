@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, Matches } from 'class-validator';
+import { IsString, IsEnum, Matches } from 'class-validator';
 import { AccessMethod } from '../../../domain/enums/access-method.enum';
 
-export class CheckAccessRequest {
-  @ApiProperty({ description: 'UID raw de la tarjeta RFID/NFC (hexadecimal)', example: '04AABBCCDDEE11' })
+export class RfidNfcAccessCheckRequest {
+  @ApiProperty({ description: 'UID de la tarjeta RFID/NFC', example: '04AABBCCDDEE11' })
   @IsString()
   @Matches(/^[0-9A-Fa-f]+$/, { message: 'rawUid must be a valid hexadecimal string' })
   rawUid?: string;

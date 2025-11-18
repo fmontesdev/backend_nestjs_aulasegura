@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam,
   ApiBody, ApiUnauthorizedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiBadRequestResponse
 } from '@nestjs/swagger';
 import { AccessService } from '../../application/services/access.service';
-import { CreateAccessLogRequest } from '../dto/requests/create-access-log.request.dto';
-import { CheckAccessRequest } from '../dto/requests/check-access.request.dto';
+import { RfidNfcAccessCheckRequest } from '../dto/requests/rfid-nfc-access-check.request.dto';
+import { QrAccessCheckRequest } from '../dto/requests/qr-access-check.request.dto';
 import { AccessLogResponse } from '../dto/responses/access-log.response.dto';
-import { CheckAccessResponse } from '../dto/responses/check-access.response.dto';
+import { AccessCheckResponse } from '../dto/responses/access-check.response.dto';
 import { AccessLogMapper } from '../mappers/access-log.mapper';
-import { CheckAccessMapper } from '../mappers/check-access.mapper';
+import { AccessCheckMapper } from '../mappers/access-check.mapper';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -49,29 +49,53 @@ export class AccessController {
     return AccessLogMapper.toResponse(accessLog);
   }
 
-  @ApiOperation({ summary: 'Crea un nuevo registro de acceso manualmente' })
-  @ApiBody({ type: CreateAccessLogRequest })
-  @ApiCreatedResponse({ description: 'Registro de acceso creado con éxito', type: AccessLogResponse })
-  @ApiBadRequestResponse({ description: 'Datos inválidos' })
-  @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: 'No autenticado' })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('logs')
-  async create(@Body() requestDto: CreateAccessLogRequest): Promise<AccessLogResponse> {
-    const accessLog = await this.accessService.create(requestDto);
-    return AccessLogMapper.toResponse(accessLog);
+  @ApiOperation({
+    summary: 'Valida el acceso de un usuario a un aula a través de lectores RFID/NFC',
+    description: 'Endpoint para lectores RFID/NFC. Valida permisos a una aula y registra el intento proporcionando rawUid del tag y el código del lector'
+  })
+  @ApiBody({ type: RfidNfcAccessCheckRequest })
+  @ApiOkResponse({ description: 'Acceso permitido', type: AccessCheckResponse })
+  @ApiForbiddenResponse({ description: 'Acceso denegado, sin permisos válidos' })
+  @ApiBadRequestResponse({ description: 'Datos inválidos o falta rawUid' })
+  @UseGuards(JwtAuthGuard)
+  @Post('check')
+  async rfidNfcAccessCheck(@Body() requestDto: RfidNfcAccessCheckRequest, @CurrentUser() currentUser: any): Promise<AccessCheckResponse> {
+    const [permission, accessStatus, reasonStatus] = await this.accessService.rfidNfcAccessCheck(requestDto, currentUser);
+    
+    // Si el acceso es denegado, devolver 403 Forbidden
+    if (accessStatus === 'denied') {
+      throw new ForbiddenException({
+        permission: null,
+        accessStatus: 'denied',
+        reasonStatus
+      });
+    }
+    
+    return AccessCheckMapper.toResponse(permission, accessStatus, reasonStatus);
   }
 
   @ApiOperation({
-    summary: 'Valida el acceso de un usuario a un aula',
-    description: 'Endpoint para lectores RFID/NFC. Valida permisos y registra el intento'
+    summary: 'Valida el acceso de un usuario a un aula solo a través de QR',
+    description: 'Valida permisos a un aula y registra el intento proporcionando el usuario autenticado y el código del lector por QR'
   })
-  @ApiBody({ type: CheckAccessRequest })
-  @ApiOkResponse({ description: 'Validación de acceso completada', type: CheckAccessResponse })
-  @ApiBadRequestResponse({ description: 'Datos inválidos o falta rawUid/tagCode según el método' })
-  @Post('check')
-  async checkAccess(@Body() requestDto: CheckAccessRequest, @CurrentUser() currentUser: any): Promise<CheckAccessResponse> {
-    const [permission, accessStatus, reasonStatus] = await this.accessService.checkAccess(requestDto, currentUser);
-    return CheckAccessMapper.toResponse(permission, accessStatus, reasonStatus);
+  @ApiBody({ type: QrAccessCheckRequest })
+  @ApiOkResponse({ description: 'Acceso permitido', type: AccessCheckResponse })
+  @ApiForbiddenResponse({ description: 'Acceso denegado, sin permisos válidos' })
+  @ApiBadRequestResponse({ description: 'Datos inválidos' })
+  @UseGuards(JwtAuthGuard)
+  @Post('qrcheck')
+  async qrAccessCheck(@Body() requestDto: QrAccessCheckRequest, @CurrentUser() currentUser: any): Promise<AccessCheckResponse> {
+    const [permission, accessStatus, reasonStatus] = await this.accessService.qrAccessCheck(requestDto, currentUser);
+    
+    // Si el acceso es denegado, devolver 403 Forbidden
+    if (accessStatus === 'denied') {
+      throw new ForbiddenException({
+        permission: null,
+        accessStatus: 'denied',
+        reasonStatus
+      });
+    }
+    
+    return AccessCheckMapper.toResponse(permission, accessStatus, reasonStatus);
   }
 }

@@ -17,8 +17,8 @@ export class AccessLogEntity {
   @PrimaryGeneratedColumn({ name: 'access_log_id', type: 'int' })
   accessLogId!: number;
 
-  @Column({ name: 'tag_id', type: 'int' })
-  tagId!: number;
+  @Column({ name: 'tag_id', type: 'int', nullable: true })
+  tagId!: number | null;
 
   @Column({ name: 'user_id', type: 'char', length: 36 })
   userId!: string;

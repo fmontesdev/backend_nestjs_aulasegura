@@ -1,10 +1,10 @@
 import { PermissionEntity } from 'src/permissions/domain/entities/permission.entity';
-import { CheckAccessResponse } from '../dto/responses/check-access.response.dto';
+import { AccessCheckResponse } from '../dto/responses/access-check.response.dto';
 import { PermissionMapper } from '../../../permissions/presentation/mappers/permission.mapper';
 import { AccessStatus } from '../../domain/enums/access-status.enum';
 
-export class CheckAccessMapper {
-  static toResponse(permission: PermissionEntity | null, accessStatus: AccessStatus, reasonStatus: string): CheckAccessResponse {
+export class AccessCheckMapper {
+  static toResponse(permission: PermissionEntity | null, accessStatus: AccessStatus, reasonStatus: string): AccessCheckResponse {
     return {
       permission: permission != null ? PermissionMapper.toResponse(permission) : null,
       accessStatus: accessStatus,
@@ -12,7 +12,7 @@ export class CheckAccessMapper {
     };
   }
 
-  static toResponseList(permission: PermissionEntity | null, accessStatus: AccessStatus, reasonStatus: string): CheckAccessResponse[] {
+  static toResponseList(permission: PermissionEntity | null, accessStatus: AccessStatus, reasonStatus: string): AccessCheckResponse[] {
     return [this.toResponse(permission, accessStatus, reasonStatus)];
   }
 }

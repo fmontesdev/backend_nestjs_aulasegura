@@ -8,8 +8,8 @@ export class AccessLogResponse {
   @ApiProperty({ description: 'ID del registro de acceso', example: 1 })
   accessLogId: number;
 
-  @ApiProperty({ description: 'ID del tag utilizado', example: 1 })
-  tagId: number;
+  @ApiProperty({ description: 'ID del tag utilizado', example: 1, nullable: true })
+  tagId: number | null;
 
   @ApiProperty({ description: 'Usuario asociado al registro de acceso', type: () => UserResponse })
   user: UserResponse;

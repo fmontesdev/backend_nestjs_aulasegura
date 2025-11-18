@@ -2,7 +2,7 @@ import { AccessMethod } from '../../domain/enums/access-method.enum';
 import { AccessStatus } from '../../domain/enums/access-status.enum';
 
 export interface CreateAccessLogDto {
-  tagId: number;
+  tagId?: number | null;
   userId: string;
   readerId: number;
   roomId: number;

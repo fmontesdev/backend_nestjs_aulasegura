@@ -42,7 +42,7 @@ export class JwtTokenService {
   extractUserIdFromToken(token: string): string {
     const payload = this.decodeToken(token);
     if (!payload || !payload.sub) {
-      throw new Error('Token inválido: no contiene sub');
+      throw new Error('Invalid token: missing sub');
     }
     return payload.sub;
   }
@@ -51,7 +51,7 @@ export class JwtTokenService {
   extractExpirationFromToken(token: string): Date {
     const payload = this.decodeToken(token);
     if (!payload || !payload.exp) {
-      throw new Error('Token inválido: no contiene exp');
+      throw new Error('Invalid token: missing exp');
     }
     return new Date(payload.exp * 1000); // Multiplica por 1000 para convertir a milisegundos
   }

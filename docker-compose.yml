@@ -47,7 +47,7 @@ services:
     depends_on:
       - database
     environment:
-      PMA_HOST: database                          # nombre del servicio de tu MySQL
+      PMA_HOST: ${DB_HOST}                        # nombre del servicio de tu MySQL
       PMA_USER: ${DB_USER}                        # opcional
       PMA_PASSWORD: ${DB_PASSWORD}                # opcional
       UPLOAD_LIMIT: 256M                          # opcional, límite de subida de archivos .sql

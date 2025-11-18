@@ -104,11 +104,10 @@ export class UsersService {
       // MariaDB/MySQL: fila referenciada por FKs
       if (e?.errno === 1451 || /a foreign key constraint fails/i.test(e?.message)) {
         throw new ConflictException(
-          'No se puede eliminar el usuario porque está referenciado por otros registros. ' +
-            'Revise permisos, tags, logs, etc. (o utilice baja lógica con valid_to).',
+          'Cannot delete the user because it is referenced by other records'
         );
       }
-      throw new BadRequestException('No se pudo eliminar el usuario');
+      throw new BadRequestException('Could not delete the user');
     }
   }
 
@@ -118,7 +117,7 @@ export class UsersService {
   async findUserByIdOrFail(userId: string): Promise<UserEntity> {
     const user = await this.usersRepo.findOneById(userId);
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
+      throw new NotFoundException('User not found');
     }
     return user;
   }
@@ -127,7 +126,7 @@ export class UsersService {
   async findUserByEmailOrFail(email: string): Promise<UserEntity> {
     const user = await this.usersRepo.findOneByEmail(email);
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
+      throw new NotFoundException('User not found');
     }
     return user;
   }
@@ -141,7 +140,7 @@ export class UsersService {
   private async ensureEmailIsUnique(email: string): Promise<void> {
     const existingUser = await this.usersRepo.findOneByEmail(email);
     if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
+      throw new ConflictException('Email is already registered');
     }
   }
 
@@ -149,7 +148,7 @@ export class UsersService {
   private async ensureEmailIsUniqueForUpdate(email: string, currentUserId: string): Promise<void> {
     const existingUser = await this.usersRepo.findOneByEmail(email);
     if (existingUser && existingUser.userId !== currentUserId) {
-      throw new ConflictException('El email ya está registrado por otro usuario');
+      throw new ConflictException('Email is already registered by another user');
     }
   }
 
@@ -157,7 +156,7 @@ export class UsersService {
   private async findRoleByNameOrFail(roleName: RoleName): Promise<any> {
     const role = await this.usersRepo.findRoleByName(roleName);
     if (!role) {
-      throw new BadRequestException(`Rol "${roleName}" no encontrado en la base de datos`);
+      throw new BadRequestException(`Role "${roleName}" not found in the database`);
     }
     return role;
   }
@@ -165,7 +164,7 @@ export class UsersService {
   //? Valida que si es teacher, tenga departmentId
   private validateTeacherDepartment(roleName: RoleName, departmentId?: number): void {
     if (roleName === RoleName.TEACHER && !departmentId) {
-      throw new BadRequestException('El departmentId es obligatorio para profesores');
+      throw new BadRequestException('The departmentId is required for teachers');
     }
   }
 

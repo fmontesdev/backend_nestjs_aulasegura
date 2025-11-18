@@ -79,7 +79,7 @@ export class AcademicYearService {
   async findActiveAcademicYear(): Promise<AcademicYearEntity> {
     const academicYear = await this.academicYearRepository.findActive();
     if (!academicYear) {
-      throw new NotFoundException('No hay ningún año académico activo');
+      throw new NotFoundException('No active academic year found');
     }
     return academicYear;
   }

@@ -42,12 +42,12 @@ export class AuthService {
 
     const isPasswordValid = await bcryptCompare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Contraseña incorrecta');
+      throw new UnauthorizedException('Incorrect password');
     }
 
     // Verificar si el usuario está activo (validTo)
     if (user.validTo && user.validTo < new Date()) {
-      throw new UnauthorizedException('Usuario suspendido');
+      throw new UnauthorizedException('User suspended');
     }
 
     return user;
@@ -80,7 +80,7 @@ export class AuthService {
       // Verifica si está en blacklist (logout individual)
       const isBlacklisted = await this.authRepo.isTokenBlacklisted(refreshToken);
       if (isBlacklisted) {
-        throw new UnauthorizedException('Token invalidado (logout)');
+        throw new UnauthorizedException('Token invalidated (logout)');
       }
 
       // Obteniene el usuario por su ID
@@ -88,12 +88,12 @@ export class AuthService {
 
       // Verifica tokenVersion (logout masivo)
       if (payload.tokenVersion !== user.tokenVersion) {
-        throw new UnauthorizedException('Token invalidado (versión)');
+        throw new UnauthorizedException('Token invalidated (version)');
       }
 
       // Verifica si el usuario está activo
       if (user.validTo && user.validTo < new Date()) {
-        throw new UnauthorizedException('Usuario desactivado');
+        throw new UnauthorizedException('User deactivated');
       }
 
       // Genera solo nuevo accessToken, mantiene el mismo refreshToken
@@ -110,14 +110,14 @@ export class AuthService {
       // Retorna el mismo refreshToken
       return { accessToken, refreshToken };
     } catch (error) {
-      throw new UnauthorizedException('Token inválido o expirado');
+      throw new UnauthorizedException('Invalid or expired token');
     }
   }
 
   /// Cierra la sesión del usuario en un dispositivo específico y añade el refresh token a la blacklist
   async logout(userId: string, refreshToken: string): Promise<void> {
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token requerido');
+      throw new UnauthorizedException('Refresh token required');
     }
 
     try {
@@ -132,7 +132,7 @@ export class AuthService {
 
       await this.authRepo.saveBlacklistToken(blacklistToken);
     } catch (error) {
-      throw new UnauthorizedException('Error al procesar el refresh token');
+      throw new UnauthorizedException('Error processing the refresh token');
     }
   }
 
@@ -143,7 +143,7 @@ export class AuthService {
       user.tokenVersion++; // Incrementa tokenVersion para invalidar todos los tokens
       await this.usersService.saveUser(user);
     } catch (error) {
-      throw new UnauthorizedException('Error al revocar los tokens');
+      throw new UnauthorizedException('Error revoking tokens');
     }
   }
 
@@ -155,7 +155,7 @@ export class AuthService {
     // Verifica contraseña actual
     const isValid = await bcryptCompare(oldPassword, user.passwordHash);
     if (!isValid) {
-      throw new UnauthorizedException('Contraseña actual incorrecta');
+      throw new UnauthorizedException('Incorrect current password');
     }
 
     try {
@@ -167,7 +167,7 @@ export class AuthService {
       
       await this.usersService.saveUser(user);
     } catch (error) {
-      throw new UnauthorizedException('Error al cambiar la contraseña');
+      throw new UnauthorizedException('Error changing the password');
     }
   }
 
@@ -178,7 +178,7 @@ export class AuthService {
     
     // Por seguridad, no revelamos si el email existe o no
     if (!user) {
-      return 'Si el email existe, recibirás un código de recuperación';
+      return 'If the email exists, you will receive a recovery code';
     }
 
     // Invalida tokens anteriores del usuario
@@ -202,7 +202,7 @@ export class AuthService {
 
     await this.authRepo.savePasswordResetToken(resetToken);
 
-    return 'Si el email existe, recibirás un código de recuperación';
+    return 'If the email exists, you will receive a recovery code';
   }
 
   /// Valida el código de recuperación y cambia la contraseña
@@ -210,14 +210,14 @@ export class AuthService {
     // Obtiene usuario por su email
     const user = await this.usersService.findUserByEmail(email);
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
+      throw new NotFoundException('User not found');
     }
 
     // Busca el token de recuperación comprobando que sea válido (isUsed: false, expiresAt > now)
     const resetToken = await this.authRepo.findPasswordResetToken(token, user.userId);
     if (!resetToken) {
       await this.incrementPasswordResetAttempts(user.userId);
-      throw new UnauthorizedException('Código inválido o expirado');
+      throw new UnauthorizedException('Invalid or expired code');
     }
 
     // Cambia la contraseña
@@ -245,7 +245,7 @@ export class AuthService {
       
       await this.usersService.saveUser(user);
     } catch (error) {
-      throw new UnauthorizedException('Error al suspender el usuario');
+      throw new UnauthorizedException('Error suspending the user');
     }
   }
 
@@ -256,7 +256,7 @@ export class AuthService {
 
     // Verifica si el usuario está activo
     if (user.validTo && user.validTo < new Date()) {
-      throw new UnauthorizedException('Usuario desactivado');
+      throw new UnauthorizedException('User deactivated');
     }
 
     return user;
@@ -283,7 +283,7 @@ export class AuthService {
     if (resetToken != null && resetToken.attempts >= 5) {
       resetToken.isUsed = true; // Marca como usado para bloquearlo
       await this.authRepo.savePasswordResetToken(resetToken);
-      throw new UnauthorizedException('Demasiados intentos. Solicita un nuevo código');
+      throw new UnauthorizedException('Too many attempts. Please request a new code');
     }
 
     if (resetToken) {

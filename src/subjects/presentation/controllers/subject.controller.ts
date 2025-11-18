@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, ParseIntPipe, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse,} from '@nestjs/swagger';
 import { SubjectService } from '../../application/services/subject.service';
@@ -61,7 +61,7 @@ export class SubjectController {
   @ApiConflictResponse({ description: 'Ya existe una asignatura con este código' })
   @ApiBadRequestResponse({ description: 'Datos inválidos' })
   @Roles(RoleName.ADMIN)
-  @Patch('/update/:id')
+  @Patch(':id')
   async update(@Param('id', ParseIntPipe) id: number, @Body() requestDto: UpdateSubjectRequest): Promise<SubjectResponse> {
     const subject = await this.subjectService.update(id, requestDto);
     return SubjectMapper.toResponse(subject);
@@ -76,7 +76,7 @@ export class SubjectController {
   @ApiNotFoundResponse({ description: 'Asignatura no encontrada' })
   @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
   @Roles(RoleName.ADMIN)
-  @Patch('/deactivate/:id')
+  @Delete(':id')
   async softRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.subjectService.softRemove(id);
     return { message: 'Subject deactivated successfully' };

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, ParseIntPipe, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse,} from '@nestjs/swagger';
 import { AcademicYearService } from '../../application/services/academic-year.service';
@@ -61,7 +61,7 @@ export class AcademicYearController {
   @ApiNotFoundResponse({ description: 'Año académico no encontrado' })
   @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
   @Roles(RoleName.ADMIN)
-  @Patch(':id')
+  @Delete(':id')
   async softRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.academicYearService.softRemove(id);
     return { message: 'Academic year deactivated successfully' };

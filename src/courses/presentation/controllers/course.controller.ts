@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, ParseIntPipe, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse,} from '@nestjs/swagger';
 import { CourseService } from '../../application/services/course.service';
@@ -61,7 +61,7 @@ export class CourseController {
   @ApiConflictResponse({ description: 'Ya existe un curso con este código' })
   @ApiBadRequestResponse({ description: 'Datos inválidos o stage fuera de rango (1-4)' })
   @Roles(RoleName.ADMIN)
-  @Patch('/update/:id')
+  @Patch(':id')
   async update(@Param('id', ParseIntPipe) id: number, @Body() requestDto: UpdateCourseRequest): Promise<CourseResponse> {
     const course = await this.courseService.update(id, requestDto);
     return CourseMapper.toResponse(course);
@@ -76,7 +76,7 @@ export class CourseController {
   @ApiNotFoundResponse({ description: 'Curso no encontrado' })
   @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
   @Roles(RoleName.ADMIN)
-  @Patch('/deactivate/:id')
+  @Delete(':id')
   async softRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.courseService.softRemove(id);
     return { message: 'Course deactivated successfully' };

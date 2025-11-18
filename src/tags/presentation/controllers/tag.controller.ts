@@ -72,7 +72,7 @@ export class TagController {
   @ApiConflictResponse({ description: 'Ya existe un tag con el nuevo código' })
   @ApiBadRequestResponse({ description: 'Datos inválidos, raw_uid faltante para RFID o el parámetro id debe ser un entero' })
   @Roles(RoleName.ADMIN)
-  @Patch('/update/:id')
+  @Patch(':id')
   async updateTagCode(@Param('id', ParseIntPipe) id: number, @Body() requestDto: UpdateTagRequest): Promise<TagResponse> {
     const tag = await this.tagService.updateTagCode(id, requestDto);
     return TagMapper.toResponse(tag);
@@ -87,7 +87,7 @@ export class TagController {
   @ApiNotFoundResponse({ description: 'Tag no encontrado' })
   @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
   @Roles(RoleName.ADMIN)
-  @Delete('/deactivate/:id')
+  @Delete(':id')
   async softRemove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.tagService.softRemove(id);
     return { message: 'Tag deactivated successfully' };

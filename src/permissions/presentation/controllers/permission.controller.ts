@@ -32,6 +32,21 @@ export class PermissionController {
     return PermissionMapper.toResponseList(permissions);
   }
 
+  @ApiOperation({ 
+    summary: 'Obtiene las reservas activas del usuario autenticado',
+    description: 'Devuelve todas las reservas (event_schedule.type=RESERVATION) vigentes desde la fecha/hora actual'
+  })
+  @ApiOkResponse({ 
+    description: 'Lista de reservas activas del usuario',
+    type: [PermissionResponse] 
+  })
+  @Roles(RoleName.TEACHER)
+  @Get('my-reservations')
+  async findMyReservations(@CurrentUser() currentUser: any): Promise<PermissionResponse[]> {
+    const reservations = await this.permissionService.findMyActiveReservations(currentUser.userId);
+    return PermissionMapper.toResponseList(reservations);
+  }
+
   @ApiOperation({ summary: 'Obtiene un permiso por su clave compuesta' })
   @ApiParam({ name: 'userId', type: 'string', description: 'ID del usuario' })
   @ApiParam({ name: 'roomId', type: 'integer', description: 'ID del aula' })

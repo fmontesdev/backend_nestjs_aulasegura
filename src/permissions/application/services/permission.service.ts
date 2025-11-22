@@ -40,6 +40,12 @@ export class PermissionService {
     return await this.findPermissionOrFail(userId, roomId, scheduleId);
   }
 
+  /// Obtiene las reservas activas de un usuario (vigentes desde ahora)
+  async findMyActiveReservations(userId: string): Promise<PermissionEntity[]> {
+    const now = new Date();
+    return await this.permissionRepository.findActiveReservationsForUser(userId, now);
+  }
+
   /// Crea los permisos para un horario semanal
   async createWeeklySchedule(createDto: CreateWeeklySchedulePermissionDto): Promise<PermissionEntity> {
     // Valida que el usuario existe

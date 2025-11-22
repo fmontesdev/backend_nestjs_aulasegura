@@ -24,6 +24,7 @@ export abstract class PermissionRepository {
     currentDate: Date,
   ): Promise<PermissionEntity | null>;
   abstract findOccupiedRooms(dto: FindOccupiedRoomsDto): Promise<number[]>;
+  abstract findActiveReservationsForUser(userId: string, now: Date): Promise<PermissionEntity[]>;
   abstract save(permission: PermissionEntity): Promise<PermissionEntity>;
   abstract updatePrimaryKeys(
     oldUserId: string,

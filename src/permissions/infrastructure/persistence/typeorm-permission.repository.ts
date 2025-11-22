@@ -202,6 +202,24 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     return uniqueRoomIds;
   }
 
+  async findActiveReservationsForUser(userId: string, now: Date): Promise<PermissionEntity[]> {
+    return await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.eventSchedule', 'eventSchedule')
+      .innerJoinAndSelect('schedule.academicYear', 'academicYear')
+      .innerJoinAndSelect('permission.user', 'user')
+      .innerJoinAndSelect('permission.room', 'room')
+      .where('permission.userId = :userId', { userId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.EVENT })
+      .andWhere('eventSchedule.type = :eventType', { eventType: 'reservation' })
+      .andWhere('eventSchedule.endAt >= :now', { now })
+      .orderBy('eventSchedule.startAt', 'ASC')
+      .getMany();
+  }
+
   async hardRemove(userId: string, roomId: number, scheduleId: number): Promise<void> {
     await this.permissionRepo.delete({ userId, roomId, scheduleId });
   }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PermissionRepository } from '../../domain/repositories/permission.repository';
 import { PermissionEntity } from '../../domain/entities/permission.entity';
 import { CreateWeeklySchedulePermissionDto } from '../dto/create-weekly-schedule-permission.dto';
@@ -7,20 +7,23 @@ import { CreateEventSchedulePermissionDto } from '../dto/create-event-schedule-p
 import { ValidateWeeklySchedulePermissionOverlapDto } from '../dto/validate-weekly-schedule-permission-overlap.dto';
 import { ValidateWeeklyScheduleOverlapDto } from '../dto/validate-weekly-schedule-overlap.dto';
 import { ValidateEventScheduleOverlapDto } from '../dto/validate-event-schedule-overlap.dto';
+import { FindAvailableRoomsDto } from '../../../rooms/application/dto/find-available-rooms.dto';
+import { FindOccupiedRoomsDto } from '../dto/find-occupied-rooms.dto';
 import { UsersService } from '../../../users/application/services/users.service';
 import { RoomService } from '../../../rooms/application/services/room.service';
 import { AcademicYearService } from '../../../academic-years/application/services/academic-year.service';
 import { EventScheduleService } from '../../../schedules/application/services/event-schedule.service';
 import { ScheduleService } from '../../../schedules/application/services/schedule.service';
-import { EventScheduleType } from 'src/schedules/domain/enums/event-schedule-type.enum';
-import { EventStatus } from 'src/schedules/domain/enums/event-status.enum';
-import { ScheduleType } from 'src/schedules/domain/enums/schedule-type.enum';
+import { EventScheduleType } from '../../../schedules/domain/enums/event-schedule-type.enum';
+import { EventStatus } from '../../../schedules/domain/enums/event-status.enum';
+import { ScheduleType } from '../../../schedules/domain/enums/schedule-type.enum';
 
 @Injectable()
 export class PermissionService {
   constructor(
     private readonly permissionRepository: PermissionRepository,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => RoomService))
     private readonly roomService: RoomService,
     private readonly academicYearService: AcademicYearService,
     private readonly eventScheduleService: EventScheduleService,
@@ -261,6 +264,25 @@ export class PermissionService {
     if (eventPermission != null) return eventPermission;
 
     return null;
+  }
+
+  /// Obtiene los IDs de las aulas ocupadas en una fecha y horario específico
+  async findOccupiedRooms(availableDto: FindAvailableRoomsDto): Promise<number[]> {
+    // Obtiene año académico activo
+    const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
+
+    // Calcula el día de la semana (1=Lunes, 7=Domingo)
+    const dayOfWeek = availableDto.date.getDay() === 0 ? 7 : availableDto.date.getDay();
+
+    const ocuppiedDto: FindOccupiedRoomsDto = {
+      academicYearId: activeAcademicYear.academicYearId,
+      date: availableDto.date,
+      startAt: availableDto.startAt,
+      endAt: availableDto.endAt,
+      dayOfWeek: dayOfWeek,
+    };
+
+    return await this.permissionRepository.findOccupiedRooms(ocuppiedDto);
   }
 
   //? ================= Métodos auxiliares =================

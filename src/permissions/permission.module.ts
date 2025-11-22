@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PermissionEntity } from './domain/entities/permission.entity';
 import { ScheduleEntity } from '../schedules/domain/entities/schedule.entity';
@@ -11,13 +11,13 @@ import { PermissionController } from './presentation/controllers/permission.cont
 import { UsersModule } from '../users/users.module';
 import { RoomModule } from '../rooms/room.module';
 import { AcademicYearModule } from '../academic-years/academic-year.module';
-import { ScheduleModule } from 'src/schedules/schedule.module';
+import { ScheduleModule } from '../schedules/schedule.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([PermissionEntity, ScheduleEntity, WeeklyScheduleEntity, EventScheduleEntity]),
     UsersModule,
-    RoomModule,
+    forwardRef(() => RoomModule),
     AcademicYearModule,
     ScheduleModule,
   ],

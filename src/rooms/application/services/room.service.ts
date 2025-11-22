@@ -3,14 +3,17 @@ import { RoomEntity } from '../../domain/entities/room.entity';
 import { RoomRepository } from '../../domain/repositories/room.repository';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { UpdateRoomDto } from '../dto/update-room.dto';
+import { FindAvailableRoomsDto } from '../dto/find-available-rooms.dto';
 import { CourseService } from '../../../courses/application/services/course.service';
-import { CourseEntity } from 'src/courses/domain/entities/course.entity';
+import { PermissionService } from '../../../permissions/application/services/permission.service';
+import { CourseEntity } from '../../../courses/domain/entities/course.entity';
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly roomRepository: RoomRepository,
     private readonly courseService: CourseService,
+    private readonly permissionService: PermissionService,
   ) {}
 
   /// Busca todas las aulas activas
@@ -100,6 +103,20 @@ export class RoomService {
     // Verifica que el aula existe antes de eliminar
     await this.findRoomByIdOrFail(roomId);
     await this.roomRepository.delete(roomId);
+  }
+
+  /// Busca aulas disponibles en una fecha y horario específico
+  async findAvailableRooms(findDto: FindAvailableRoomsDto): Promise<RoomEntity[]> {
+    // Obtener todas las aulas activas
+    const allRooms = await this.roomRepository.findAll();
+
+    // Obtener las aulas ocupadas en el horario especificado
+    const occupiedRoomIds = await this.permissionService.findOccupiedRooms(findDto);
+
+    // Filtrar las aulas disponibles (las que NO están ocupadas)
+    const availableRooms = allRooms.filter(room => !occupiedRoomIds.includes(room.roomId));
+
+    return availableRooms;
   }
 
   //? ================= Métodos auxiliares =================

@@ -6,11 +6,13 @@ import { TypeOrmRoomRepository } from './infrastructure/persistence/typeorm/type
 import { RoomService } from './application/services/room.service';
 import { RoomController } from './presentation/controllers/room.controller';
 import { CourseModule } from '../courses/course.module';
+import { PermissionModule } from '../permissions/permission.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([RoomEntity]),
     forwardRef(() => CourseModule),
+    forwardRef(() => PermissionModule),
   ],
   controllers: [RoomController],
   providers: [

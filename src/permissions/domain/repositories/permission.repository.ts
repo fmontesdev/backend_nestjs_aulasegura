@@ -1,7 +1,8 @@
 import { PermissionEntity } from '../entities/permission.entity';
-import { ValidateWeeklySchedulePermissionOverlapDto } from 'src/permissions/application/dto/validate-weekly-schedule-permission-overlap.dto';
-import { ValidateWeeklyScheduleOverlapDto } from 'src/permissions/application/dto/validate-weekly-schedule-overlap.dto';
-import { ValidateEventScheduleOverlapDto } from 'src/permissions/application/dto/validate-event-schedule-overlap.dto';
+import { ValidateWeeklySchedulePermissionOverlapDto } from '../../../permissions/application/dto/validate-weekly-schedule-permission-overlap.dto';
+import { ValidateWeeklyScheduleOverlapDto } from '../../../permissions/application/dto/validate-weekly-schedule-overlap.dto';
+import { ValidateEventScheduleOverlapDto } from '../../../permissions/application/dto/validate-event-schedule-overlap.dto';
+import { FindOccupiedRoomsDto } from '../../../permissions/application/dto/find-occupied-rooms.dto';
 
 export abstract class PermissionRepository {
   abstract findAll(): Promise<PermissionEntity[]>;
@@ -22,6 +23,7 @@ export abstract class PermissionRepository {
     academicYearId: number,
     currentDate: Date,
   ): Promise<PermissionEntity | null>;
+  abstract findOccupiedRooms(dto: FindOccupiedRoomsDto): Promise<number[]>;
   abstract save(permission: PermissionEntity): Promise<PermissionEntity>;
   abstract updatePrimaryKeys(
     oldUserId: string,

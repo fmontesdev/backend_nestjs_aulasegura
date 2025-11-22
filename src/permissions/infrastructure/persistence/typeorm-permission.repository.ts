@@ -7,6 +7,7 @@ import { ScheduleType } from '../../../schedules/domain/enums/schedule-type.enum
 import { ValidateWeeklySchedulePermissionOverlapDto } from '../../application/dto/validate-weekly-schedule-permission-overlap.dto';
 import { ValidateWeeklyScheduleOverlapDto } from '../../application/dto/validate-weekly-schedule-overlap.dto';
 import { ValidateEventScheduleOverlapDto } from '../../application/dto/validate-event-schedule-overlap.dto';
+import { FindOccupiedRoomsDto } from '../../application/dto/find-occupied-rooms.dto';
 
 @Injectable()
 export class TypeOrmPermissionRepository implements PermissionRepository {
@@ -156,6 +157,49 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async findOccupiedRooms(dto: FindOccupiedRoomsDto): Promise<number[]> {
+    // Buscar aulas ocupadas por horarios semanales
+    const weeklyOccupied = await this.permissionRepo
+      .createQueryBuilder('permission')
+      .select('DISTINCT permission.roomId', 'roomId')
+      .innerJoin('permission.schedule', 'schedule')
+      .innerJoin('schedule.weeklySchedule', 'weeklySchedule')
+      .where('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.WEEKLY })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId: dto.academicYearId })
+      .andWhere('weeklySchedule.dayOfWeek = :dayOfWeek', { dayOfWeek: dto.dayOfWeek })
+      // Validación de solapamiento horario: (start1 < end2) AND (start2 < end1)
+      .andWhere('weeklySchedule.startTime < :endTime', { endTime: dto.endAt })
+      .andWhere(':startTime < weeklySchedule.endTime', { startTime: dto.startAt })
+      .getRawMany(); // Devuelve objetos planos solo con lo seleccionado en .select()
+
+    // Buscar aulas ocupadas por eventos
+    const eventOccupied = await this.permissionRepo
+      .createQueryBuilder('permission')
+      .select('DISTINCT permission.roomId', 'roomId')
+      .innerJoin('permission.schedule', 'schedule')
+      .innerJoin('schedule.eventSchedule', 'eventSchedule')
+      .where('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.EVENT })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId: dto.academicYearId })
+      // Crear rangos de fecha/hora para el día solicitado
+      .andWhere('eventSchedule.startAt < :endAt', { 
+        endAt: new Date(`${dto.date.toISOString().split('T')[0]}T${dto.endAt}:00`) 
+      })
+      .andWhere(':startAt < eventSchedule.endAt', { 
+        startAt: new Date(`${dto.date.toISOString().split('T')[0]}T${dto.startAt}:00`) 
+      })
+      .getRawMany(); // Devuelve objetos planos solo con lo seleccionado en .select()
+
+    // Combinar y eliminar duplicados
+    const allOccupied = [...weeklyOccupied, ...eventOccupied];
+    const uniqueRoomIds = [...new Set(allOccupied.map(item => parseInt(item.roomId)))];
+    
+    return uniqueRoomIds;
   }
 
   async hardRemove(userId: string, roomId: number, scheduleId: number): Promise<void> {

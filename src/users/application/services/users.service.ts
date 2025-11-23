@@ -1,16 +1,21 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { UsersRepository } from '../../domain/repositories/users.repository';
 import { UserEntity } from '../../domain/entities/user.entity';
 import { TeacherEntity } from '../../domain/entities/teacher.entity';
 import { RoleName } from '../../domain/enums/rolename.enum';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { UploadAvatarDto } from '../dto/upload-avatar.dto';
 import { hash as bcryptHash } from '@node-rs/bcrypt';
+import { unlink } from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepo: UsersRepository,
+    private readonly configService: ConfigService,
   ) {}
 
   /// Obtiene todos los usuarios
@@ -108,6 +113,57 @@ export class UsersService {
         );
       }
       throw new BadRequestException('Could not delete the user');
+    }
+  }
+
+  /// Sube el avatar de un usuario
+  async uploadAvatar(userId: string, file: Express.Multer.File, dto: UploadAvatarDto): Promise<UserEntity> {
+    // Verifica que el usuario exista
+    const user = await this.findUserByIdOrFail(userId);
+
+    const imagesPath = this.configService.get<string>('IMAGES_PATH', '/app/images');
+
+    try {
+      // Eliminar avatar anterior si existe
+      if (user.avatar) {
+        const oldAvatarPath = join(imagesPath, user.avatar);
+        try {
+          // Elimina el archivo antiguo del sistema de archivos
+          await unlink(oldAvatarPath);
+        } catch (error) {
+          // Ignorar si el archivo no existe
+          console.warn(`Could not delete old avatar: ${oldAvatarPath}`);
+        }
+      }
+
+      // Renombrar el archivo temporal al nombre deseado
+      const tempPath = file.path;  // app/images/temp_1234567890.jpg
+      const finalPath = join(imagesPath, dto.filename);  // app/images/avatar_123.jpg
+      
+      // Usar rename para mover/renombrar el archivo
+      const { rename } = await import('fs/promises');
+      await rename(tempPath, finalPath);
+
+      // Actualizar en BD el avatar del usuario con el nombre final
+      user.avatar = dto.filename;
+      const updatedUser = await this.saveUser(user);
+
+      return updatedUser;
+    } catch (error) {
+      // Si algo falla, eliminar el archivo subido (puede ser temporal o ya renombrado)
+      try {
+        await unlink(file.path);
+      } catch (e) {
+        // Si el temporal ya fue renombrado, intentar eliminar el archivo final
+        try {
+          const finalPath = join(imagesPath, dto.filename);
+          await unlink(finalPath);
+        } catch (e2) {
+          // Ignorar errores al eliminar
+        }
+      }
+
+      throw new InternalServerErrorException('Failed to upload avatar');
     }
   }
 

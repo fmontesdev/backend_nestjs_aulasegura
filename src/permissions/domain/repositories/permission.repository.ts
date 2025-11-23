@@ -7,6 +7,8 @@ import { FindOccupiedRoomsDto } from '../../../permissions/application/dto/find-
 export abstract class PermissionRepository {
   abstract findAll(): Promise<PermissionEntity[]>;
   abstract findOne(userId: string, roomId: number, scheduleId: number): Promise<PermissionEntity | null>;
+  abstract findActiveWeeklySchedulesForUser(userId: string, academicYearId: number): Promise<PermissionEntity[]>;
+  abstract findActiveReservationsForUser(userId: string, now: Date): Promise<PermissionEntity[]>;
   abstract findWeeklySchedulePermissionOverlappingForRoom(overlapDto: ValidateWeeklySchedulePermissionOverlapDto): Promise<PermissionEntity[]>;
   abstract findWeeklyScheduleOverlappingForRoom(overlapDto: ValidateWeeklyScheduleOverlapDto): Promise<PermissionEntity[]>;
   abstract findEventScheduleOverlappingForRoom(overlapDto: ValidateEventScheduleOverlapDto): Promise<PermissionEntity[]>;
@@ -24,7 +26,6 @@ export abstract class PermissionRepository {
     currentDate: Date,
   ): Promise<PermissionEntity | null>;
   abstract findOccupiedRooms(dto: FindOccupiedRoomsDto): Promise<number[]>;
-  abstract findActiveReservationsForUser(userId: string, now: Date): Promise<PermissionEntity[]>;
   abstract save(permission: PermissionEntity): Promise<PermissionEntity>;
   abstract updatePrimaryKeys(
     oldUserId: string,

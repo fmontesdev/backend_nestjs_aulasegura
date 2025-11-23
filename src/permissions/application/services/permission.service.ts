@@ -46,6 +46,14 @@ export class PermissionService {
     return await this.permissionRepository.findActiveReservationsForUser(userId, now);
   }
 
+  /// Obtiene los horarios semanales activos de un usuario
+  async findMyWeeklySchedules(userId: string): Promise<PermissionEntity[]> {
+    // Obtener el año académico activo
+    const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
+    
+    return await this.permissionRepository.findActiveWeeklySchedulesForUser(userId, activeAcademicYear.academicYearId);
+  }
+
   /// Crea los permisos para un horario semanal
   async createWeeklySchedule(createDto: CreateWeeklySchedulePermissionDto): Promise<PermissionEntity> {
     // Valida que el usuario existe

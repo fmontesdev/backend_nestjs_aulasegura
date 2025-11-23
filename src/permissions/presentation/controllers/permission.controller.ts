@@ -47,6 +47,20 @@ export class PermissionController {
     return PermissionMapper.toResponseList(reservations);
   }
 
+  @ApiOperation({ 
+    summary: 'Obtiene los horarios semanales activos del usuario autenticado',
+    description: 'Devuelve todos los horarios semanales del año académico activo para el usuario autenticado'
+  })
+  @ApiOkResponse({ 
+    description: 'Lista de horarios semanales del usuario',
+    type: [PermissionResponse] 
+  })
+  @Get('my-weekly-schedules')
+  async findMyWeeklySchedules(@CurrentUser() currentUser: any): Promise<PermissionResponse[]> {
+    const weeklySchedules = await this.permissionService.findMyWeeklySchedules(currentUser.userId);
+    return PermissionMapper.toResponseList(weeklySchedules);
+  }
+
   @ApiOperation({ summary: 'Obtiene un permiso por su clave compuesta' })
   @ApiParam({ name: 'userId', type: 'string', description: 'ID del usuario' })
   @ApiParam({ name: 'roomId', type: 'integer', description: 'ID del aula' })

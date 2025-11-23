@@ -113,8 +113,10 @@ export class RoomService {
     // Obtener las aulas ocupadas en el horario especificado
     const occupiedRoomIds = await this.permissionService.findOccupiedRooms(findDto);
 
-    // Filtrar las aulas disponibles (las que NO están ocupadas)
-    const availableRooms = allRooms.filter(room => !occupiedRoomIds.includes(room.roomId));
+    // Filtrar las aulas disponibles (las que NO están ocupadas y tienen capacidad mayor a 0)
+    const availableRooms = allRooms.filter(room => 
+      !occupiedRoomIds.includes(room.roomId) && room.capacity > 0
+    );
 
     return availableRooms;
   }

@@ -31,6 +31,45 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     });
   }
 
+  /// Busca horarios semanales activos para un usuario
+  async findActiveWeeklySchedulesForUser(userId: string, academicYearId: number): Promise<PermissionEntity[]> {
+    return await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.weeklySchedule', 'weeklySchedule')
+      .innerJoinAndSelect('schedule.academicYear', 'academicYear')
+      .innerJoinAndSelect('permission.user', 'user')
+      .innerJoinAndSelect('permission.room', 'room')
+      .where('permission.userId = :userId', { userId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.WEEKLY })
+      .andWhere('schedule.academicYearId = :academicYearId', { academicYearId })
+      .orderBy('weeklySchedule.dayOfWeek', 'ASC')
+      .addOrderBy('weeklySchedule.startTime', 'ASC')
+      .getMany();
+  }
+
+  /// Busca reservas activas para un usuario
+  async findActiveReservationsForUser(userId: string, now: Date): Promise<PermissionEntity[]> {
+    return await this.permissionRepo
+      .createQueryBuilder('permission')
+      .innerJoinAndSelect('permission.schedule', 'schedule')
+      .innerJoinAndSelect('schedule.eventSchedule', 'eventSchedule')
+      .innerJoinAndSelect('schedule.academicYear', 'academicYear')
+      .innerJoinAndSelect('permission.user', 'user')
+      .innerJoinAndSelect('permission.room', 'room')
+      .where('permission.userId = :userId', { userId })
+      .andWhere('permission.isActive = :isActive', { isActive: true })
+      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
+      .andWhere('schedule.type = :type', { type: ScheduleType.EVENT })
+      .andWhere('eventSchedule.type = :eventType', { eventType: 'reservation' })
+      .andWhere('eventSchedule.endAt >= :now', { now })
+      .orderBy('eventSchedule.startAt', 'ASC')
+      .getMany();
+  }
+
+  /// Busca permisos de horario semanal que solapen para un aula dada
   async findWeeklySchedulePermissionOverlappingForRoom(overlapDto: ValidateWeeklySchedulePermissionOverlapDto): Promise<PermissionEntity[]> {
     return await this.permissionRepo
       .createQueryBuilder('permission')
@@ -45,6 +84,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .getMany();
   }
 
+  /// Busca horarios semanales que solapen para un aula dada
   async findWeeklyScheduleOverlappingForRoom(overlapDto: ValidateWeeklyScheduleOverlapDto): Promise<PermissionEntity[]> {
     return await this.permissionRepo
       .createQueryBuilder('permission')
@@ -62,6 +102,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .getMany();
   }
 
+  /// Busca horarios de evento que solapen para un aula dada
   async findEventScheduleOverlappingForRoom(overlapDto: ValidateEventScheduleOverlapDto): Promise<PermissionEntity[]> {
     return await this.permissionRepo
       .createQueryBuilder('permission')
@@ -78,6 +119,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .getMany();
   }
 
+  /// Busca un permiso semanal activo
   async findActiveWeeklyPermissionForUserAtCurrentTime(
     userId: string,
     roomId: number,
@@ -106,6 +148,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     return result.length > 0 ? result[0] : null;
   }
 
+  /// Busca un permiso de evento activo
   async findActiveEventPermissionForUserAtCurrentTime(
     userId: string,
     roomId: number,
@@ -136,6 +179,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     return await this.permissionRepo.save(permission);
   }
 
+  /// Actualiza las claves primarias de un permiso
   async updatePrimaryKeys(oldUserId: string, oldRoomId: number, oldScheduleId: number, newUserId: string, newRoomId: number, newScheduleId: number): Promise<void> {
     // Usar queryRunner para transacción manual porque TypeORM no puede actualizar PKs directamente
     const queryRunner = this.permissionRepo.manager.connection.createQueryRunner();
@@ -159,6 +203,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     }
   }
 
+  /// Busca aulas ocupadas en un horario específico
   async findOccupiedRooms(dto: FindOccupiedRoomsDto): Promise<number[]> {
     // Buscar aulas ocupadas por horarios semanales
     const weeklyOccupied = await this.permissionRepo
@@ -200,24 +245,6 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
     const uniqueRoomIds = [...new Set(allOccupied.map(item => parseInt(item.roomId)))];
     
     return uniqueRoomIds;
-  }
-
-  async findActiveReservationsForUser(userId: string, now: Date): Promise<PermissionEntity[]> {
-    return await this.permissionRepo
-      .createQueryBuilder('permission')
-      .innerJoinAndSelect('permission.schedule', 'schedule')
-      .innerJoinAndSelect('schedule.eventSchedule', 'eventSchedule')
-      .innerJoinAndSelect('schedule.academicYear', 'academicYear')
-      .innerJoinAndSelect('permission.user', 'user')
-      .innerJoinAndSelect('permission.room', 'room')
-      .where('permission.userId = :userId', { userId })
-      .andWhere('permission.isActive = :isActive', { isActive: true })
-      .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
-      .andWhere('schedule.type = :type', { type: ScheduleType.EVENT })
-      .andWhere('eventSchedule.type = :eventType', { eventType: 'reservation' })
-      .andWhere('eventSchedule.endAt >= :now', { now })
-      .orderBy('eventSchedule.startAt', 'ASC')
-      .getMany();
   }
 
   async hardRemove(userId: string, roomId: number, scheduleId: number): Promise<void> {

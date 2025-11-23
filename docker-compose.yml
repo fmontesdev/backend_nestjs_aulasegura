@@ -19,6 +19,7 @@ services:
     command: pm2-runtime start pm2.json
     volumes:
       - .:/web
+      - ./imageserver/images:/app/images
     networks:
       - aulasegura-network
 
@@ -54,6 +55,18 @@ services:
       BLOWFISH_SECRET: "quelafuerzateacompañe"    # opcional, clave de cifrado para asegurar las cookies de autenticación
     ports:
       - "8081:80"                             
+    networks:
+      - aulasegura-network
+
+  imageserver:
+    image: nginx:1.29.3-alpine
+    container_name: aulasegura-nginx-images
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    volumes:
+      - ./imageserver/images:/srv/images:ro
+      - ./imageserver/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - aulasegura-network
 

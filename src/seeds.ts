@@ -1,10 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { runSeeders, SeederOptions } from 'typeorm-extension';
 import { UserEntity } from './users/domain/entities/user.entity';
-import { UserSeeder } from './db/seeding/seeds/user.seeder';
 import { TeacherEntity } from './users/domain/entities/teacher.entity';
 import { RoleEntity } from './users/domain/entities/role.entity';
-import { RoleSeeder } from './db/seeding/seeds/role.seeder';
 import { BlacklistTokenEntity } from './auth/domain/entities/blacklist-token.entity';
 import { PasswordResetTokenEntity } from './auth/domain/entities/password-reset-token.entity';
 import { TagEntity } from './tags/domain/entities/tag.entity';
@@ -18,14 +15,33 @@ import { WeeklyScheduleEntity } from './schedules/domain/entities/weekly-schedul
 import { AcademicYearEntity } from './academic-years/domain/entities/academic-year.entity';
 import { CourseEntity } from './courses/domain/entities/course.entity';
 import { DepartmentEntity } from './departments/domain/entities/department.entity';
-import { DepartmentSeeder } from './db/seeding/seeds/department.seeder';
 import { SubjectEntity } from './subjects/domain/entities/subject.entity';
 import { ReaderEntity } from './readers/domain/entities/reader.entity';
 import { config } from 'dotenv';
 
+// Importar seeders
+import { seedRoles } from './db/seeding/seeds/01-role.seeder';
+import { seedDepartments } from './db/seeding/seeds/02-department.seeder';
+import { seedAcademicYears } from './db/seeding/seeds/02b-academic-year.seeder';
+import { seedCourses } from './db/seeding/seeds/03-course.seeder';
+import { seedUsers } from './db/seeding/seeds/04-user.seeder';
+import { seedRoleUsers } from './db/seeding/seeds/05-role-user.seeder';
+import { seedRooms } from './db/seeding/seeds/06-room.seeder';
+import { seedAcademicYearCourse } from './db/seeding/seeds/07-academic-year-course.seeder';
+import { seedSubjects } from './db/seeding/seeds/07b-subject.seeder';
+import { seedCourseSubject } from './db/seeding/seeds/08-course-subject.seeder';
+import { seedTeacher } from './db/seeding/seeds/09-teacher.seeder';
+import { seedTeacherSubject } from './db/seeding/seeds/10-teacher-subject.seeder';
+import { seedReaders } from './db/seeding/seeds/11-reader.seeder';
+import { seedTags } from './db/seeding/seeds/12-tag.seeder';
+import { seedSchedules } from './db/seeding/seeds/13-schedule.seeder';
+import { seedWeeklySchedules } from './db/seeding/seeds/14-weekly-schedule.seeder';
+import { seedEventSchedules } from './db/seeding/seeds/15-event-schedule.seeder';
+import { seedPermissions } from './db/seeding/seeds/16-permission.seeder';
+
 config();
 
-const options: DataSourceOptions & SeederOptions = {
+const options: DataSourceOptions = {
   type: 'mariadb',
   host: 'localhost',
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
@@ -51,13 +67,9 @@ const options: DataSourceOptions & SeederOptions = {
     CourseEntity,
     DepartmentEntity,
     SubjectEntity,
-    ReaderEntity
+    ReaderEntity,
   ],
-  seeds: [
-    RoleSeeder,
-    DepartmentSeeder,
-    UserSeeder
-  ],
+  synchronize: true, // Auto-create tables in development
 };
 
 const dataSource = new DataSource(options);
@@ -65,10 +77,70 @@ const dataSource = new DataSource(options);
 dataSource
   .initialize()
   .then(async () => {
-    console.log('Data source initialized. Running seeders...');
-    await dataSource.synchronize(true);
-    await runSeeders(dataSource);
-    console.log('Seeders executed successfully!');
-    process.exit();
+    console.log('Data source initialized. Running seeders...\n');
+    
+    // 1. Tablas base (sin dependencias)
+    console.log('Seeding base tables...');
+    await seedRoles(dataSource);
+    await seedAcademicYears(dataSource);
+    await seedDepartments(dataSource);
+    await seedCourses(dataSource);
+    
+    // 2. Usuarios y relaciones
+    console.log('\nSeeding users...');
+    await seedUsers(dataSource);
+    await seedRoleUsers(dataSource);
+    
+    // 3. Asignaturas y relaciones
+    console.log('\nSeeding subjects...');
+    await seedSubjects(dataSource);
+    await seedCourseSubject(dataSource);
+    await seedAcademicYearCourse(dataSource);
+    
+    // 4. Teachers y asignaciones
+    console.log('\nSeeding teachers...');
+    await seedTeacher(dataSource);
+    await seedTeacherSubject(dataSource);
+    
+    // 5. Infraestructura
+    console.log('\nSeeding infrastructure...');
+    await seedRooms(dataSource);
+    await seedReaders(dataSource);
+    await seedTags(dataSource);
+    
+    // 6. Horarios
+    console.log('\nSeeding schedules...');
+    await seedSchedules(dataSource);
+    await seedWeeklySchedules(dataSource);
+    await seedEventSchedules(dataSource);
+    
+    // 7. Permisos (dependen de todo lo anterior)
+    console.log('\nSeeding permissions...');
+    await seedPermissions(dataSource);
+
+    console.log('\nAll seeders executed successfully!');
+    console.log('\nSummary:');
+    console.log('   - 4 Roles');
+    console.log('   - 3 Academic Years');
+    console.log('   - 21 Departments');
+    console.log('   - 26 Courses');
+    console.log('   - 5 Users');
+    console.log('   - 193 Subjects');
+    console.log('   - 221 Course-Subject relations');
+    console.log('   - 75 Academic Year-Course relations');
+    console.log('   - 2 Teachers');
+    console.log('   - 10 Teacher-Subject assignments');
+    console.log('   - 46 Rooms');
+    console.log('   - 46 Readers');
+    console.log('   - 10 Tags');
+    console.log('   - 76 Schedules (70 weekly + 6 events)');
+    console.log('   - 70 Weekly time slots');
+    console.log('   - 6 Event schedules');
+    console.log('   - 47 Permissions');
+    
+    process.exit(0);
   })
-  .catch((error) => console.log('Error initializing data source', error));
+  .catch((error) => {
+    console.error('Error initializing data source:', error);
+    process.exit(1);
+  });

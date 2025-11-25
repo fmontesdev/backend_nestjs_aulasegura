@@ -139,6 +139,13 @@ JWT_SECRET=tu_secreto_jwt_muy_seguro
 JWT_EXPIRATION=1h
 JWT_REFRESH_SECRET=tu_secreto_refresh_jwt
 JWT_REFRESH_EXPIRATION=7d
+
+# Tag Configuration (RFID/NFC)
+TAG_PEPPER=tu_clave_secreta_para_encriptacion_en_db
+
+# Image Server Configuration (Nginx)
+IMAGES_PATH=/app/images
+IMAGES_BASE_URL=http://localhost:8090
 ```
 
 ### 3. Levantar servicios con Docker Compose

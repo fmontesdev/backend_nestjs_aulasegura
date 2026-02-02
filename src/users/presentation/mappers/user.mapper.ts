@@ -13,6 +13,7 @@ export class UserMapper {
       validFrom: user.validFrom,
       validTo: user.validTo ?? null,
       createdAt: user.createdAt,
+      department: user.teacher?.department ?? null,
     };
   }
 

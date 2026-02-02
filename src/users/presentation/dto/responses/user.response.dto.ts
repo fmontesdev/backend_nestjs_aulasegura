@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RoleName } from '../../../domain/enums/rolename.enum';
+import { DepartmentEntity } from 'src/departments/domain/entities/department.entity';
 
 export class UserResponse {
   @ApiProperty({
@@ -53,4 +54,11 @@ export class UserResponse {
     format: 'date-time',
   })
   createdAt!: Date;
+
+  @ApiPropertyOptional({
+    description: 'Departamento al que pertenece el usuario (solo para teachers)',
+    type: () => DepartmentEntity,
+    nullable: true,
+  })
+  department!: DepartmentEntity | null;
 }

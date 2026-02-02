@@ -108,15 +108,16 @@ export class UsersService {
     // Guardar usuario
     await this.saveUser(user);
 
-    // Si se proporciona departmentId y el usuario es teacher, actualizar el departamento
-    if (dto.departmentId !== undefined && user.roles?.some(role => role.name === RoleName.TEACHER)) {
-      // Recupera el teacher asociado
-      const teacher = await this.usersRepo.findTeacherByUserId(userId);
+    // Gestionar registro de teacher según los roles
+    const isTeacher = user.roles?.some(role => role.name === RoleName.TEACHER);
+    const teacher = await this.usersRepo.findTeacherByUserId(userId);
 
-      if (teacher) {
-        teacher.departmentId = dto.departmentId;
-        await this.usersRepo.saveTeacher(teacher);
-      }
+    if (isTeacher && dto.departmentId !== undefined) {
+      // Usuario es teacher y se proporciona departmentId: actualizar o crear
+      await this.updateOrCreateTeacherDepartment(userId, dto.departmentId);
+    } else if (!isTeacher && teacher) {
+      // Usuario ya no es teacher pero tiene registro: eliminar
+      await this.usersRepo.deleteTeacher(userId);
     }
 
     // Recarga y retorna usuario con relaciones actualizadas
@@ -248,6 +249,23 @@ export class UsersService {
     if (roleNames.includes(RoleName.TEACHER) && !departmentId) {
       throw new BadRequestException('The departmentId is required for teachers');
     }
+  }
+
+  //? Actualiza o crea el registro de teacher con el departmentId
+  private async updateOrCreateTeacherDepartment(userId: string, departmentId: number): Promise<void> {
+    let teacher = await this.usersRepo.findTeacherByUserId(userId);
+
+    if (teacher) {
+      // Actualizar departamento existente
+      teacher.departmentId = departmentId;
+    } else {
+      // Crear nuevo registro de teacher
+      teacher = new TeacherEntity();
+      teacher.userId = userId;
+      teacher.departmentId = departmentId;
+    }
+
+    await this.usersRepo.saveTeacher(teacher);
   }
 
   //? Hash de contraseña con bcrypt

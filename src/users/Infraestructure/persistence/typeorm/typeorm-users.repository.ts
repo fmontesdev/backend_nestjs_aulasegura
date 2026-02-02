@@ -54,6 +54,10 @@ export class TypeormUsersRepository implements UsersRepository {
     await this.userRepo.delete(userId);
   }
 
+  async deleteTeacher(userId: string): Promise<void> {
+    await this.teacherRepo.delete({ userId });
+  }
+
   async existsById(userId: string): Promise<boolean> {
     const count = await this.userRepo.count({ where: { userId } });
     return count > 0;

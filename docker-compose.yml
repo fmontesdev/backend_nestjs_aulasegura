@@ -54,7 +54,7 @@ services:
       UPLOAD_LIMIT: 256M                          # opcional, límite de subida de archivos .sql
       BLOWFISH_SECRET: "quelafuerzateacompañe"    # opcional, clave de cifrado para asegurar las cookies de autenticación
     ports:
-      - "8081:80"                             
+      - "8085:80"                             
     networks:
       - aulasegura-network
 

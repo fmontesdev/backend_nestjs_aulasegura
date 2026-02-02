@@ -7,6 +7,18 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
+  // Configuración de CORS
+  app.enableCors({
+    origin: [
+      'http://localhost:8081',  // Expo Web. Dashboard admin
+      'http://localhost:19006', // Expo Web alternativo. Dashboard admin
+      // 'http://localhost:3000',  // Si usas otro frontend
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   // Pipe global para validación
   app.useGlobalPipes(
     new ValidationPipe({

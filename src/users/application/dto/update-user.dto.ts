@@ -8,4 +8,5 @@ export interface UpdateUserDto {
   avatar?: string | null;
   roles?: RoleName[];
   validTo?: Date | null;
+  departmentId?: number;
 }

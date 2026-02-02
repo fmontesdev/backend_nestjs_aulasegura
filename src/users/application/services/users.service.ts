@@ -105,7 +105,23 @@ export class UsersService {
       user.roles = roles;
     }
 
-    return await this.saveUser(user);
+    // Guardar usuario
+    await this.saveUser(user);
+
+    // Si se proporciona departmentId y el usuario es teacher, actualizar el departamento
+    if (dto.departmentId !== undefined && user.roles?.some(role => role.name === RoleName.TEACHER)) {
+      // Recupera el teacher asociado
+      const teacher = await this.usersRepo.findTeacherByUserId(userId);
+
+      if (teacher) {
+        teacher.departmentId = dto.departmentId;
+        await this.usersRepo.saveTeacher(teacher);
+      }
+    }
+
+    // Recarga y retorna usuario con relaciones actualizadas
+    const finalUser = await this.usersRepo.findOneById(userId);
+    return finalUser!;
   }
 
   /// Elimina un usuario de la base de datos

@@ -31,6 +31,10 @@ export class TypeormUsersRepository implements UsersRepository {
     });
   }
 
+  async findTeacherByUserId(userId: string): Promise<TeacherEntity | null> {
+    return await this.teacherRepo.findOne({ where: { userId } });
+  }
+
   async findOneByEmail(email: string): Promise<UserEntity | null> {
     return await this.userRepo.findOne({ 
       where: { email },

@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsDate, MaxLength, MinLength, IsEnum, IsArray } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsDate, MaxLength, MinLength, IsEnum, IsArray, IsInt } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { RoleName } from '../../../domain/enums/rolename.enum';
 
@@ -54,4 +54,12 @@ export class UpdateUserRequest {
   @IsDate({ message: 'ValidTo must be a valid date' })
   @IsOptional()
   validTo?: Date | null;
+
+  @ApiPropertyOptional({ 
+    type: 'integer',
+    description: 'ID del departamento (solo para usuarios con rol teacher)'
+  })
+  @IsInt({ message: 'Department ID must be an integer' })
+  @IsOptional()
+  departmentId?: number;
 }

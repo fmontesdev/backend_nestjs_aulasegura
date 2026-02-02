@@ -20,6 +20,11 @@ export class DepartmentService {
     return await this.departmentRepository.findAll();
   }
 
+  /// Busca todos los departamentos activos junto con relaciones
+  async findAllWithRelations(): Promise<DepartmentEntity[]> {
+    return await this.departmentRepository.findAllWithRelations();
+  }
+
   /// Busca un departamento por ID o lanza una excepción si no se encuentra
   async findOne(departmentId: number): Promise<DepartmentEntity> {
     return await this.findDepartmentByIdOrFail(departmentId);

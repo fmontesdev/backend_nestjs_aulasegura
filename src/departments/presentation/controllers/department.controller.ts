@@ -29,6 +29,15 @@ export class DepartmentController {
     return DepartmentMapper.toResponseList(departments);
   }
 
+  @ApiOperation({ summary: 'Lista todos los departamentos activos con relaciones (asignaturas, cursos, profesores, etc.)' })
+  @ApiOkResponse({ type: [DepartmentResponse] })
+  @Roles(RoleName.ADMIN)
+  @Get('relations')
+  async findAllWithRelations(): Promise<DepartmentResponse[]> {
+    const departments = await this.departmentService.findAllWithRelations();
+    return DepartmentMapper.toResponseList(departments);
+  }
+
   @ApiOperation({ summary: 'Muestra un departamento por ID' })
   @ApiParam({ name: 'id', type: 'integer', description: 'ID del departamento', example: 1 })
   @ApiOkResponse({ type: DepartmentResponse })

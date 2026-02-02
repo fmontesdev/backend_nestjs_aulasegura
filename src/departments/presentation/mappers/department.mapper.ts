@@ -5,13 +5,23 @@ import { UserMapper } from '../../../users/presentation/mappers/user.mapper';
 
 export class DepartmentMapper {
   static toResponse(entity: DepartmentEntity): DepartmentResponse {
-    return {
+    const response: DepartmentResponse = {
       departmentId: entity.departmentId,
       name: entity.name,
       isActive: entity.isActive,
-      subjects: entity.subjects ? SubjectMapper.toSimpleResponseList(entity.subjects) : [],
-      teachers: entity.teachers ? UserMapper.toResponseList(entity.teachers.map(teacher => teacher.user)) : [],
     };
+
+    // Solo incluir subjects si existe y no está vacío
+    if (entity.subjects && entity.subjects.length > 0) {
+      response.subjects = SubjectMapper.toSimpleResponseList(entity.subjects);
+    }
+
+    // Solo incluir teachers si existe y no está vacío
+    if (entity.teachers && entity.teachers.length > 0) {
+      response.teachers = UserMapper.toResponseList(entity.teachers.map(teacher => teacher.user));
+    }
+
+    return response;
   }
 
   static toResponseList(entities: DepartmentEntity[]): DepartmentResponse[] {

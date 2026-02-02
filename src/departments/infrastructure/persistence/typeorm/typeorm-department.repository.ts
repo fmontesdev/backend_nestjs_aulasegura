@@ -11,9 +11,16 @@ export class TypeOrmDepartmentRepository implements DepartmentRepository {
     private readonly repository: Repository<DepartmentEntity>,
   ) {}
 
+  async findAll(): Promise<DepartmentEntity[]> {
+    return this.repository.find({
+      where: { isActive: true },
+      order: { departmentId: 'ASC' },
+    });
+  }
+
   // Utilizados leftJoinAndSelect (QueryBuilder) para poder listar departamentos aunque no tengan subjects o teachers asociados
 
-  async findAll(): Promise<DepartmentEntity[]> {
+  async findAllWithRelations(): Promise<DepartmentEntity[]> {
     return this.repository
       .createQueryBuilder('department')
       .leftJoinAndSelect('department.subjects', 'subject')

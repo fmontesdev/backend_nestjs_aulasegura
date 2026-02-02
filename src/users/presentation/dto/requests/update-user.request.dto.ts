@@ -1,5 +1,6 @@
-import { IsEmail, IsOptional, IsString, IsDate, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsDate, MaxLength, MinLength, IsEnum, IsArray } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { RoleName } from '../../../domain/enums/rolename.enum';
 
 export class UpdateUserRequest {
   @ApiPropertyOptional({ maxLength: 50, description: 'Nombre del usuario' })
@@ -31,6 +32,17 @@ export class UpdateUserRequest {
   @MaxLength(255, { message: 'Avatar cannot exceed 255 characters' })
   @IsOptional()
   avatar?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Roles del usuario',
+    enum: RoleName,
+    isArray: true,
+    example: [RoleName.TEACHER, RoleName.ADMIN],
+  })
+  @IsArray({ message: 'RoleNames must be an array' })
+  @IsEnum(RoleName, { each: true, message: 'Each role must be a valid RoleName' })
+  @IsOptional()
+  roles?: RoleName[];
 
   @ApiPropertyOptional({
     description: 'Fecha final de validez en ISO 8601 o null',

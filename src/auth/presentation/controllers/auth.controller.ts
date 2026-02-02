@@ -40,7 +40,7 @@ export class AuthController {
       lastname: requestDto.lastname,
       email: requestDto.email,
       password: requestDto.password,
-      roleName: requestDto.roleName,
+      roles: requestDto.roles,
       avatar: requestDto.avatar,
       departmentId: requestDto.departmentId,
     });

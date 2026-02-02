@@ -32,7 +32,7 @@ export class UsersService {
   async createUser(dto: CreateUserDto): Promise<UserEntity> {
     // Validaciones
     await this.ensureEmailIsUnique(dto.email);
-    this.validateTeacherDepartment(dto.roleName, dto.departmentId);
+    this.validateTeacherDepartment(dto.roles, dto.departmentId);
 
     // Hash de la contraseña
     const passwordHash = await this.hashPassword(dto.password);
@@ -49,15 +49,17 @@ export class UsersService {
     user.createdAt = new Date();
     user.tokenVersion = 1;
 
-    // Asigna rol
-    const role = await this.findRoleByNameOrFail(dto.roleName);
-    user.roles = [role];
+    // Asigna roles
+    const roles = await Promise.all(
+      dto.roles.map(roleName => this.findRoleByNameOrFail(roleName))
+    );
+    user.roles = roles;
 
     // Guarda usuario
     const savedUser = await this.saveUser(user);
 
     // Si es teacher, crea la entrada en teacher
-    if (dto.roleName === RoleName.TEACHER && dto.departmentId) {
+    if (dto.roles.includes(RoleName.TEACHER) && dto.departmentId) {
       const teacher = new TeacherEntity();
       teacher.userId = savedUser.userId;
       teacher.departmentId = dto.departmentId;
@@ -94,6 +96,14 @@ export class UsersService {
     if (dto.password !== undefined) user.passwordHash = await this.hashPassword(dto.password);
     if (dto.avatar !== undefined) user.avatar = dto.avatar ?? null;
     if (dto.validTo !== undefined) user.validTo = dto.validTo ? new Date(dto.validTo) : null;
+
+    // Si se proporcionan roles, actualizarlos
+    if (dto.roles !== undefined && dto.roles.length > 0) {
+      const roles = await Promise.all(
+        dto.roles.map(roleName => this.findRoleByNameOrFail(roleName))
+      );
+      user.roles = roles;
+    }
 
     return await this.saveUser(user);
   }
@@ -218,8 +228,8 @@ export class UsersService {
   }
 
   //? Valida que si es teacher, tenga departmentId
-  private validateTeacherDepartment(roleName: RoleName, departmentId?: number): void {
-    if (roleName === RoleName.TEACHER && !departmentId) {
+  private validateTeacherDepartment(roleNames: RoleName[], departmentId?: number): void {
+    if (roleNames.includes(RoleName.TEACHER) && !departmentId) {
       throw new BadRequestException('The departmentId is required for teachers');
     }
   }

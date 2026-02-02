@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, IsEnum, IsInt, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, IsEnum, IsInt, Matches, IsArray } from 'class-validator';
 import { RoleName } from '../../../../users/domain/enums/rolename.enum';
 
 export class RegisterRequest {
@@ -37,12 +37,15 @@ export class RegisterRequest {
   avatar?: string;
 
   @ApiProperty({ 
-    enum: RoleName, 
-    description: 'Rol del usuario',
-    example: RoleName.TEACHER
+    enum: RoleName,
+    isArray: true,
+    description: 'Roles del usuario',
+    example: [RoleName.TEACHER]
   })
-  @IsEnum(RoleName, { message: `RoleName must be one of: ${Object.values(RoleName).join(', ')}` })
-  roleName!: RoleName;
+  @IsArray({ message: 'RoleNames must be an array' })
+  @IsEnum(RoleName, { each: true, message: `Each role must be one of: ${Object.values(RoleName).join(', ')}` })
+  @IsNotEmpty({ message: 'At least one role is required' })
+  roles!: RoleName[];
 
   @ApiPropertyOptional({ 
     type: 'integer',

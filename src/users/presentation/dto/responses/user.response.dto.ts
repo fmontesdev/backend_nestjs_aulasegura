@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { RoleName } from '../../../domain/enums/rolename.enum';
 
 export class UserResponse {
   @ApiProperty({
@@ -19,6 +20,14 @@ export class UserResponse {
 
   @ApiPropertyOptional({ nullable: true, description: 'Archivo de imagen del avatar o null' })
   avatar!: string | null;
+
+  @ApiProperty({ 
+    description: 'Roles del usuario',
+    enum: RoleName,
+    isArray: true,
+    example: [RoleName.TEACHER] 
+  })
+  roles!: RoleName[];
 
   @ApiProperty({
     description: 'Fecha de inicio de validez en ISO 8601',

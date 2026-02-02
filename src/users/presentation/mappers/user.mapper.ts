@@ -9,6 +9,7 @@ export class UserMapper {
       lastname: user.lastname,
       email: user.email,
       avatar: user.avatar ?? null,
+      roles: user.roles?.map(role => role.name) ?? [],
       validFrom: user.validFrom,
       validTo: user.validTo ?? null,
       createdAt: user.createdAt,

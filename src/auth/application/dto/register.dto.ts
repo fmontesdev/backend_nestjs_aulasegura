@@ -5,7 +5,7 @@ export interface RegisterDto {
   lastname: string;
   email: string;
   password: string;
-  roleName: RoleName;
+  roles: RoleName[];
   avatar?: string;
   departmentId?: number;
 }

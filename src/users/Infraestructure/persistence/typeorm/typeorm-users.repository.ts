@@ -31,15 +31,19 @@ export class TypeormUsersRepository implements UsersRepository {
     });
   }
 
-  async findTeacherByUserId(userId: string): Promise<TeacherEntity | null> {
-    return await this.teacherRepo.findOne({ where: { userId } });
-  }
-
   async findOneByEmail(email: string): Promise<UserEntity | null> {
     return await this.userRepo.findOne({ 
       where: { email },
       relations: ['roles', 'teacher', 'teacher.department'] 
     });
+  }
+
+  async findTeacherByUserId(userId: string): Promise<TeacherEntity | null> {
+    return await this.teacherRepo.findOne({ where: { userId } });
+  }
+
+  async findRoleByName(name: string): Promise<RoleEntity | null> {
+    return await this.roleRepo.findOne({ where: { name: name as any } });
   }
 
   create(data: Partial<UserEntity>): UserEntity {
@@ -48,6 +52,10 @@ export class TypeormUsersRepository implements UsersRepository {
 
   async save(user: UserEntity): Promise<UserEntity> {
     return await this.userRepo.save(user);
+  }
+
+  async saveTeacher(teacher: TeacherEntity): Promise<TeacherEntity> {
+    return await this.teacherRepo.save(teacher);
   }
 
   async deleteById(userId: string): Promise<void> {
@@ -61,13 +69,5 @@ export class TypeormUsersRepository implements UsersRepository {
   async existsById(userId: string): Promise<boolean> {
     const count = await this.userRepo.count({ where: { userId } });
     return count > 0;
-  }
-
-  async findRoleByName(name: string): Promise<RoleEntity | null> {
-    return await this.roleRepo.findOne({ where: { name: name as any } });
-  }
-
-  async saveTeacher(teacher: TeacherEntity): Promise<TeacherEntity> {
-    return await this.teacherRepo.save(teacher);
   }
 }

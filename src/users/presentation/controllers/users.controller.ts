@@ -106,6 +106,48 @@ export class UsersController {
 
     const updatedUser = await this.usersService.uploadAvatar(user.userId, file, uploadDto);
 
-    return AuthMapper.toAuthResponseWithoutTokens(updatedUser);
+    return UserMapper.toResponse(updatedUser);
   }
-}
+
+  @ApiOperation({ summary: 'Actualiza el avatar de un usuario específico (solo admin)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Archivo de imagen (JPG, JPEG, PNG, WebP) - máximo 5MB',
+        },
+        filename: {
+          type: 'string',
+          description: 'Nombre del archivo que se guardará',
+          example: 'avatar_123.jpg',
+        },
+      },
+      required: ['file', 'filename'],
+    },
+  })
+  @ApiOkResponse({ type: UserResponse })
+  @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
+  @Post(':id/upload-avatar')
+  @UseInterceptors(FileInterceptor('file', avatarUploadConfig))
+  async uploadAvatarForAdmin(
+    @Param('id') userId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: UploadAvatarRequest,
+  ): Promise<UserResponse> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const uploadDto = new UploadAvatarDto();
+    uploadDto.filename = dto.filename;
+
+    const updatedUser = await this.usersService.uploadAvatar(userId, file, uploadDto);
+
+    return UserMapper.toResponse(updatedUser);
+  }}

@@ -43,6 +43,7 @@ export class AuthController {
       roles: requestDto.roles,
       avatar: requestDto.avatar,
       departmentId: requestDto.departmentId,
+      validTo: requestDto.validTo,
     });
 
     return AuthMapper.toAuthResponseWithoutTokens(user);

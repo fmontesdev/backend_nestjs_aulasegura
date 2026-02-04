@@ -45,7 +45,7 @@ export class UsersService {
     user.passwordHash = passwordHash;
     user.avatar = dto.avatar || null;
     user.validFrom = new Date();
-    user.validTo = null;
+    user.validTo = dto.validTo || null;
     user.createdAt = new Date();
     user.tokenVersion = 1;
 

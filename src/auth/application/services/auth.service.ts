@@ -30,6 +30,7 @@ export class AuthService {
       roles: dto.roles,
       avatar: dto.avatar,
       departmentId: dto.departmentId,
+      validTo: dto.validTo,
     };
     
     return this.usersService.createUser(userDto);

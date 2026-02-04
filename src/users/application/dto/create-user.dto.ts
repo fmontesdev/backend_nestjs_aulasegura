@@ -7,6 +7,6 @@ export interface CreateUserDto {
   password: string;
   roles: RoleName[];
   avatar?: string | null;
-  // validTo?: Date | null;
+  validTo?: Date | null;
   departmentId?: number;
 }

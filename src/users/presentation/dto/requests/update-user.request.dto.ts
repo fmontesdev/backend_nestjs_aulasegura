@@ -1,4 +1,5 @@
 import { IsEmail, IsOptional, IsString, IsDate, MaxLength, MinLength, IsEnum, IsArray, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { RoleName } from '../../../domain/enums/rolename.enum';
 
@@ -51,6 +52,7 @@ export class UpdateUserRequest {
     type: String,
     format: 'date-time',
   })
+  @Type(() => Date)
   @IsDate({ message: 'ValidTo must be a valid date' })
   @IsOptional()
   validTo?: Date | null;

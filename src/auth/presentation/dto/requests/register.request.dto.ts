@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, IsEnum, IsInt, Matches, IsArray } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, IsEnum, IsInt, Matches, IsArray, IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
 import { RoleName } from '../../../../users/domain/enums/rolename.enum';
 
 export class RegisterRequest {
@@ -54,4 +55,16 @@ export class RegisterRequest {
   @IsInt({ message: 'Department ID must be an integer' })
   @IsOptional()
   departmentId?: number;
+
+  @ApiPropertyOptional({
+    description: 'Fecha final de validez en ISO 8601 o null',
+    example: '2025-12-31T23:59:59.000Z',
+    nullable: true,
+    type: String,
+    format: 'date-time',
+  })
+  @Type(() => Date)
+  @IsDate({ message: 'ValidTo must be a valid date' })
+  @IsOptional()
+  validTo?: Date | null;
 }

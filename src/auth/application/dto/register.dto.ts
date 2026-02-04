@@ -8,4 +8,5 @@ export interface RegisterDto {
   roles: RoleName[];
   avatar?: string;
   departmentId?: number;
+  validTo?: Date | null;
 }

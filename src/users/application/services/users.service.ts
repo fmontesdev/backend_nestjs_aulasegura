@@ -94,7 +94,20 @@ export class UsersService {
     if (dto.lastname !== undefined) user.lastname = dto.lastname;
     if (dto.email !== undefined) user.email = dto.email;
     if (dto.password !== undefined) user.passwordHash = await this.hashPassword(dto.password);
-    if (dto.avatar !== undefined) user.avatar = dto.avatar ?? null;
+    
+    // Manejar actualización del avatar
+    if (dto.avatar !== undefined) {
+      const oldAvatar = user.avatar;
+      const newAvatar = dto.avatar;
+      
+      // Si cambia el avatar y el antiguo era un archivo subido (no predefinido), eliminarlo
+      if (oldAvatar && newAvatar !== oldAvatar && !this.isDefaultAvatar(oldAvatar)) {
+        await this.deleteAvatarFile(oldAvatar);
+      }
+      
+      user.avatar = newAvatar ?? null;
+    }
+    
     if (dto.validTo !== undefined) user.validTo = dto.validTo ? new Date(dto.validTo) : null;
 
     // Si se proporcionan roles, actualizarlos
@@ -128,7 +141,12 @@ export class UsersService {
   /// Elimina un usuario de la base de datos
   async remove(userId: string): Promise<void> {
     // Verifica que el usuario exista
-    await this.findUserByIdOrFail(userId);
+    const user = await this.findUserByIdOrFail(userId);
+
+    // Eliminar avatar si existe y no es predefinido
+    if (user.avatar && !this.isDefaultAvatar(user.avatar)) {
+      await this.deleteAvatarFile(user.avatar);
+    }
 
     try {
       await this.usersRepo.deleteById(userId);
@@ -151,8 +169,8 @@ export class UsersService {
     const imagesPath = this.configService.get<string>('IMAGES_PATH', '/app/images');
 
     try {
-      // Eliminar avatar anterior si existe
-      if (user.avatar) {
+      // Eliminar avatar anterior si existe y NO es predefinido
+      if (user.avatar && !this.isDefaultAvatar(user.avatar)) {
         const oldAvatarPath = join(imagesPath, user.avatar);
         try {
           // Elimina el archivo antiguo del sistema de archivos
@@ -271,5 +289,24 @@ export class UsersService {
   //? Hash de contraseña con bcrypt
   private async hashPassword(password: string): Promise<string> {
     return bcryptHash(password, 12);
+  }
+
+  //? Verifica si el avatar es predefinido (formato: avatar_default_XX)
+  private isDefaultAvatar(avatarFilename: string | null): boolean {
+    if (!avatarFilename) return false;
+    return avatarFilename.startsWith('avatar_default');
+  }
+
+  //? Elimina un archivo de avatar del sistema de archivos
+  private async deleteAvatarFile(avatarFilename: string): Promise<void> {
+    const imagesPath = this.configService.get<string>('IMAGES_PATH', '/app/images');
+    const avatarPath = join(imagesPath, avatarFilename);
+    
+    try {
+      await unlink(avatarPath);
+    } catch (error) {
+      // Ignorar si el archivo no existe
+      console.warn(`Could not delete avatar file: ${avatarPath}`);
+    }
   }
 }

@@ -1,9 +1,11 @@
-import { Controller, Get, Body, Patch, Param, Delete, HttpCode, UseGuards, Post, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, HttpCode, UseGuards, Post, UseInterceptors, UploadedFile, BadRequestException, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from '../../application/services/users.service';
 import { UpdateUserRequest } from '../dto/requests/update-user.request.dto';
+import { GetUsersQueryRequest } from '../dto/requests/get-users-query.request.dto';
 import { UploadAvatarRequest } from '../dto/requests/upload-avatar.request.dto';
 import { UserResponse } from '../dto/responses/user.response.dto';
+import { PaginatedUsersResponse } from '../dto/responses/paginated-users.response.dto';
 import { UserMapper } from '../mappers/user.mapper';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
@@ -14,7 +16,6 @@ import { ApiBearerAuth, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse,
 import { avatarUploadConfig } from '../../../utils/image-upload.config';
 import { UploadAvatarDto } from '../../application/dto/upload-avatar.dto';
 import { AuthResponse } from '../../../auth/presentation/dto/responses/auth.response.dto';
-import { AuthMapper } from '../../../auth/presentation/mappers/auth.mapper';
 
 @ApiTags('users')
 @ApiBearerAuth() // porque usamos auth tipo Bearer
@@ -22,14 +23,24 @@ import { AuthMapper } from '../../../auth/presentation/mappers/auth.mapper';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Lista de usuarios' })
-  @ApiOkResponse({ type: UserResponse, isArray: true })
+  @ApiOperation({ summary: 'Lista de usuarios con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedUsersResponse })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ADMIN)
   @Get()
-  async getUsers(): Promise<UserResponse[]> {
-    const entities = await this.usersService.findAll();
-    return UserMapper.toResponseList(entities);
+  async getUsers(@Query() query: GetUsersQueryRequest): Promise<PaginatedUsersResponse> {
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      fullName: query.fullName,
+      email: query.email,
+      roles: query.roles,
+      departmentId: query.departmentId,
+      state: query.state,
+    };
+
+    const result = await this.usersService.findAllWithFilters(filters);
+    return UserMapper.toPaginatedResponse(result);
   }
 
   @ApiOperation({ summary: 'Detalle de usuario por ID' })

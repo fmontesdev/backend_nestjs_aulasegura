@@ -1,9 +1,10 @@
 import { UserEntity } from '../entities/user.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { TeacherEntity } from '../entities/teacher.entity';
+import { FindUsersFiltersDto, PaginatedResult } from '../../application/dto/find-users-filters.dto';
 
 export abstract class UsersRepository {
-  abstract findAll(): Promise<UserEntity[]>;
+  abstract findAllWithFilters(filters: FindUsersFiltersDto): Promise<PaginatedResult<UserEntity>>;
   abstract findOneById(userId: string): Promise<UserEntity | null>;
   abstract findOneByEmail(email: string): Promise<UserEntity | null>;
   abstract findTeacherByUserId(userId: string): Promise<TeacherEntity | null>;

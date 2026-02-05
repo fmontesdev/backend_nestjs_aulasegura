@@ -1,5 +1,7 @@
 import { UserEntity } from '../../domain/entities/user.entity';
 import { UserResponse } from '../dto/responses/user.response.dto';
+import { PaginatedUsersResponse, PaginationMeta } from '../dto/responses/paginated-users.response.dto';
+import { PaginatedResult } from '../../application/dto/find-users-filters.dto';
 
 export class UserMapper {
   static toResponse(user: UserEntity): UserResponse {
@@ -19,5 +21,23 @@ export class UserMapper {
 
   static toResponseList(entities: UserEntity[]): UserResponse[] {
     return entities.map((entity) => this.toResponse(entity));
+  }
+
+  static toPaginationMeta(result: PaginatedResult<UserEntity>): PaginationMeta {
+    return {
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      hasPrevious: result.page > 1,
+      hasNext: result.page < result.totalPages,
+    };
+  }
+
+  static toPaginatedResponse(result: PaginatedResult<UserEntity>): PaginatedUsersResponse {
+    return {
+      data: this.toResponseList(result.data),
+      meta: this.toPaginationMeta(result),
+    };
   }
 }

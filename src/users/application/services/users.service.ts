@@ -7,6 +7,7 @@ import { RoleName } from '../../domain/enums/rolename.enum';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UploadAvatarDto } from '../dto/upload-avatar.dto';
+import { FindUsersFiltersDto, PaginatedResult } from '../dto/find-users-filters.dto';
 import { hash as bcryptHash } from '@node-rs/bcrypt';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
@@ -18,9 +19,9 @@ export class UsersService {
     private readonly configService: ConfigService,
   ) {}
 
-  /// Obtiene todos los usuarios
-  async findAll(): Promise<UserEntity[]> {
-    return await this.usersRepo.findAll();
+  /// Obtiene usuarios con paginación y filtros
+  async findAllWithFilters(filters: FindUsersFiltersDto): Promise<PaginatedResult<UserEntity>> {
+    return await this.usersRepo.findAllWithFilters(filters);
   }
 
   /// Obtiene un usuario por su ID

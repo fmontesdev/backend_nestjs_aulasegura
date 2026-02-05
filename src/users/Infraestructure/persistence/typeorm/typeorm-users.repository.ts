@@ -5,6 +5,7 @@ import { UsersRepository } from '../../../domain/repositories/users.repository';
 import { UserEntity } from '../../../domain/entities/user.entity';
 import { RoleEntity } from '../../../domain/entities/role.entity';
 import { TeacherEntity } from '../../../domain/entities/teacher.entity';
+import { FindUsersFiltersDto, PaginatedResult, UserState } from '../../../application/dto/find-users-filters.dto';
 
 @Injectable()
 export class TypeormUsersRepository implements UsersRepository {
@@ -17,11 +18,67 @@ export class TypeormUsersRepository implements UsersRepository {
     private readonly teacherRepo: Repository<TeacherEntity>,
   ) {}
 
-  async findAll(): Promise<UserEntity[]> {
-    return await this.userRepo.find({ 
-      relations: ['roles', 'teacher', 'teacher.department'],
-      order: { createdAt: 'DESC' } 
-    });
+  async findAllWithFilters(filters: FindUsersFiltersDto): Promise<PaginatedResult<UserEntity>> {
+    const { page, limit, fullName, email, roles, departmentId, state } = filters;
+
+    // Crear query builder
+    const query = this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'role')
+      .leftJoinAndSelect('user.teacher', 'teacher')
+      .leftJoinAndSelect('teacher.department', 'department');
+
+    // Aplicar filtros
+    if (fullName) {
+      query.andWhere(
+        '(LOWER(user.name) LIKE LOWER(:fullName) OR LOWER(user.lastname) LIKE LOWER(:fullName) OR LOWER(CONCAT(user.name, \' \', user.lastname)) LIKE LOWER(:fullName))',
+        { fullName: `%${fullName}%` }
+      );
+    }
+
+    if (email) {
+      query.andWhere('LOWER(user.email) LIKE LOWER(:email)', { email: `%${email}%` });
+    }
+
+    if (roles && roles.length > 0) {
+      query.andWhere('role.name IN (:...roles)', { roles });
+    }
+
+    if (departmentId !== undefined) {
+      query.andWhere('teacher.departmentId = :departmentId', { departmentId });
+    }
+
+    // Filtro por estado (activo/inactivo)
+    if (state === UserState.ACTIVE) {
+      // Activos: validTo es null O validTo > fecha actual
+      query.andWhere('(user.validTo IS NULL OR user.validTo > :now)', { now: new Date() });
+    } else if (state === UserState.INACTIVE) {
+      // Inactivos: validTo no es null Y validTo <= fecha actual
+      query.andWhere('user.validTo IS NOT NULL AND user.validTo <= :now', { now: new Date() });
+    }
+
+    // Ordenar por fecha de creación descendente
+    query.orderBy('user.createdAt', 'DESC');
+
+    // Calcular offset
+    const offset = (page - 1) * limit;
+
+    // Ejecutar query con paginación
+    const [data, total] = await query
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    // Calcular total de páginas
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async findOneById(userId: string): Promise<UserEntity | null> {

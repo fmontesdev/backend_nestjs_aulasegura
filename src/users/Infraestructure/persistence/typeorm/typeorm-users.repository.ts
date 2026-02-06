@@ -43,22 +43,23 @@ export class TypeormUsersRepository implements UsersRepository {
         const paramName = `global${index}`;
         
         // Condiciones base: nombre, apellido, nombre completo, email y departamento
+        // COALESCE convierte NULL en '' para evitar que usuarios sin departamento aparezcan en búsquedas
         const basicConditions = [
           `LOWER(user.name) LIKE LOWER(:${paramName})`,
           `LOWER(user.lastname) LIKE LOWER(:${paramName})`,
           `LOWER(CONCAT(user.name, ' ', user.lastname)) LIKE LOWER(:${paramName})`,
           `LOWER(user.email) LIKE LOWER(:${paramName})`,
-          `LOWER(department.name) LIKE LOWER(:${paramName})`
+          `LOWER(COALESCE(department.name, '')) LIKE LOWER(:${paramName})`
         ];
 
         globalParams[paramName] = `%${term}%`;
         
-        // Combinar todas las condiciones con OR
+        // Combinar todas las condiciones con OR para cada término
         globalConditions.push(`(${basicConditions.join(' OR ')})`);
       });
 
-      // Combinar con OR si hay múltiples términos de búsqueda global
-      query.andWhere(`(${globalConditions.join(' OR ')})`, globalParams);
+      // Combinar con AND para que todos los términos globales coincidan
+      query.andWhere(`(${globalConditions.join(' AND ')})`, globalParams);
     }
 
     // Aplicar filtros específicos

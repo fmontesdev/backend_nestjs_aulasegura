@@ -1,8 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type, Transform } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Min, Max, IsEnum } from 'class-validator';
-import { RoleName } from '../../../domain/enums/rolename.enum';
-import { UserState } from '../../../application/dto/find-users-filters.dto';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Min, Max } from 'class-validator';
 
 export class GetUsersQueryRequest {
   @ApiPropertyOptional({ 
@@ -30,48 +28,15 @@ export class GetUsersQueryRequest {
   limit?: number = 10;
 
   @ApiPropertyOptional({ 
-    description: 'Búsqueda por nombre, apellido o nombre completo (parcial, case-insensitive)'
+    description: 'Filtros combinados. Formato: valor1,campo:valor2,campo:valor3. Valores sin ":" buscan en todos los campos (fullName, email, roles, estado, departamento). La búsqueda global reconoce términos como "administrador", "profesor", "conserje", "personal" y los mapea a roles. Campos específicos: fullName, email, rol (admin|teacher|janitor|support_staff), status (active|inactive), department (nombre del departamento). Ejemplos: profesor,department:Informática | paco,rol:admin,status:active | garcia | activo',
+    examples: {
+      'Por rol': { value: 'profesor' },
+      'Por departamento': { value: 'department:Informática' },
+      'Búsqueda global': { value: 'garcia' },
+      'Múltiples filtros': { value: 'profesor,department:Matemáticas,status:active' }
+    }
   })
   @IsString()
   @IsOptional()
-  fullName?: string;
-
-  @ApiPropertyOptional({ 
-    description: 'Búsqueda por email (parcial, case-insensitive)'
-  })
-  @IsString()
-  @IsOptional()
-  email?: string;
-
-  @ApiPropertyOptional({ 
-    description: 'Filtrar por roles',
-    enum: RoleName,
-    isArray: true,
-    example: [RoleName.TEACHER]
-  })
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (!value) return undefined;
-    return Array.isArray(value) ? value : [value];
-  })
-  @IsEnum(RoleName, { each: true })
-  roles?: RoleName[];
-
-  @ApiPropertyOptional({ 
-    description: 'Filtrar por ID de departamento (solo para teachers)',
-    type: 'integer'
-  })
-  @Type(() => Number)
-  @IsInt()
-  @IsOptional()
-  departmentId?: number;
-
-  @ApiPropertyOptional({ 
-    description: 'Filtrar por estado del usuario',
-    enum: UserState,
-    example: UserState.ACTIVE
-  })
-  @IsEnum(UserState)
-  @IsOptional()
-  state?: UserState;
+  filters?: string;
 }

@@ -8,10 +8,11 @@ export enum UserState {
 export interface FindUsersFiltersDto {
   page: number;
   limit: number;
+  globalSearch?: string[]; // Términos de búsqueda que se aplicarán a múltiples campos
   fullName?: string;
   email?: string;
   roles?: RoleName[];
-  departmentId?: number;
+  departmentName?: string;
   state?: UserState;
 }
 

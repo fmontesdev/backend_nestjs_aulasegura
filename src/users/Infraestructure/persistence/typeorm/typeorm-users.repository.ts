@@ -19,7 +19,7 @@ export class TypeormUsersRepository implements UsersRepository {
   ) {}
 
   async findAllWithFilters(filters: FindUsersFiltersDto): Promise<PaginatedResult<UserEntity>> {
-    const { page, limit, fullName, email, roles, departmentId, state } = filters;
+    const { page, limit, globalSearch, fullName, email, roles, departmentName, state } = filters;
 
     // Crear query builder
     const query = this.userRepo
@@ -28,7 +28,40 @@ export class TypeormUsersRepository implements UsersRepository {
       .leftJoinAndSelect('user.teacher', 'teacher')
       .leftJoinAndSelect('teacher.department', 'department');
 
-    // Aplicar filtros
+    // JOIN adicional solo para filtrar (no para cargar datos) - evita que se filtren las relaciones
+    const needsRoleFilter = (globalSearch && globalSearch.length > 0) || (roles && roles.length > 0);
+    if (needsRoleFilter) {
+      query.leftJoin('user.roles', 'roleFilter');
+    }
+
+    // Aplicar búsqueda global (busca en múltiples campos)
+    if (globalSearch && globalSearch.length > 0) {
+      const globalConditions: string[] = [];
+      const globalParams: any = {};
+
+      globalSearch.forEach((term, index) => {
+        const paramName = `global${index}`;
+        
+        // Condiciones base: nombre, apellido, nombre completo, email y departamento
+        const basicConditions = [
+          `LOWER(user.name) LIKE LOWER(:${paramName})`,
+          `LOWER(user.lastname) LIKE LOWER(:${paramName})`,
+          `LOWER(CONCAT(user.name, ' ', user.lastname)) LIKE LOWER(:${paramName})`,
+          `LOWER(user.email) LIKE LOWER(:${paramName})`,
+          `LOWER(department.name) LIKE LOWER(:${paramName})`
+        ];
+
+        globalParams[paramName] = `%${term}%`;
+        
+        // Combinar todas las condiciones con OR
+        globalConditions.push(`(${basicConditions.join(' OR ')})`);
+      });
+
+      // Combinar con OR si hay múltiples términos de búsqueda global
+      query.andWhere(`(${globalConditions.join(' OR ')})`, globalParams);
+    }
+
+    // Aplicar filtros específicos
     if (fullName) {
       query.andWhere(
         '(LOWER(user.name) LIKE LOWER(:fullName) OR LOWER(user.lastname) LIKE LOWER(:fullName) OR LOWER(CONCAT(user.name, \' \', user.lastname)) LIKE LOWER(:fullName))',
@@ -41,11 +74,11 @@ export class TypeormUsersRepository implements UsersRepository {
     }
 
     if (roles && roles.length > 0) {
-      query.andWhere('role.name IN (:...roles)', { roles });
+      query.andWhere('roleFilter.name IN (:...roles)', { roles });
     }
 
-    if (departmentId !== undefined) {
-      query.andWhere('teacher.departmentId = :departmentId', { departmentId });
+    if (departmentName) {
+      query.andWhere('LOWER(department.name) LIKE LOWER(:departmentName)', { departmentName: `%${departmentName}%` });
     }
 
     // Filtro por estado (activo/inactivo)
@@ -59,6 +92,11 @@ export class TypeormUsersRepository implements UsersRepository {
 
     // Ordenar por fecha de creación descendente
     query.orderBy('user.createdAt', 'DESC');
+
+    // Evitar duplicados cuando usamos el JOIN adicional para filtrar roles
+    if (needsRoleFilter) {
+      query.distinct(true);
+    }
 
     // Calcular offset
     const offset = (page - 1) * limit;

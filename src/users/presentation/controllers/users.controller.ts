@@ -16,6 +16,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse,
 import { avatarUploadConfig } from '../../../utils/image-upload.config';
 import { UploadAvatarDto } from '../../application/dto/upload-avatar.dto';
 import { AuthResponse } from '../../../auth/presentation/dto/responses/auth.response.dto';
+import { parseFiltersString } from '../utils/filters-parser.util';
 
 @ApiTags('users')
 @ApiBearerAuth() // porque usamos auth tipo Bearer
@@ -29,14 +30,14 @@ export class UsersController {
   @Roles(RoleName.ADMIN)
   @Get()
   async getUsers(@Query() query: GetUsersQueryRequest): Promise<PaginatedUsersResponse> {
+    // Parsear filtros
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+
+    // Construir objeto de filtros
     const filters = {
       page: query.page || 1,
       limit: query.limit || 10,
-      fullName: query.fullName,
-      email: query.email,
-      roles: query.roles,
-      departmentId: query.departmentId,
-      state: query.state,
+      ...parsedFilters,
     };
 
     const result = await this.usersService.findAllWithFilters(filters);

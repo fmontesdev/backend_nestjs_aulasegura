@@ -169,7 +169,7 @@ export function parseFiltersString(filtersString: string): ParsedFilters {
 
       // Verificar si es un estado
       const mappedState = stateMapping[lowerTerm];
-      if (mappedState) {
+      if (mappedState !== undefined) {
         parsed.isActive = mappedState;
         continue; // No agregar a globalSearch
       }

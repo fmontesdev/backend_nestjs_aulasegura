@@ -76,6 +76,10 @@ export class CourseService {
       course.cfLevel = updateDto.cfLevel;
     }
 
+    if (updateDto.isActive !== undefined) {
+      course.isActive = updateDto.isActive;
+    }
+
     // Si se quiere cambiar el año académico
     if (updateDto.academicYearCode) {
       const academicYear = await this.academicYearService.findByCode(updateDto.academicYearCode);

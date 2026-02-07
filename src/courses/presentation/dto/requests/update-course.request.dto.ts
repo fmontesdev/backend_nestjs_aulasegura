@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEnum, IsInt, Min, Max, IsOptional, Matches } from 'class-validator';
+import { IsString, IsEnum, IsInt, Min, Max, IsOptional, Matches, IsBoolean } from 'class-validator';
 import { EducationStage } from '../../../domain/enums/education-stage.enum';
 import { CFLevel } from '../../../domain/enums/cf-level.enum';
 
@@ -36,4 +36,9 @@ export class UpdateCourseRequest {
   @Matches(/^\d{4}-\d{4}$/, { message: 'Academic year code must be in format YYYY-YYYY' })
   @IsOptional()
   academicYearCode?: string;
+
+  @ApiPropertyOptional({ description: 'Estado de activación del curso', example: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

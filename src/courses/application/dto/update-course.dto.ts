@@ -8,4 +8,5 @@ export interface UpdateCourseDto {
   levelNumber?: number;
   cfLevel?: CFLevel | null;
   academicYearCode?: string;
+  isActive?: boolean;
 }

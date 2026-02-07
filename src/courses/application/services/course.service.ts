@@ -3,6 +3,7 @@ import { CourseEntity } from '../../domain/entities/course.entity';
 import { CourseRepository } from '../../domain/repositories/course.repository';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
+import { FindCoursesFiltersDto } from '../dto/find-courses-filters.dto';
 import { AcademicYearService } from '../../../academic-years/application/services/academic-year.service';
 
 @Injectable()
@@ -12,9 +13,9 @@ export class CourseService {
     private readonly academicYearService: AcademicYearService,
   ) {}
 
-  /// Busca todos los cursos activos
-  async findAll(): Promise<CourseEntity[]> {
-    return await this.courseRepository.findAll();
+  /// Busca cursos con paginación y filtros
+  async findAllWithFilters(filters: FindCoursesFiltersDto): Promise<{ data: CourseEntity[]; total: number }> {
+    return await this.courseRepository.findAllWithFilters(filters);
   }
 
   /// Busca un curso por ID o lanza una excepción si no se encuentra

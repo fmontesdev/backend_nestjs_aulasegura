@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse,} from '@nestjs/swagger';
 import { CourseService } from '../../application/services/course.service';
 import { CreateCourseRequest } from '../dto/requests/create-course.request.dto';
 import { UpdateCourseRequest } from '../dto/requests/update-course.request.dto';
+import { GetCoursesQueryRequest } from '../dto/requests/get-courses-query.request.dto';
 import { CourseResponse } from '../dto/responses/course.response.dto';
+import { PaginatedCoursesResponse } from '../dto/responses/paginated-courses.response.dto';
 import { CourseMapper } from '../mappers/course.mapper';
+import { parseFiltersString } from '../utils/filters-parser.util';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -20,13 +23,20 @@ import { RoleName } from '../../../users/domain/enums/rolename.enum';
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
-  @ApiOperation({ summary: 'Lista todos los cursos activos' })
-  @ApiOkResponse({ type: [CourseResponse] })
+  @ApiOperation({ summary: 'Lista todos los cursos con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedCoursesResponse })
   @Roles(RoleName.ADMIN)
   @Get()
-  async findAll(): Promise<CourseResponse[]> {
-    const courses = await this.courseService.findAll();
-    return CourseMapper.toResponseList(courses);
+  async findAll(@Query() query: GetCoursesQueryRequest): Promise<PaginatedCoursesResponse> {
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      ...parsedFilters,
+    };
+
+    const result = await this.courseService.findAllWithFilters(filters);
+    return CourseMapper.toPaginatedResponse(result, filters.page, filters.limit);
   }
 
   @ApiOperation({ summary: 'Muestra un curso por ID' })

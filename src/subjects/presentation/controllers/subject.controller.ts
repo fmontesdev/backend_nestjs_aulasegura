@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse,} from '@nestjs/swagger';
 import { SubjectService } from '../../application/services/subject.service';
 import { CreateSubjectRequest } from '../dto/requests/create-subject.request.dto';
 import { UpdateSubjectRequest } from '../dto/requests/update-subject.request.dto';
+import { GetSubjectsQueryRequest } from '../dto/requests/get-subjects-query.request.dto';
 import { SubjectResponse } from '../dto/responses/subject.response.dto';
+import { PaginatedSubjectsResponse } from '../dto/responses/paginated-subjects.response.dto';
 import { SubjectMapper } from '../mappers/subject.mapper';
+import { parseFiltersString } from '../utils/filters-parser.util';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -20,13 +23,20 @@ import { RoleName } from '../../../users/domain/enums/rolename.enum';
 export class SubjectController {
   constructor(private readonly subjectService: SubjectService) {}
 
-  @ApiOperation({ summary: 'Lista todas las asignaturas activas' })
-  @ApiOkResponse({ type: [SubjectResponse] })
+  @ApiOperation({ summary: 'Lista todas las asignaturas con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedSubjectsResponse })
   @Roles(RoleName.ADMIN)
   @Get()
-  async findAll(): Promise<SubjectResponse[]> {
-    const subjects = await this.subjectService.findAll();
-    return SubjectMapper.toResponseList(subjects);
+  async findAll(@Query() query: GetSubjectsQueryRequest): Promise<PaginatedSubjectsResponse> {
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      ...parsedFilters,
+    };
+
+    const result = await this.subjectService.findAllWithFilters(filters);
+    return SubjectMapper.toPaginatedResponse(result, filters.page, filters.limit);
   }
 
   @ApiOperation({ summary: 'Muestra una asignatura por ID' })

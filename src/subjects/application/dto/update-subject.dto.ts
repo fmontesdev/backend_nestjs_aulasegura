@@ -3,4 +3,5 @@ export interface UpdateSubjectDto {
   name?: string;
   departmentId?: number;
   courseIds?: number[];
+  isActive?: boolean;
 }

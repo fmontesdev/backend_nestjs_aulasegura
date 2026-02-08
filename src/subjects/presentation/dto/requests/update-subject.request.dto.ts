@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsInt, IsPositive, IsOptional, IsArray, ArrayMinSize, ArrayNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsInt, IsPositive, IsOptional, IsArray, ArrayMinSize, ArrayNotEmpty, MaxLength, IsBoolean } from 'class-validator';
 
 export class UpdateSubjectRequest {
   @ApiPropertyOptional({ description: 'Código único de la asignatura', example: 'MATH-ALG', maxLength: 50 })
@@ -28,4 +28,9 @@ export class UpdateSubjectRequest {
   @IsPositive({ each: true })
   @IsOptional()
   courseIds?: number[];
+
+  @ApiPropertyOptional({ description: 'Estado de activación de la asignatura', example: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

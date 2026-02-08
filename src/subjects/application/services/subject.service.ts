@@ -3,6 +3,7 @@ import { SubjectEntity } from '../../domain/entities/subject.entity';
 import { SubjectRepository } from '../../domain/repositories/subject.repository';
 import { CreateSubjectDto } from '../dto/create-subject.dto';
 import { UpdateSubjectDto } from '../dto/update-subject.dto';
+import { FindSubjectsFiltersDto } from '../dto/find-subjects-filters.dto';
 import { CourseService } from '../../../courses/application/services/course.service';
 import { DepartmentService } from '../../../departments/application/services/department.service';
 import { DepartmentEntity } from 'src/departments/domain/entities/department.entity';
@@ -17,9 +18,9 @@ export class SubjectService {
     private readonly departmentService: DepartmentService,
   ) {}
 
-  /// Busca todas las asignaturas activas
-  async findAll(): Promise<SubjectEntity[]> {
-    return await this.subjectRepository.findAll();
+  /// Busca asignaturas con paginación y filtros
+  async findAllWithFilters(filters: FindSubjectsFiltersDto): Promise<{ data: SubjectEntity[]; total: number }> {
+    return await this.subjectRepository.findAllWithFilters(filters);
   }
 
   /// Busca una asignatura por ID o lanza una excepción si no se encuentra
@@ -80,6 +81,10 @@ export class SubjectService {
       // Verifica que los cursos existan
       const courses = await this.validateCourses(updateDto.courseIds);
       subject.courses = courses;
+    }
+
+    if (updateDto.isActive !== undefined) {
+      subject.isActive = updateDto.isActive;
     }
 
     try {

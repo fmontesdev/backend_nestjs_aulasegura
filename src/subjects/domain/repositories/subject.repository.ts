@@ -1,7 +1,8 @@
 import { SubjectEntity } from '../entities/subject.entity';
+import { FindSubjectsFiltersDto } from '../../application/dto/find-subjects-filters.dto';
 
 export abstract class SubjectRepository {
-  abstract findAll(): Promise<SubjectEntity[]>;
+  abstract findAllWithFilters(filters: FindSubjectsFiltersDto): Promise<{ data: SubjectEntity[]; total: number }>;
   abstract findOneById(subjectId: number): Promise<SubjectEntity | null>;
   abstract findOneActiveById(subjectId: number): Promise<SubjectEntity | null>;
   abstract findOneBySubjectCode(subjectCode: string): Promise<SubjectEntity | null>;

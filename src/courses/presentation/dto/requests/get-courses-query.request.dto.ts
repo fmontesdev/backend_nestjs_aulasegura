@@ -5,6 +5,7 @@ import { IsInt, IsOptional, IsString, Min, Max } from 'class-validator';
 export class GetCoursesQueryRequest {
   @ApiPropertyOptional({
     description: 'Número de página (comienza en 1)',
+    example: 1,
     default: 1,
     minimum: 1
   })
@@ -16,9 +17,10 @@ export class GetCoursesQueryRequest {
 
   @ApiPropertyOptional({
     description: 'Número de items por página',
-    default: 10,
+    example: 10,
     minimum: 1,
-    maximum: 100
+    maximum: 100,
+    default: 10,
   })
   @Type(() => Number)
   @IsInt()

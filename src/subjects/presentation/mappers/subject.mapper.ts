@@ -1,5 +1,6 @@
 import { SubjectEntity } from '../../domain/entities/subject.entity';
 import { SubjectResponse } from '../dto/responses/subject.response.dto';
+import { PaginatedSubjectsResponse } from '../dto/responses/paginated-subjects.response.dto';
 import { DepartmentMapper } from '../../../departments/presentation/mappers/department.mapper';
 import { CourseMapper } from '../../../courses/presentation/mappers/course.mapper';
 
@@ -33,5 +34,25 @@ export class SubjectMapper {
 
   static toSimpleResponseList(entities: SubjectEntity[]): SubjectResponse[] {
     return entities.map((entity) => this.toSimpleResponse(entity));
+  }
+
+  static toPaginatedResponse(
+    result: { data: SubjectEntity[]; total: number },
+    page: number,
+    limit: number,
+  ): PaginatedSubjectsResponse {
+    const totalPages = Math.ceil(result.total / limit);
+    
+    return {
+      data: this.toResponseList(result.data),
+      meta: {
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasPrevious: page > 1,
+        hasNext: page < totalPages,
+      }
+    };
   }
 }

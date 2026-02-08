@@ -3,6 +3,7 @@ import { DepartmentEntity } from '../../domain/entities/department.entity';
 import { DepartmentRepository } from '../../domain/repositories/department.repository';
 import { CreateDepartmentDto } from '../dto/create-department.dto';
 import { UpdateDepartmentDto } from '../dto/update-department.dto';
+import { FindDepartmentsFiltersDto } from '../dto/find-departments-filters.dto';
 import { SubjectService } from '../../../subjects/application/services/subject.service';
 import { UsersService } from '../../../users/application/services/users.service';
 
@@ -20,9 +21,9 @@ export class DepartmentService {
     return await this.departmentRepository.findAll();
   }
 
-  /// Busca todos los departamentos activos junto con relaciones
-  async findAllWithRelations(): Promise<DepartmentEntity[]> {
-    return await this.departmentRepository.findAllWithRelations();
+  /// Busca departamentos con paginación y filtros
+  async findAllWithFilters(filters: FindDepartmentsFiltersDto): Promise<{ data: DepartmentEntity[]; total: number }> {
+    return await this.departmentRepository.findAllWithFilters(filters);
   }
 
   /// Busca un departamento por ID o lanza una excepción si no se encuentra
@@ -52,6 +53,10 @@ export class DepartmentService {
     // Actualizar campos si vienen en el DTO
     if (updateDto.name !== undefined) {
       department.name = updateDto.name;
+    }
+
+    if (updateDto.isActive !== undefined) {
+      department.isActive = updateDto.isActive;
     }
 
     // Guarda en la base de datos

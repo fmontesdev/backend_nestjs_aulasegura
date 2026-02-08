@@ -1,5 +1,6 @@
 import { DepartmentEntity } from '../../domain/entities/department.entity';
 import { DepartmentResponse } from '../dto/responses/department.response.dto';
+import { PaginatedDepartmentsResponse } from '../dto/responses/paginated-departments.response.dto';
 import { SubjectMapper } from '../../../subjects/presentation/mappers/subject.mapper';
 import { UserMapper } from '../../../users/presentation/mappers/user.mapper';
 
@@ -40,5 +41,25 @@ export class DepartmentMapper {
 
   static toSimpleResponseList(entities: DepartmentEntity[]): DepartmentResponse[] {
     return entities.map((entity) => this.toSimpleResponse(entity));
+  }
+
+  static toPaginatedResponse(
+    result: { data: DepartmentEntity[]; total: number },
+    page: number,
+    limit: number,
+  ): PaginatedDepartmentsResponse {
+    const totalPages = Math.ceil(result.total / limit);
+    
+    return {
+      data: this.toResponseList(result.data),
+      meta: {
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasPrevious: page > 1,
+        hasNext: page < totalPages,
+      },
+    };
   }
 }

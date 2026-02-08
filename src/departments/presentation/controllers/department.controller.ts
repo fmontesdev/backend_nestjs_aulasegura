@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam, ApiBody, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { DepartmentService } from '../../application/services/department.service';
 import { CreateDepartmentRequest } from '../dto/requests/create-department.request.dto';
 import { UpdateDepartmentRequest } from '../dto/requests/update-department.request.dto';
+import { GetDepartmentsQueryRequest } from '../dto/requests/get-departments-query.request.dto';
 import { DepartmentResponse } from '../dto/responses/department.response.dto';
+import { PaginatedDepartmentsResponse } from '../dto/responses/paginated-departments.response.dto';
 import { DepartmentMapper } from '../mappers/department.mapper';
+import { parseFiltersString } from '../utils/filters-parser.util';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -29,13 +32,20 @@ export class DepartmentController {
     return DepartmentMapper.toResponseList(departments);
   }
 
-  @ApiOperation({ summary: 'Lista todos los departamentos activos con relaciones (asignaturas, cursos, profesores, etc.)' })
-  @ApiOkResponse({ type: [DepartmentResponse] })
+  @ApiOperation({ summary: 'Lista todos los departamentos activos con relaciones (asignaturas, cursos, profesores, etc.) con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedDepartmentsResponse })
   @Roles(RoleName.ADMIN)
-  @Get('relations')
-  async findAllWithRelations(): Promise<DepartmentResponse[]> {
-    const departments = await this.departmentService.findAllWithRelations();
-    return DepartmentMapper.toResponseList(departments);
+  @Get('filters')
+  async findAllWithFilters(@Query() query: GetDepartmentsQueryRequest): Promise<PaginatedDepartmentsResponse> {
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      ...parsedFilters,
+    };
+
+    const result = await this.departmentService.findAllWithFilters(filters);
+    return DepartmentMapper.toPaginatedResponse(result, filters.page, filters.limit);
   }
 
   @ApiOperation({ summary: 'Muestra un departamento por ID' })

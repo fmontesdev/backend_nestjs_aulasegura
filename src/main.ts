@@ -8,12 +8,17 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
   // Configuración de CORS
+  const defaultOrigins = [
+    'http://localhost:8081',
+    'http://localhost:19006',
+  ];
+  const extraOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    : [];
+  const allowedOrigins = [...defaultOrigins, ...extraOrigins];
+
   app.enableCors({
-    origin: [
-      'http://localhost:8081',  // Expo Web. Dashboard admin
-      'http://localhost:19006', // Expo Web alternativo. Dashboard admin
-      // 'http://localhost:3000',  // Si usas otro frontend
-    ],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

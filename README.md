@@ -126,18 +126,18 @@ Crea un archivo `.env` en la raíz del proyecto:
 DB_HOST=database
 DB_PORT=3306
 DB_DATABASE=aulasegura
-DB_USER=tu_usuario
-DB_PASSWORD=tu_password
-DB_ROOT_PASSWORD=root_password
+DB_USER=tu_usuario_db
+DB_PASSWORD=tu_contraseña_db
+DB_ROOT_PASSWORD=tu_contraseña_root_db
 
 # Application
 NODE_ENV=development
 WEB_SERVER_PORT=8000
 
 # JWT
-JWT_SECRET=tu_secreto_jwt_muy_seguro
-JWT_EXPIRATION=1h
-JWT_REFRESH_SECRET=tu_secreto_refresh_jwt
+JWT_ACCESS_SECRET=tu_clave_secreta_jwt_access
+JWT_REFRESH_SECRET=tu_clave_secreta_jwt_refresh
+JWT_ACCESS_EXPIRATION=1d
 JWT_REFRESH_EXPIRATION=7d
 
 # Tag Configuration (RFID/NFC)

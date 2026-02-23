@@ -33,6 +33,8 @@ export const seedCourses = async (dataSource: DataSource): Promise<void> => {
     { courseId: 24, courseCode: 'CFGS-AF-2', name: '2º Administración y Finanzas', isActive: true, educationStage: EducationStage.CF, levelNumber: 2, cfLevel: CFLevel.CFGS },
     { courseId: 26, courseCode: 'CFGS-ASIR-1', name: '1º Administración de Sistemas Informáticos en Red', isActive: true, educationStage: EducationStage.CF, levelNumber: 1, cfLevel: CFLevel.CFGS },
     { courseId: 27, courseCode: 'CFGS-ASIR-2', name: '2º Administración de Sistemas Informáticos en Red', isActive: true, educationStage: EducationStage.CF, levelNumber: 2, cfLevel: CFLevel.CFGS },
+    { courseId: 28, courseCode: 'cur-02', name: 'Curso 2', isActive: false, educationStage: EducationStage.BACHILLERATO, levelNumber: 2, cfLevel: null },
+    { courseId: 29, courseCode: 'cur-01', name: 'Curso 1', isActive: false, educationStage: EducationStage.BACHILLERATO, levelNumber: 1, cfLevel: null },
   ];
 
   for (const data of courses) {

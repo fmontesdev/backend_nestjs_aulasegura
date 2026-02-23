@@ -26,6 +26,7 @@ export const seedDepartments = async (dataSource: DataSource): Promise<void> => 
     { departmentId: 19, name: 'Orientación', isActive: true },
     { departmentId: 20, name: 'Religión', isActive: true },
     { departmentId: 21, name: 'Tecnología', isActive: true },
+    { departmentId: 22, name: 'Nuevo', isActive: true },
   ];
 
   for (const data of departments) {

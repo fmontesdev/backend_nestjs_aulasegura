@@ -1355,6 +1355,13 @@ export const seedSubjects = async (dataSource: DataSource): Promise<void> => {
         "name": "Formación en Centros de Trabajo (ASIR)",
         "departmentId": 7,
         "isActive": true
+    },
+    {
+        "subjectId": 194,
+        "subjectCode": "NUEVA",
+        "name": "nueva",
+        "departmentId": 1,
+        "isActive": false
     }
 ];
 

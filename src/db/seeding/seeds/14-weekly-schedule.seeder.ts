@@ -77,5 +77,5 @@ export const seedWeeklySchedules = async (dataSource: DataSource): Promise<void>
     ON DUPLICATE KEY UPDATE schedule_id = schedule_id
   `);
 
-  console.log('Weekly schedules created (70 time slots: 14 per day x 5 days)');
+  console.log('Weekly schedules created');
 };

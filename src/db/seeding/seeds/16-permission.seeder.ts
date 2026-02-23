@@ -32,9 +32,9 @@ export const seedPermissions = async (dataSource: DataSource): Promise<void> => 
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 1, '6b86f7e7-bf19-4117-b262-a1221c4ced55', '2025-11-22 16:26:04', 1, 90),
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 8, '2d9ce2e0-b172-4756-8c92-c647e3f0a649', '2025-11-23 21:33:11', 1, 11),
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 8, '2d9ce2e0-b172-4756-8c92-c647e3f0a649', '2025-11-23 21:33:11', 1, 12),
-    ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 8, '6b86f7e7-bf19-4117-b262-a1221c4ced55', '2025-11-23 17:41:00', 1, 109),
+    ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 36, '6b86f7e7-bf19-4117-b262-a1221c4ced55', '2025-11-24 12:49:19', 1, 115),
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 9, '6b86f7e7-bf19-4117-b262-a1221c4ced55', '2025-11-22 19:11:06', 1, 97),
-    ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 9, '6b86f7e7-bf19-4117-b262-a1221c4ced55', '2025-11-23 18:17:52', 1, 113),
+    ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 32, '6b86f7e7-bf19-4117-b262-a1221c4ced55', '2025-11-27 15:28:09', 1, 117),
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 23, '2d9ce2e0-b172-4756-8c92-c647e3f0a649', '2025-11-23 21:33:11', 1, 22),
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 23, '2d9ce2e0-b172-4756-8c92-c647e3f0a649', '2025-11-23 21:33:11', 1, 23),
     ('6b86f7e7-bf19-4117-b262-a1221c4ced55', 24, '2d9ce2e0-b172-4756-8c92-c647e3f0a649', '2025-11-23 21:33:11', 1, 25),
@@ -53,5 +53,5 @@ export const seedPermissions = async (dataSource: DataSource): Promise<void> => 
     ON DUPLICATE KEY UPDATE user_id = user_id
   `);
 
-  console.log('Permissions created (47 user-room-schedule assignments)');
+  console.log('Permissions created (46 user-room-schedule assignments)');
 };

@@ -119,24 +119,53 @@ dataSource
     await seedPermissions(dataSource);
 
     console.log('\nAll seeders executed successfully!');
+
+    const counts = await Promise.all([
+      dataSource.query('SELECT COUNT(*) as c FROM `role`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `academic_year`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `department`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `course`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `user`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `role_user`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `subject`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `course_subject`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `academic_year_course`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `teacher`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `teacher_subject`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `room`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `reader`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `tag`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `schedule`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `weekly_schedule`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `event_schedule`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `permission`'),
+    ]);
+
+    const [
+      roles, academicYears, departments, courses, users, roleUsers,
+      subjects, courseSubjects, academicYearCourses, teachers, teacherSubjects,
+      rooms, readers, tags, schedules, weeklySchedules, eventSchedules, permissions,
+    ] = counts.map(r => Number(r[0].c));
+
     console.log('\nSummary:');
-    console.log('   - 4 Roles');
-    console.log('   - 3 Academic Years');
-    console.log('   - 21 Departments');
-    console.log('   - 26 Courses');
-    console.log('   - 5 Users');
-    console.log('   - 193 Subjects');
-    console.log('   - 221 Course-Subject relations');
-    console.log('   - 75 Academic Year-Course relations');
-    console.log('   - 2 Teachers');
-    console.log('   - 10 Teacher-Subject assignments');
-    console.log('   - 46 Rooms');
-    console.log('   - 46 Readers');
-    console.log('   - 10 Tags');
-    console.log('   - 76 Schedules (70 weekly + 6 events)');
-    console.log('   - 70 Weekly time slots');
-    console.log('   - 6 Event schedules');
-    console.log('   - 47 Permissions');
+    console.log(`   - ${roles} Roles`);
+    console.log(`   - ${academicYears} Academic Years`);
+    console.log(`   - ${departments} Departments`);
+    console.log(`   - ${courses} Courses`);
+    console.log(`   - ${users} Users`);
+    console.log(`   - ${roleUsers} User-Role assignments`);
+    console.log(`   - ${subjects} Subjects`);
+    console.log(`   - ${courseSubjects} Course-Subject relations`);
+    console.log(`   - ${academicYearCourses} Academic Year-Course relations`);
+    console.log(`   - ${teachers} Teachers`);
+    console.log(`   - ${teacherSubjects} Teacher-Subject assignments`);
+    console.log(`   - ${rooms} Rooms`);
+    console.log(`   - ${readers} Readers`);
+    console.log(`   - ${tags} Tags`);
+    console.log(`   - ${schedules} Schedules (${weeklySchedules} weekly + ${eventSchedules} events)`);
+    console.log(`   - ${weeklySchedules} Weekly time slots`);
+    console.log(`   - ${eventSchedules} Event schedules`);
+    console.log(`   - ${permissions} Permissions`);
     
     process.exit(0);
   })

@@ -82,6 +82,7 @@ export const seedCourseSubject = async (dataSource: DataSource): Promise<void> =
 (5, 77),
 (5, 78),
 (5, 79),
+(5, 194),
 (6, 80),
 (6, 81),
 (6, 82),

@@ -28,7 +28,6 @@ export const seedAcademicYearCourse = async (dataSource: DataSource): Promise<vo
 (1, 23),
 (1, 24),
 (1, 26),
-(1, 27),
 (2, 1),
 (2, 2),
 (2, 3),
@@ -54,7 +53,6 @@ export const seedAcademicYearCourse = async (dataSource: DataSource): Promise<vo
 (2, 23),
 (2, 24),
 (2, 26),
-(2, 27),
 (3, 1),
 (3, 2),
 (3, 3),
@@ -80,7 +78,9 @@ export const seedAcademicYearCourse = async (dataSource: DataSource): Promise<vo
 (3, 23),
 (3, 24),
 (3, 26),
-(3, 27)
+(3, 27),
+(3, 28),
+(3, 29)
     ON DUPLICATE KEY UPDATE academic_year_id = academic_year_id
   `);
 

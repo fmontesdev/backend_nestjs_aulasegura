@@ -22,3 +22,13 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+# local agent folders/files
+.agents/
+.claude/
+.atl/
+AGENTS.md
+skills-lock.json
+
+# documentation
+docs/

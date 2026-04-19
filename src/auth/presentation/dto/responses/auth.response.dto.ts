@@ -5,9 +5,6 @@ export class AuthResponse {
   @ApiProperty({ description: 'Access token JWT' })
   accessToken?: string | null;
 
-  @ApiProperty({ description: 'Refresh token JWT' })
-  refreshToken?: string | null;
-
   @ApiProperty({
     description: 'Identificador del usuario (UUID v4)',
     format: 'uuid',
@@ -21,10 +18,16 @@ export class AuthResponse {
   @ApiProperty({ description: 'Apellidos del usuario autenticado' })
   lastname!: string;
 
-  @ApiProperty({ format: 'email', description: 'Email del usuario autenticado' })
+  @ApiProperty({
+    format: 'email',
+    description: 'Email del usuario autenticado',
+  })
   email!: string;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Archivo de imagen del avatar o null' })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Archivo de imagen del avatar o null',
+  })
   avatar!: string | null;
 
   @ApiProperty({

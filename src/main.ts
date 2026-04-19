@@ -3,15 +3,13 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
   // Configuración de CORS
-  const defaultOrigins = [
-    'http://localhost:8081',
-    'http://localhost:19006',
-  ];
+  const defaultOrigins = ['http://localhost:8081', 'http://localhost:19006'];
   const extraOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
     : [];
@@ -24,12 +22,14 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
+  app.use(cookieParser());
+
   // Pipe global para validación
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,            // quita propiedades no definidas en el DTO
+      whitelist: true, // quita propiedades no definidas en el DTO
       forbidNonWhitelisted: true, // lanza error si llega una propiedad extra
-      transform: true,            // transforma tipos (string -> number/date, etc.)
+      transform: true, // transforma tipos (string -> number/date, etc.)
       transformOptions: { enableImplicitConversion: true }, // permite conversiones implícitas
     }),
   );
@@ -42,7 +42,7 @@ async function bootstrap() {
       .setTitle('AulaSegura API')
       .setDescription('Documentación del backend Nest.js de AulaSegura')
       .setVersion('1.0.0')
-      .addBearerAuth()  // Si usas JWT/Bearer
+      .addBearerAuth() // Si usas JWT/Bearer
       // .addServer('http://localhost:8080') // opcional
       .build();
 
@@ -59,6 +59,8 @@ async function bootstrap() {
   const webserverPort = process.env.WEB_SERVER_PORT || '8000';
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  console.log(`Server running on port ${webserverPort}. Swagger ${isDev ? 'enabled at /docs' : 'disabled'}`);
+  console.log(
+    `Server running on port ${webserverPort}. Swagger ${isDev ? 'enabled at /docs' : 'disabled'}`,
+  );
 }
 bootstrap();

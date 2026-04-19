@@ -2,10 +2,9 @@ import { UserEntity } from '../../../users/domain/entities/user.entity';
 import { AuthResponse } from '../dto/responses/auth.response.dto';
 
 export class AuthMapper {
-  static toAuthResponse( user: UserEntity, tokens: { accessToken: string; refreshToken: string } ): AuthResponse {
+  static toAuthResponse(user: UserEntity, tokens: { accessToken: string }): AuthResponse {
     return {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
       userId: user.userId,
       name: user.name,
       lastname: user.lastname,

@@ -1,4 +1,11 @@
-import { Injectable, UnauthorizedException, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  Inject,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { compare as bcryptCompare, hash as bcryptHash } from '@node-rs/bcrypt';
 import { UsersService } from '../../../users/application/services/users.service';
 import { CreateUserDto } from '../../../users/application/dto/create-user.dto';
@@ -13,6 +20,8 @@ import { JwtTokenService } from './jwt-token.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(AuthRepository)
     private readonly authRepo: AuthRepository,
@@ -32,7 +41,7 @@ export class AuthService {
       departmentId: dto.departmentId,
       validTo: dto.validTo,
     };
-    
+
     return this.usersService.createUser(userDto);
   }
 
@@ -54,10 +63,9 @@ export class AuthService {
     return user;
   }
 
-
   /// Genera tokens de acceso y refresh durante el login del usuario
   async login(user: UserEntity): Promise<AuthTokens> {
-    const roleNames = user.roles ? user.roles.map(r => r.name) : [];
+    const roleNames = user.roles ? user.roles.map((r) => r.name) : [];
 
     const payload: JwtPayload = {
       sub: user.userId,
@@ -74,6 +82,10 @@ export class AuthService {
 
   /// Refresca el access token usando un refresh token válido
   async refreshAccessToken(refreshToken: string): Promise<AuthTokens> {
+    let accessToken!: string;
+    let newPayload!: JwtPayload;
+    let user!: UserEntity;
+
     try {
       // Verifica firma y expiración del refresh token
       const payload = this.jwtTokenService.verifyRefreshToken(refreshToken);
@@ -85,7 +97,7 @@ export class AuthService {
       }
 
       // Obteniene el usuario por su ID
-      const user = await this.usersService.findUserByIdOrFail(payload.sub);
+      user = await this.usersService.findUserByIdOrFail(payload.sub);
 
       // Verifica tokenVersion (logout masivo)
       if (payload.tokenVersion !== user.tokenVersion) {
@@ -97,22 +109,34 @@ export class AuthService {
         throw new UnauthorizedException('User deactivated');
       }
 
-      // Genera solo nuevo accessToken, mantiene el mismo refreshToken
-      const roleNames = user.roles ? user.roles.map(r => r.name) : [];
-      const newPayload: JwtPayload = {
+      // Construye nuevo payload y genera accessToken
+      const roleNames = user.roles ? user.roles.map((r) => r.name) : [];
+      newPayload = {
         sub: user.userId,
         email: user.email,
         roles: roleNames,
         tokenVersion: user.tokenVersion,
       };
 
-      const accessToken = this.jwtTokenService.generateAccessToken(newPayload);
-
-      // Retorna el mismo refreshToken
-      return { accessToken, refreshToken };
+      accessToken = this.jwtTokenService.generateAccessToken(newPayload);
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
+
+    // Token rotation: blacklistea el refresh token viejo (fuera del try de validación)
+    try {
+      await this.saveToBlacklist(user.userId, refreshToken);
+    } catch (e) {
+      this.logger.error(
+        'Critical: failed to blacklist refresh token during rotation',
+        e,
+      );
+      throw new InternalServerErrorException('Token rotation failed');
+    }
+
+    const newRefreshToken =
+      this.jwtTokenService.generateRefreshToken(newPayload);
+    return { accessToken, refreshToken: newRefreshToken };
   }
 
   /// Cierra la sesión del usuario en un dispositivo específico y añade el refresh token a la blacklist
@@ -122,16 +146,8 @@ export class AuthService {
     }
 
     try {
-      // Combinado con una tarea cron limpiaria periódicamente los tokens expirados en la blacklist
-      const expiresAt = this.jwtTokenService.extractExpirationFromToken(refreshToken);
-
-      const blacklistToken = new BlacklistTokenEntity();
-      blacklistToken.userId = userId;
-      blacklistToken.token = refreshToken;
-      blacklistToken.expiresAt = expiresAt;
-      blacklistToken.createdAt = new Date();
-
-      await this.authRepo.saveBlacklistToken(blacklistToken);
+      // Combinado con una tarea cron limpiaría periódicamente los tokens expirados en la blacklist
+      await this.saveToBlacklist(userId, refreshToken);
     } catch (error) {
       throw new UnauthorizedException('Error processing the refresh token');
     }
@@ -162,10 +178,10 @@ export class AuthService {
     try {
       // Actualiza contraseña
       user.passwordHash = await bcryptHash(newPassword, 12);
-      
+
       // Incrementa tokenVersion para invalidar todos los tokens
       user.tokenVersion++;
-      
+
       await this.usersService.saveUser(user);
     } catch (error) {
       throw new UnauthorizedException('Error changing the password');
@@ -176,7 +192,7 @@ export class AuthService {
   async requestPasswordReset(email: string): Promise<string> {
     // Obtiene usuario por su email
     const user = await this.usersService.findUserByEmail(email);
-    
+
     // Por seguridad, no revelamos si el email existe o no
     if (!user) {
       return 'If the email exists, you will receive a recovery code';
@@ -187,7 +203,7 @@ export class AuthService {
 
     // Genera código alfanumérico de 6 caracteres
     const token = this.generateResetToken();
-    
+
     // Expira en 20 minutos
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 20);
@@ -223,7 +239,7 @@ export class AuthService {
 
     // Cambia la contraseña
     user.passwordHash = await bcryptHash(newPassword, 12);
-    
+
     // Incrementa tokenVersion para invalidar todos los tokens JWT
     user.tokenVersion++;
 
@@ -243,7 +259,7 @@ export class AuthService {
     try {
       user.validTo = new Date(); // Desactiva cuenta
       user.tokenVersion++; // Invalida todos los tokens
-      
+
       await this.usersService.saveUser(user);
     } catch (error) {
       throw new UnauthorizedException('Error suspending the user');
@@ -265,6 +281,17 @@ export class AuthService {
 
   //? ================= Métodos auxiliares =================
 
+  //? Inserta un refresh token en la blacklist con su fecha de expiración
+  private async saveToBlacklist(userId: string, token: string): Promise<void> {
+    const expiresAt = this.jwtTokenService.extractExpirationFromToken(token);
+    const blacklistEntity = new BlacklistTokenEntity();
+    blacklistEntity.userId = userId;
+    blacklistEntity.token = token;
+    blacklistEntity.expiresAt = expiresAt;
+    blacklistEntity.createdAt = new Date();
+    await this.authRepo.saveBlacklistToken(blacklistEntity);
+  }
+
   //? Genera un código alfanumérico aleatorio de 6 caracteres
   private generateResetToken(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -284,7 +311,9 @@ export class AuthService {
     if (resetToken != null && resetToken.attempts >= 5) {
       resetToken.isUsed = true; // Marca como usado para bloquearlo
       await this.authRepo.savePasswordResetToken(resetToken);
-      throw new UnauthorizedException('Too many attempts. Please request a new code');
+      throw new UnauthorizedException(
+        'Too many attempts. Please request a new code',
+      );
     }
 
     if (resetToken) {

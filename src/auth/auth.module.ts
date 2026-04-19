@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { BlacklistTokenEntity } from './domain/entities/blacklist-token.entity';
 import { PasswordResetTokenEntity } from './domain/entities/password-reset-token.entity';
 import { AuthController } from './presentation/controllers/auth.controller';
+import { CookieService } from './presentation/services/cookie.service';
 import { AuthService } from './application/services/auth.service';
 import { JwtTokenService } from './application/services/jwt-token.service';
 import { JwtStrategy } from './application/strategies/jwt.strategy';
@@ -24,7 +25,7 @@ import { TypeormAuthRepository } from './infrastructure/persistence/typeorm/type
       useFactory: (configService: ConfigService): JwtModuleOptions => ({
         secret: configService.get<string>('JWT_ACCESS_SECRET'),
         signOptions: {
-          expiresIn: (configService.get<string>('JWT_ACCESS_EXPIRATION')) as any,
+          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRATION') as any,
         },
       }),
     }),
@@ -36,6 +37,7 @@ import { TypeormAuthRepository } from './infrastructure/persistence/typeorm/type
     JwtTokenService,
     JwtStrategy,
     LocalStrategy,
+    CookieService,
     { provide: AuthRepository, useClass: TypeormAuthRepository }, // binding
   ],
   exports: [AuthService, JwtModule],

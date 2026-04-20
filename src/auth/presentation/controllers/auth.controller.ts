@@ -96,6 +96,7 @@ export class AuthController {
     const user = req.user;
     const tokens = await this.authService.login(user);
     this.cookieService.setRefreshCookie(res, tokens.refreshToken);
+    this.cookieService.setAccessCookie(res, tokens.accessToken);
     return AuthMapper.toAuthResponse(user, { accessToken: tokens.accessToken });
   }
 
@@ -122,6 +123,7 @@ export class AuthController {
     const userId = this.jwtTokenService.extractUserIdFromToken(tokens.accessToken);
     const user = await this.authService.getCurrentUser(userId);
     this.cookieService.setRefreshCookie(res, tokens.refreshToken);
+    this.cookieService.setAccessCookie(res, tokens.accessToken);
     return AuthMapper.toAuthResponse(user, { accessToken: tokens.accessToken });
   }
 
@@ -147,6 +149,7 @@ export class AuthController {
     }
     await this.authService.logout(user.userId, refreshToken);
     this.cookieService.clearRefreshCookie(res);
+    this.cookieService.clearAccessCookie(res);
     return { message: 'Sesión cerrada' };
   }
 

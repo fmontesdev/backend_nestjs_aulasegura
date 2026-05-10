@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
-import { UserEntity } from '../users/domain/entities/user.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { NotificationRecipientEntity } from './notification-recipient.entity';
 
 export enum NotificationType {
   ACCESS = 'access',
@@ -10,7 +10,7 @@ export enum NotificationType {
 @Entity({ name: 'notification' })
 export class NotificationEntity {
   @PrimaryGeneratedColumn({ name: 'notification_id', type: 'bigint' })
-  notificationId!: string; // bigint → string (JS no precisa)
+  notificationId!: string;
 
   @Column({ name: 'type', type: 'enum', enum: NotificationType })
   type!: NotificationType;
@@ -24,6 +24,6 @@ export class NotificationEntity {
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
-  @ManyToMany(() => UserEntity, (u) => u.notifications)
-  users!: UserEntity[];
+  @OneToMany(() => NotificationRecipientEntity, (recipient) => recipient.notification)
+  recipients!: NotificationRecipientEntity[];
 }

@@ -10,6 +10,7 @@ import { AccessController } from './presentation/controllers/access.controller';
 import { TagModule } from '../tags/tag.module';
 import { ReaderModule } from '../readers/reader.module';
 import { PermissionModule } from '../permissions/permission.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { PermissionModule } from '../permissions/permission.module';
     ConfigModule,
     TagModule,
     ReaderModule,
-    PermissionModule
+    PermissionModule,
+    NotificationsModule,
   ],
   controllers: [AccessController],
   providers: [

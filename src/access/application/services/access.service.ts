@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'crypto';
 import { AccessLogEntity } from '../../domain/entities/access-log.entity';
@@ -13,9 +13,11 @@ import { ReaderService } from 'src/readers/application/services/reader.service';
 import { PermissionService } from '../../../permissions/application/services/permission.service';
 import { PermissionEntity } from 'src/permissions/domain/entities/permission.entity';
 import { AccessEventEmitter } from './access-event-emitter.service';
+import { NotificationService } from '../../../notifications/application/services/notification.service';
 
 @Injectable()
 export class AccessService {
+  private readonly logger = new Logger(AccessService.name);
   private readonly pepper: string;
 
   constructor(
@@ -25,6 +27,7 @@ export class AccessService {
     private readonly permissionService: PermissionService,
     private readonly configService: ConfigService,
     private readonly accessEventEmitter: AccessEventEmitter,
+    private readonly notificationService: NotificationService,
   ) {
     this.pepper = this.configService.get<string>('TAG_PEPPER') || '';
     if (!this.pepper) {
@@ -57,6 +60,12 @@ export class AccessService {
     const accessLogWithRelations = await this.findAccessLogByIdOrFail(savedAccessLog.accessLogId);
 
     this.accessEventEmitter.emit(accessLogWithRelations);
+
+    try {
+      await this.notificationService.createFromAccessLog(accessLogWithRelations);
+    } catch (error) {
+      this.logger.error('Failed to create notification from access log', error instanceof Error ? error.stack : String(error));
+    }
 
     return accessLogWithRelations;
   }

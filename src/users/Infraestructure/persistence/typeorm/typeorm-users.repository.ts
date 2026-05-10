@@ -6,6 +6,7 @@ import { UserEntity } from '../../../domain/entities/user.entity';
 import { RoleEntity } from '../../../domain/entities/role.entity';
 import { TeacherEntity } from '../../../domain/entities/teacher.entity';
 import { FindUsersFiltersDto, PaginatedResult, UserState } from '../../../application/dto/find-users-filters.dto';
+import { RoleName } from '../../../domain/enums/rolename.enum';
 
 @Injectable()
 export class TypeormUsersRepository implements UsersRepository {
@@ -132,6 +133,14 @@ export class TypeormUsersRepository implements UsersRepository {
       where: { email },
       relations: ['roles', 'teacher', 'teacher.department'] 
     });
+  }
+
+  async findActiveUsersByRole(roleName: RoleName): Promise<UserEntity[]> {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .innerJoinAndSelect('user.roles', 'role', 'role.name = :roleName', { roleName })
+      .where('(user.validTo IS NULL OR user.validTo > :now)', { now: new Date() })
+      .getMany();
   }
 
   async findTeacherByUserId(userId: string): Promise<TeacherEntity | null> {

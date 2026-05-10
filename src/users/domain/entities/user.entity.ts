@@ -3,10 +3,10 @@ import { randomUUID } from 'crypto';
 import { RoleEntity } from './role.entity';
 import { BlacklistTokenEntity } from '../../../auth/domain/entities/blacklist-token.entity';
 import { TagEntity } from '../../../tags/domain/entities/tag.entity';
-import { NotificationEntity } from '../../../entities/notification.entity';
 import { PermissionEntity } from '../../../permissions/domain/entities/permission.entity';
 import { TeacherEntity } from './teacher.entity';
 import { AccessLogEntity } from '../../../access/domain/entities/access-log.entity';
+import { NotificationRecipientEntity } from '../../../notifications/domain/entities/notification-recipient.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -62,13 +62,8 @@ export class UserEntity {
   @OneToMany(() => TagEntity, (t) => t.user)
   tags!: TagEntity[];
 
-  @ManyToMany(() => NotificationEntity, (n) => n.users, { cascade: false })
-  @JoinTable({
-    name: 'notification_user',
-    joinColumn: { name: 'user_id', referencedColumnName: 'userId' },
-    inverseJoinColumn: { name: 'notification_id', referencedColumnName: 'notificationId' },
-  })
-  notifications!: NotificationEntity[];
+  @OneToMany(() => NotificationRecipientEntity, (recipient) => recipient.user)
+  notificationRecipients!: NotificationRecipientEntity[];
 
   @OneToMany(() => PermissionEntity, (p) => p.user)
   permissions!: PermissionEntity[];

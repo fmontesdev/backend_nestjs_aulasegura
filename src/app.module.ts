@@ -13,7 +13,7 @@ import { ReaderModule } from './readers/reader.module';
 import { ScheduleModule } from './schedules/schedule.module';
 import { PermissionModule } from './permissions/permission.module';
 import { AccessModule } from './access/access.module';
-import { NotificationEntity } from './entities/notification.entity';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -31,9 +31,6 @@ import { NotificationEntity } from './entities/notification.entity';
         username: configService.get<string>('DB_USER', 'user'),
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
-        entities: [
-          NotificationEntity,
-        ],
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Solo en desarrollo
         autoLoadEntities: true, // Carga automáticamente las entidades
       }),
@@ -49,10 +46,10 @@ import { NotificationEntity } from './entities/notification.entity';
     ReaderModule,
     ScheduleModule,
     PermissionModule,
+    NotificationsModule,
     AccessModule,
   ],
   controllers: [],
   providers: [],
 })
 export class AppModule {}
-

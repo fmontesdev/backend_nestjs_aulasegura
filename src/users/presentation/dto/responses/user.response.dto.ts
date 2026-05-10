@@ -48,12 +48,12 @@ export class UserResponse {
   validTo!: Date | null;
 
   @ApiProperty({
-    description: 'Fecha de creación en ISO 8601',
-    example: '2025-12-31T23:59:59.000Z',
+    description: 'Fecha de creación en ISO 8601 Europe/Madrid',
+    example: '2025-12-31T23:59:59.000+01:00',
     type: String,
     format: 'date-time',
   })
-  createdAt!: Date;
+  createdAt!: string;
 
   @ApiPropertyOptional({
     description: 'Departamento al que pertenece el usuario (solo para teachers)',

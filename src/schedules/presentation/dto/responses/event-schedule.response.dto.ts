@@ -9,11 +9,11 @@ export class EventScheduleResponse {
   @ApiProperty({ description: 'Descripción del evento', example: 'Exámen primera evaluación de base de datos' })
   description: string;
 
-  @ApiProperty({ description: 'Fecha y hora de inicio del evento', example: '2024-09-01T08:00:00.000Z' })
-  startAt: Date;
+  @ApiProperty({ description: 'Fecha y hora de inicio del evento en Europe/Madrid', example: '2024-09-01T08:00:00.000+02:00' })
+  startAt: string;
 
-  @ApiProperty({ description: 'Fecha y hora de fin del evento', example: '2024-09-01T10:00:00.000Z' })
-  endAt: Date;
+  @ApiProperty({ description: 'Fecha y hora de fin del evento en Europe/Madrid', example: '2024-09-01T10:00:00.000+02:00' })
+  endAt: string;
 
   @ApiProperty({ description: 'Estado del evento', enum: EventStatus, example: EventStatus.PENDING })
   status: EventStatus;

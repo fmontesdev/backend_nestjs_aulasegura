@@ -2,6 +2,7 @@ import { UserEntity } from '../../domain/entities/user.entity';
 import { UserResponse } from '../dto/responses/user.response.dto';
 import { PaginatedUsersResponse, PaginationMeta } from '../dto/responses/paginated-users.response.dto';
 import { PaginatedResult } from '../../application/dto/find-users-filters.dto';
+import { toMadridIsoString } from 'src/common/utils/madrid-timezone.util';
 
 export class UserMapper {
   static toResponse(user: UserEntity): UserResponse {
@@ -14,7 +15,7 @@ export class UserMapper {
       roles: user.roles?.map(role => role.name) ?? [],
       validFrom: user.validFrom,
       validTo: user.validTo ?? null,
-      createdAt: user.createdAt,
+      createdAt: toMadridIsoString(user.createdAt),
       department: user.teacher?.department ?? null,
     };
   }

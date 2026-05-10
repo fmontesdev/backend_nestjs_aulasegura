@@ -1,6 +1,7 @@
 import { NotificationRecipientEntity } from '../../domain/entities/notification-recipient.entity';
 import { NotificationEntity } from '../../domain/entities/notification.entity';
 import { NotificationResponseDto } from '../dto/responses/notification.response.dto';
+import { toMadridIsoString } from 'src/common/utils/madrid-timezone.util';
 
 export class NotificationMapper {
   static toResponse(notification: NotificationEntity, readAt: Date | null): NotificationResponseDto {
@@ -9,8 +10,8 @@ export class NotificationMapper {
       type: notification.type,
       title: notification.title,
       body: notification.body,
-      createdAt: notification.createdAt,
-      readAt,
+      createdAt: toMadridIsoString(notification.createdAt),
+      readAt: readAt ? toMadridIsoString(readAt) : null,
     };
   }
 

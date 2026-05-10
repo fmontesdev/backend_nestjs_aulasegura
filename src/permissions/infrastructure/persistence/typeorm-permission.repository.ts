@@ -8,6 +8,7 @@ import { ValidateWeeklySchedulePermissionOverlapDto } from '../../application/dt
 import { ValidateWeeklyScheduleOverlapDto } from '../../application/dto/validate-weekly-schedule-overlap.dto';
 import { ValidateEventScheduleOverlapDto } from '../../application/dto/validate-event-schedule-overlap.dto';
 import { FindOccupiedRoomsDto } from '../../application/dto/find-occupied-rooms.dto';
+import { combineMadridDateAndTime } from 'src/common/utils/madrid-timezone.util';
 
 @Injectable()
 export class TypeOrmPermissionRepository implements PermissionRepository {
@@ -233,10 +234,10 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .andWhere('schedule.academicYearId = :academicYearId', { academicYearId: dto.academicYearId })
       // Crear rangos de fecha/hora para el día solicitado
       .andWhere('eventSchedule.startAt < :endAt', { 
-        endAt: new Date(`${dto.date.toISOString().split('T')[0]}T${dto.endAt}:00`) 
+        endAt: combineMadridDateAndTime(dto.date, dto.endAt) 
       })
       .andWhere(':startAt < eventSchedule.endAt', { 
-        startAt: new Date(`${dto.date.toISOString().split('T')[0]}T${dto.startAt}:00`) 
+        startAt: combineMadridDateAndTime(dto.date, dto.startAt) 
       })
       .getRawMany(); // Devuelve objetos planos solo con lo seleccionado en .select()
 

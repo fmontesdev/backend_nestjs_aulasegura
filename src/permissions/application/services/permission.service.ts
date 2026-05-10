@@ -17,6 +17,7 @@ import { ScheduleService } from '../../../schedules/application/services/schedul
 import { EventScheduleType } from '../../../schedules/domain/enums/event-schedule-type.enum';
 import { EventStatus } from '../../../schedules/domain/enums/event-status.enum';
 import { ScheduleType } from '../../../schedules/domain/enums/schedule-type.enum';
+import { getMadridDayOfWeek, getMadridTimeString, parseMadridDateTime } from 'src/common/utils/madrid-timezone.util';
 
 @Injectable()
 export class PermissionService {
@@ -169,7 +170,9 @@ export class PermissionService {
     const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
 
     // Valida que no exista solapamiento de horarios semanales para esta aula
-    const { dayOfWeek, startTime, endTime } = await this.eventToWeeklyConversion(createDto.startAt, createDto.endAt);
+    const startAt = parseMadridDateTime(createDto.startAt);
+    const endAt = parseMadridDateTime(createDto.endAt);
+    const { dayOfWeek, startTime, endTime } = await this.eventToWeeklyConversion(startAt, endAt);
     const weeklyScheduleOverlapDto: ValidateWeeklyScheduleOverlapDto = {
       roomId: createDto.roomId,
       academicYearId: activeAcademicYear.academicYearId,
@@ -183,8 +186,8 @@ export class PermissionService {
     const eventScheduleOverlapDto: ValidateEventScheduleOverlapDto = {
       roomId: createDto.roomId,
       academicYearId: activeAcademicYear.academicYearId,
-      startAt: new Date(createDto.startAt),
-      endAt: new Date(createDto.endAt)
+      startAt,
+      endAt
     };
     await this.eventScheduleOverlappingForRoom(eventScheduleOverlapDto);
 
@@ -194,8 +197,8 @@ export class PermissionService {
       academicYear: activeAcademicYear,
       type: type!,
       description: createDto.description,
-      startAt: new Date(createDto.startAt),
-      endAt: new Date(createDto.endAt),
+      startAt,
+      endAt,
       status: status
     });
 
@@ -252,8 +255,8 @@ export class PermissionService {
   /// Valida si existe algún permiso activo para el usuario en el aula en el momento actual
   async activePermissionAtCurrentTime(userId: string, roomId: number): Promise<PermissionEntity | null> {
     const currentDate = new Date();
-    const currentDayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay(); // 1=Lunes, 7=Domingo
-    const currentTime = currentDate.toTimeString().slice(0, 8); // HH:MM:SS
+    const currentDayOfWeek = getMadridDayOfWeek(currentDate); // 1=Lunes, 7=Domingo
+    const currentTime = getMadridTimeString(currentDate); // HH:MM:SS en Europe/Madrid
 
     // Obtiene año académico activo
     const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
@@ -286,7 +289,7 @@ export class PermissionService {
     const activeAcademicYear = await this.academicYearService.findActiveAcademicYear();
 
     // Calcula el día de la semana (1=Lunes, 7=Domingo)
-    const dayOfWeek = availableDto.date.getDay() === 0 ? 7 : availableDto.date.getDay();
+    const dayOfWeek = getMadridDayOfWeek(availableDto.date);
 
     const ocuppiedDto: FindOccupiedRoomsDto = {
       academicYearId: activeAcademicYear.academicYearId,
@@ -345,10 +348,10 @@ export class PermissionService {
     }
   }
 
-  private async eventToWeeklyConversion(startAt: string, endAt: string): Promise<{ dayOfWeek: number; startTime: string; endTime: string }> {
-    const dayOfWeek = new Date(startAt).getDay() === 0 ? 7 : new Date(startAt).getDay(); // Convierte a dia de la semana (lunes=1,domingo=7)
-    const startTime = new Date(startAt).toTimeString().slice(0, 8); // Convierte a HH:MM:SS
-    const endTime = new Date(endAt).toTimeString().slice(0, 8); // Convierte a HH:MM:SS
+  private async eventToWeeklyConversion(startAt: Date, endAt: Date): Promise<{ dayOfWeek: number; startTime: string; endTime: string }> {
+    const dayOfWeek = getMadridDayOfWeek(startAt); // Convierte a dia de la semana (lunes=1,domingo=7)
+    const startTime = getMadridTimeString(startAt); // Convierte a HH:MM:SS en Europe/Madrid
+    const endTime = getMadridTimeString(endAt); // Convierte a HH:MM:SS en Europe/Madrid
 
     return { dayOfWeek, startTime, endTime };
   }

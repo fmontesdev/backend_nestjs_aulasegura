@@ -29,6 +29,6 @@ export class AccessLogResponse {
   @ApiProperty({ description: 'Estado del acceso', enum: AccessStatus, example: AccessStatus.ALLOWED })
   accessStatus: AccessStatus;
 
-  @ApiProperty({ description: 'Fecha y hora del acceso', example: '2025-11-10T14:30:00Z' })
-  createdAt: Date;
+  @ApiProperty({ description: 'Fecha y hora del acceso en Europe/Madrid', example: '2025-11-10T14:30:00.000+01:00' })
+  createdAt: string;
 }

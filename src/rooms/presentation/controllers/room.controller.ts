@@ -47,7 +47,7 @@ export class RoomController {
   @Get('available')
   async findAvailableRooms(@Query() query: FindAvailableRoomsRequest): Promise<RoomResponse[]> {
     const availableRooms = await this.roomService.findAvailableRooms({
-      date: new Date(query.date),
+      date: query.date,
       startAt: query.startAt,
       endAt: query.endAt
     });

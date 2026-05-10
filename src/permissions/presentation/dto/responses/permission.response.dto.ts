@@ -23,7 +23,7 @@ export class PermissionResponse {
       type: ScheduleType.WEEKLY,
       academicYear: { id: 1, code: '2025-2026', isActive: true },
       isActive: true,
-      createdAt: '2024-09-01T10:00:00.000Z',
+      createdAt: '2024-09-01T10:00:00.000+02:00',
       updatedAt: null,
       weeklySchedule: { dayOfWeek: 1, startTime: '08:00:00', endTime: '10:00:00', validFrom: '2024-09-01', validTo: null },
     },
@@ -33,8 +33,8 @@ export class PermissionResponse {
   @ApiProperty({ description: 'ID del usuario que creó el permiso', type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
   createdById: string;
 
-  @ApiProperty({ description: 'Fecha de creación', type: String, format: 'date-time', example: '2024-09-01T10:00:00.000Z' })
-  createdAt: Date;
+  @ApiProperty({ description: 'Fecha de creación en Europe/Madrid', type: String, format: 'date-time', example: '2024-09-01T10:00:00.000+02:00' })
+  createdAt: string;
 
   @ApiProperty({ description: 'Estado activo del permiso', type: Boolean, example: true })
   isActive: boolean;

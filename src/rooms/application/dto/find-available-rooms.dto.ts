@@ -1,5 +1,5 @@
 export class FindAvailableRoomsDto {
-  date: Date;
+  date: string;
   startAt: string;
   endAt: string;
 }

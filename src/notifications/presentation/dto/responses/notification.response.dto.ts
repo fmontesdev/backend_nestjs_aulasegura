@@ -14,9 +14,9 @@ export class NotificationResponseDto {
   @ApiProperty({ example: 'Ada Lovelace no pudo acceder a Aula 1' })
   body!: string;
 
-  @ApiProperty({ type: Date })
-  createdAt!: Date;
+  @ApiProperty({ type: String, format: 'date-time', example: '2026-05-10T14:29:35.000+02:00' })
+  createdAt!: string;
 
-  @ApiProperty({ type: Date, nullable: true })
-  readAt!: Date | null;
+  @ApiProperty({ type: String, format: 'date-time', nullable: true, example: '2026-05-10T14:30:10.000+02:00' })
+  readAt!: string | null;
 }

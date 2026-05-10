@@ -17,11 +17,11 @@ export class ScheduleResponse {
   @ApiProperty({ description: 'Estado activo del horario', example: true })
   isActive: boolean;
 
-  @ApiProperty({ description: 'Fecha de creación', example: '2024-09-01T10:00:00.000Z' })
-  createdAt: Date;
+  @ApiProperty({ description: 'Fecha de creación en Europe/Madrid', example: '2024-09-01T10:00:00.000+02:00' })
+  createdAt: string;
 
-  @ApiPropertyOptional({ description: 'Fecha de última actualización', example: '2024-09-01T10:00:00.000Z', nullable: true })
-  updatedAt: Date | null;
+  @ApiPropertyOptional({ description: 'Fecha de última actualización en Europe/Madrid', example: '2024-09-01T10:00:00.000+02:00', nullable: true })
+  updatedAt: string | null;
 
   @ApiPropertyOptional({ description: 'Horario semanal asociado', type: () => WeeklyScheduleResponse, nullable: true })
   weeklySchedule?: WeeklyScheduleResponse;

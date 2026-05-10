@@ -49,6 +49,7 @@ const options: DataSourceOptions = {
   username: process.env.DB_USER || 'user',
   password: process.env.DB_PASSWORD || 'password',
   database: process.env.DB_DATABASE || 'db',
+  timezone: 'Z',
 
   entities: [
     UserEntity,

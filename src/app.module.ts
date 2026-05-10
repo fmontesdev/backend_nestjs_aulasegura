@@ -31,6 +31,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         username: configService.get<string>('DB_USER', 'user'),
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'db'),
+        timezone: 'Z', // La BD guarda instantes UTC; evita que mysql2 interprete timestamps como hora local y aplique doble desplazamiento.
         synchronize: configService.get<string>('NODE_ENV') !== 'production', // Solo en desarrollo
         autoLoadEntities: true, // Carga automáticamente las entidades
       }),

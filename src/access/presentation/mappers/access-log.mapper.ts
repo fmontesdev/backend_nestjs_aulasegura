@@ -2,6 +2,7 @@ import { AccessLogEntity } from '../../domain/entities/access-log.entity';
 import { AccessLogResponse } from '../dto/responses/access-log.response.dto';
 import { UserMapper } from '../../../users/presentation/mappers/user.mapper';
 import { RoomMapper } from '../../../rooms/presentation/mappers/room.mapper';
+import { toMadridIsoString } from 'src/common/utils/madrid-timezone.util';
 
 export class AccessLogMapper {
   static toResponse(entity: AccessLogEntity): AccessLogResponse {
@@ -14,7 +15,7 @@ export class AccessLogMapper {
       subjectId: entity.subjectId,
       accessMethod: entity.accessMethod,
       accessStatus: entity.accessStatus,
-      createdAt: entity.createdAt,
+      createdAt: toMadridIsoString(entity.createdAt),
     };
   }
 

@@ -3,6 +3,7 @@ import { PermissionResponse } from '../dto/responses/permission.response.dto';
 import { UserMapper } from '../../../users/presentation/mappers/user.mapper';
 import { RoomMapper } from '../../../rooms/presentation/mappers/room.mapper';
 import { ScheduleMapper } from '../../../schedules/presentation/mappers/schedule.mapper';
+import { toMadridIsoString } from 'src/common/utils/madrid-timezone.util';
 
 export class PermissionMapper {
   /// Convierte una entidad Permission a PermissionResponse
@@ -12,7 +13,7 @@ export class PermissionMapper {
       room: RoomMapper.toResponse(entity.room),
       schedule: ScheduleMapper.toResponse(entity.schedule),
       createdById: entity.createdById,
-      createdAt: entity.createdAt,
+      createdAt: toMadridIsoString(entity.createdAt),
       isActive: entity.isActive,
     };
   }

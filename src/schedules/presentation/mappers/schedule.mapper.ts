@@ -4,6 +4,7 @@ import { ScheduleResponse } from '../dto/responses/schedule.response.dto';
 import { WeeklyScheduleMapper } from './weekly-schedule.mapper';
 import { EventScheduleMapper } from './event-schedule.mapper';
 import { AcademicYearMapper } from '../../../academic-years/presentation/mappers/academic-year.mapper';
+import { toMadridIsoString } from 'src/common/utils/madrid-timezone.util';
 
 export class ScheduleMapper {
   /// Convierte una entidad Schedule a ScheduleResponse (Weekly o Event)
@@ -13,8 +14,8 @@ export class ScheduleMapper {
       type: entity.type,
       academicYear: AcademicYearMapper.toResponse(entity.academicYear),
       isActive: entity.isActive,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
+      createdAt: toMadridIsoString(entity.createdAt),
+      updatedAt: entity.updatedAt ? toMadridIsoString(entity.updatedAt) : null,
       weeklySchedule: entity.type === ScheduleType.WEEKLY ? WeeklyScheduleMapper.toResponse(entity.weeklySchedule!) : undefined,
       eventSchedule: entity.type === ScheduleType.EVENT ? EventScheduleMapper.toResponse(entity.eventSchedule!) : undefined,
     };

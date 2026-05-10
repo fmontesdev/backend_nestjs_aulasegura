@@ -135,11 +135,30 @@ export class TypeormUsersRepository implements UsersRepository {
     });
   }
 
+  async findActiveUserById(userId: string): Promise<UserEntity | null> {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'role')
+      .where('user.userId = :userId', { userId })
+      .andWhere('(user.validTo IS NULL OR user.validTo > :now)', { now: new Date() })
+      .getOne();
+  }
+
+  async findActiveUsers(): Promise<UserEntity[]> {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'role')
+      .where('(user.validTo IS NULL OR user.validTo > :now)', { now: new Date() })
+      .distinct(true)
+      .getMany();
+  }
+
   async findActiveUsersByRole(roleName: RoleName): Promise<UserEntity[]> {
     return this.userRepo
       .createQueryBuilder('user')
       .innerJoinAndSelect('user.roles', 'role', 'role.name = :roleName', { roleName })
       .where('(user.validTo IS NULL OR user.validTo > :now)', { now: new Date() })
+      .distinct(true)
       .getMany();
   }
 

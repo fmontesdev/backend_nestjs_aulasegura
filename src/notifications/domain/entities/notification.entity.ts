@@ -4,7 +4,7 @@ import { NotificationRecipientEntity } from './notification-recipient.entity';
 export enum NotificationType {
   ACCESS = 'access',
   WARNING = 'warning',
-  ALERT = 'alert',
+  INFO = 'info',
 }
 
 @Entity({ name: 'notification' })

@@ -242,6 +242,14 @@ export class UsersService {
     return this.usersRepo.findActiveUsersByRole(roleName);
   }
 
+  async findActiveUserById(userId: string): Promise<UserEntity | null> {
+    return this.usersRepo.findActiveUserById(userId);
+  }
+
+  async findActiveUsers(): Promise<UserEntity[]> {
+    return this.usersRepo.findActiveUsers();
+  }
+
   //? Verifica que el email no esté en uso
   private async ensureEmailIsUnique(email: string): Promise<void> {
     const existingUser = await this.usersRepo.findOneByEmail(email);

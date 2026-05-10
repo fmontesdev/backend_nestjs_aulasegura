@@ -1,5 +1,7 @@
 import { NotificationRecipientEntity } from '../../domain/entities/notification-recipient.entity';
 import { NotificationEntity } from '../../domain/entities/notification.entity';
+import { PaginatedResult } from '../../application/dto/find-notifications-filters.dto';
+import { PaginatedNotificationsResponse, NotificationPaginationMeta } from '../dto/responses/paginated-notifications.response.dto';
 import { NotificationResponseDto } from '../dto/responses/notification.response.dto';
 import { toMadridIsoString } from 'src/common/utils/madrid-timezone.util';
 
@@ -21,5 +23,23 @@ export class NotificationMapper {
 
   static toResponseListFromRecipients(recipients: NotificationRecipientEntity[]): NotificationResponseDto[] {
     return recipients.map((recipient) => this.toResponseFromRecipient(recipient));
+  }
+
+  static toPaginationMeta(result: PaginatedResult<NotificationResponseDto>): NotificationPaginationMeta {
+    return {
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      hasPrevious: result.page > 1,
+      hasNext: result.page < result.totalPages,
+    };
+  }
+
+  static toPaginatedResponse(result: PaginatedResult<NotificationResponseDto>): PaginatedNotificationsResponse {
+    return {
+      data: result.data,
+      meta: this.toPaginationMeta(result),
+    };
   }
 }

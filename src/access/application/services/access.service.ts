@@ -56,6 +56,7 @@ export class AccessService {
     accessLog.subjectId = createDto.subjectId ?? null;
     accessLog.accessMethod = createDto.accessMethod;
     accessLog.accessStatus = createDto.accessStatus;
+    accessLog.reasonStatus = createDto.reasonStatus ?? null;
 
     const savedAccessLog = await this.accessLogRepository.save(accessLog);
     const accessLogWithRelations = await this.findAccessLogByIdOrFail(savedAccessLog.accessLogId);
@@ -159,6 +160,7 @@ export class AccessService {
         subjectId: null,
         accessMethod: checkDto.accessMethod,
         accessStatus,
+        reasonStatus,
       });
     }
 
@@ -223,6 +225,7 @@ export class AccessService {
         subjectId: null,
         accessMethod: checkDto.accessMethod,
         accessStatus,
+        reasonStatus,
       });
     }
 

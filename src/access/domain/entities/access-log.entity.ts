@@ -38,6 +38,9 @@ export class AccessLogEntity {
   @Column({ name: 'access_status', type: 'enum', enum: AccessStatus })
   accessStatus!: AccessStatus;
 
+  @Column({ name: 'reason_status', type: 'varchar', length: 255, nullable: true })
+  reasonStatus!: string | null;
+
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 

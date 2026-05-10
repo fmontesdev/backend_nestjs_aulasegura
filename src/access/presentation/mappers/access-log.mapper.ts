@@ -17,6 +17,7 @@ export class AccessLogMapper {
       subjectId: entity.subjectId,
       accessMethod: entity.accessMethod,
       accessStatus: entity.accessStatus,
+      reasonStatus: entity.reasonStatus,
       createdAt: toMadridIsoString(entity.createdAt),
     };
   }

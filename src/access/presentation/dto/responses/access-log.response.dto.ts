@@ -29,6 +29,9 @@ export class AccessLogResponse {
   @ApiProperty({ description: 'Estado del acceso', enum: AccessStatus, example: AccessStatus.ALLOWED })
   accessStatus: AccessStatus;
 
+  @ApiProperty({ description: 'Motivo del estado del acceso', example: 'Valid permission found', nullable: true })
+  reasonStatus: string | null;
+
   @ApiProperty({ description: 'Fecha y hora del acceso en Europe/Madrid', example: '2025-11-10T14:30:00.000+01:00' })
   createdAt: string;
 }

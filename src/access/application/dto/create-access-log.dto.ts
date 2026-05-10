@@ -9,4 +9,5 @@ export interface CreateAccessLogDto {
   subjectId?: number | null;
   accessMethod: AccessMethod;
   accessStatus: AccessStatus;
+  reasonStatus?: string | null;
 }

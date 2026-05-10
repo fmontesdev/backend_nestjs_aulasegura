@@ -154,3 +154,72 @@ export function getMadridTimeString(date: Date): string {
 
   return `${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`;
 }
+
+export function getMadridDayRange(date: Date = new Date()): { start: Date; end: Date } {
+  const parts = getMadridParts(date);
+  const start = madridLocalPartsToDate({ ...parts, hour: 0, minute: 0, second: 0, millisecond: 0 });
+  const nextDay = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + 1));
+  const endParts = {
+    year: nextDay.getUTCFullYear(),
+    month: nextDay.getUTCMonth() + 1,
+    day: nextDay.getUTCDate(),
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  };
+
+  return { start, end: madridLocalPartsToDate(endParts) };
+}
+
+export function getMadridWeekRange(date: Date = new Date()): { start: Date; end: Date } {
+  const parts = getMadridParts(date);
+  const dayOfWeek = getMadridDayOfWeek(date);
+  const monday = new Date(Date.UTC(parts.year, parts.month - 1, parts.day - dayOfWeek + 1));
+  const nextMonday = new Date(Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate() + 7));
+
+  const start = madridLocalPartsToDate({
+    year: monday.getUTCFullYear(),
+    month: monday.getUTCMonth() + 1,
+    day: monday.getUTCDate(),
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const end = madridLocalPartsToDate({
+    year: nextMonday.getUTCFullYear(),
+    month: nextMonday.getUTCMonth() + 1,
+    day: nextMonday.getUTCDate(),
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+
+  return { start, end };
+}
+
+export function getMadridMonthRange(date: Date = new Date()): { start: Date; end: Date } {
+  const parts = getMadridParts(date);
+  const start = madridLocalPartsToDate({
+    year: parts.year,
+    month: parts.month,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const end = madridLocalPartsToDate({
+    year: parts.month === 12 ? parts.year + 1 : parts.year,
+    month: parts.month === 12 ? 1 : parts.month + 1,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+
+  return { start, end };
+}

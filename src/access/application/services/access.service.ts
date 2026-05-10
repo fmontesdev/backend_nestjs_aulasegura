@@ -14,6 +14,7 @@ import { PermissionService } from '../../../permissions/application/services/per
 import { PermissionEntity } from 'src/permissions/domain/entities/permission.entity';
 import { AccessEventEmitter } from './access-event-emitter.service';
 import { NotificationService } from '../../../notifications/application/services/notification.service';
+import { FindAccessLogFiltersDto, PaginatedResult } from '../dto/find-access-log-filters.dto';
 
 @Injectable()
 export class AccessService {
@@ -36,8 +37,8 @@ export class AccessService {
   }
 
   /// Busca todos los registros de acceso
-  async findAll(): Promise<AccessLogEntity[]> {
-    return await this.accessLogRepository.findAll();
+  async findAll(filters: FindAccessLogFiltersDto): Promise<PaginatedResult<AccessLogEntity>> {
+    return await this.accessLogRepository.findAll(filters);
   }
 
   /// Busca un registro de acceso por ID o lanza una excepción si no se encuentra

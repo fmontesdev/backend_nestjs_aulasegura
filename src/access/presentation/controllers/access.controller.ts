@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, ForbiddenException, Sse, MessageEvent } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, ForbiddenException, Sse, MessageEvent, Query } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -17,9 +17,12 @@ import { AccessEventEmitter } from '../../application/services/access-event-emit
 import { RfidNfcAccessCheckRequest } from '../dto/requests/rfid-nfc-access-check.request.dto';
 import { QrAccessCheckRequest } from '../dto/requests/qr-access-check.request.dto';
 import { AccessLogResponse } from '../dto/responses/access-log.response.dto';
+import { GetAccessLogsQueryRequest } from '../dto/requests/get-access-logs-query.request.dto';
+import { PaginatedAccessLogsResponse } from '../dto/responses/paginated-access-logs.response.dto';
 import { AccessCheckResponse } from '../dto/responses/access-check.response.dto';
 import { AccessLogMapper } from '../mappers/access-log.mapper';
 import { AccessCheckMapper } from '../mappers/access-check.mapper';
+import { parseFiltersString } from '../utils/filters-parser.util';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -34,17 +37,24 @@ export class AccessController {
     private readonly accessEventEmitter: AccessEventEmitter,
   ) {}
 
-  @ApiOperation({ summary: 'Lista todos los registros de acceso' })
-  @ApiOkResponse({ type: [AccessLogResponse] })
+  @ApiOperation({ summary: 'Lista los registros de acceso con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedAccessLogsResponse })
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'No autenticado' })
   @ApiForbiddenResponse({ description: 'Prohibido. Requiere rol ADMIN' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ADMIN)
   @Get('logs')
-  async findAll(): Promise<AccessLogResponse[]> {
-    const accessLogs = await this.accessService.findAll();
-    return AccessLogMapper.toResponseList(accessLogs);
+  async findAll(@Query() query: GetAccessLogsQueryRequest): Promise<PaginatedAccessLogsResponse> {
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      ...parsedFilters,
+    };
+
+    const result = await this.accessService.findAll(filters);
+    return AccessLogMapper.toPaginatedResponse(result);
   }
 
   @ApiOperation({ summary: 'Stream en tiempo real de nuevos registros de acceso' })

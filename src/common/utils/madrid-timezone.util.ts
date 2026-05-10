@@ -155,6 +155,10 @@ export function getMadridTimeString(date: Date): string {
   return `${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`;
 }
 
+export function getMadridHour(date: Date): number {
+  return getMadridParts(date).hour;
+}
+
 export function getMadridDayRange(date: Date = new Date()): { start: Date; end: Date } {
   const parts = getMadridParts(date);
   const start = madridLocalPartsToDate({ ...parts, hour: 0, minute: 0, second: 0, millisecond: 0 });

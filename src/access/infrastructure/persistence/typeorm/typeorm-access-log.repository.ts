@@ -3,8 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AccessLogEntity } from '../../../domain/entities/access-log.entity';
 import { AccessLogRepository } from '../../../domain/repositories/access-log.repository';
+import {
+  AccessAnalyticsDateFilter,
+  AccessAnalyticsSummaryDto,
+  HourlyActivityDto,
+  TopDeniedRoomDto,
+  TopDeniedUserDto,
+} from '../../../application/dto/access-analytics-summary.dto';
 import { AccessLogDateFilter, FindAccessLogFiltersDto, PaginatedResult } from '../../../application/dto/find-access-log-filters.dto';
-import { getMadridDayRange, getMadridMonthRange, getMadridWeekRange } from 'src/common/utils/madrid-timezone.util';
+import { getMadridDayRange, getMadridHour, getMadridMonthRange, getMadridWeekRange } from 'src/common/utils/madrid-timezone.util';
 import { AccessStatus } from '../../../domain/enums/access-status.enum';
 
 const spanishAccessStatusMapping: Record<string, AccessStatus> = {
@@ -104,6 +111,22 @@ export class TypeOrmAccessLogRepository implements AccessLogRepository {
     };
   }
 
+  async getAnalyticsSummary(dateFilter: AccessAnalyticsDateFilter, limit: number): Promise<AccessAnalyticsSummaryDto> {
+    const range = this.getAnalyticsDateRange(dateFilter);
+    const logs = await this.repository
+      .createQueryBuilder('accessLog')
+      .leftJoinAndSelect('accessLog.user', 'user')
+      .leftJoinAndSelect('user.roles', 'role')
+      .leftJoinAndSelect('accessLog.room', 'room')
+      .where('accessLog.createdAt >= :startDate AND accessLog.createdAt < :endDate', {
+        startDate: range.start,
+        endDate: range.end,
+      })
+      .getMany();
+
+    return this.buildAnalyticsSummary(logs, limit);
+  }
+
   private getDateRange(dateFilter: AccessLogDateFilter): { start: Date; end: Date } {
     switch (dateFilter) {
       case AccessLogDateFilter.TODAY:
@@ -115,6 +138,129 @@ export class TypeOrmAccessLogRepository implements AccessLogRepository {
       default:
         return getMadridDayRange();
     }
+  }
+
+  private getAnalyticsDateRange(dateFilter: AccessAnalyticsDateFilter): { start: Date; end: Date } {
+    switch (dateFilter) {
+      case AccessAnalyticsDateFilter.TODAY:
+        return getMadridDayRange();
+      case AccessAnalyticsDateFilter.WEEK:
+        return getMadridWeekRange();
+      case AccessAnalyticsDateFilter.MONTH:
+        return getMadridMonthRange();
+      default:
+        return getMadridDayRange();
+    }
+  }
+
+  private buildAnalyticsSummary(logs: AccessLogEntity[], limit: number): AccessAnalyticsSummaryDto {
+    const totalAccesses = logs.length;
+    const allowedAccesses = logs.filter((log) => log.accessStatus === AccessStatus.ALLOWED).length;
+    const deniedLogs = logs.filter((log) => log.accessStatus === AccessStatus.DENIED);
+    const deniedAccesses = deniedLogs.length;
+    const denialRate = totalAccesses === 0 ? 0 : Math.round((deniedAccesses / totalAccesses) * 1000) / 10;
+
+    return {
+      kpis: {
+        totalAccesses,
+        allowedAccesses,
+        deniedAccesses,
+        denialRate,
+      },
+      topDeniedRooms: this.buildTopDeniedRooms(deniedLogs, limit),
+      topDeniedUsers: this.buildTopDeniedUsers(deniedLogs, limit),
+      hourlyActivity: this.buildHourlyActivity(logs),
+    };
+  }
+
+  private buildTopDeniedRooms(deniedLogs: AccessLogEntity[], limit: number): TopDeniedRoomDto[] {
+    const rooms = new Map<number, TopDeniedRoomDto>();
+
+    deniedLogs.forEach((log) => {
+      if (!log.room) return;
+
+      const current = rooms.get(log.room.roomId);
+      if (current) {
+        current.deniedCount += 1;
+        return;
+      }
+
+      rooms.set(log.room.roomId, {
+        roomId: log.room.roomId,
+        roomCode: log.room.roomCode,
+        roomName: log.room.name,
+        building: log.room.building,
+        floor: log.room.floor,
+        deniedCount: 1,
+      });
+    });
+
+    return [...rooms.values()]
+      .sort((a, b) => b.deniedCount - a.deniedCount || a.roomId - b.roomId)
+      .slice(0, limit);
+  }
+
+  private buildTopDeniedUsers(deniedLogs: AccessLogEntity[], limit: number): TopDeniedUserDto[] {
+    const users = new Map<string, TopDeniedUserDto>();
+
+    deniedLogs.forEach((log) => {
+      if (!log.user) return;
+
+      const current = users.get(log.user.userId);
+      if (current) {
+        current.deniedCount += 1;
+        return;
+      }
+
+      users.set(log.user.userId, {
+        userId: log.user.userId,
+        name: log.user.name,
+        lastname: log.user.lastname,
+        email: log.user.email,
+        avatar: log.user.avatar ?? null,
+        roles: log.user.roles?.map((role) => role.name) ?? [],
+        deniedCount: 1,
+      });
+    });
+
+    return [...users.values()]
+      .sort((a, b) => b.deniedCount - a.deniedCount || a.userId.localeCompare(b.userId))
+      .slice(0, limit);
+  }
+
+  private buildHourlyActivity(logs: AccessLogEntity[]): HourlyActivityDto[] {
+    const activity = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      total: 0,
+      allowed: 0,
+      denied: 0,
+      timeout: 0,
+      exit: 0,
+    }));
+
+    logs.forEach((log) => {
+      const hour = getMadridHour(log.createdAt);
+      const bucket = activity[hour];
+      bucket.total += 1;
+
+      if (log.accessStatus === AccessStatus.ALLOWED) {
+        bucket.allowed += 1;
+      }
+
+      if (log.accessStatus === AccessStatus.DENIED) {
+        bucket.denied += 1;
+      }
+
+      if (log.accessStatus === AccessStatus.TIMEOUT) {
+        bucket.timeout += 1;
+      }
+
+      if (log.accessStatus === AccessStatus.EXIT) {
+        bucket.exit += 1;
+      }
+    });
+
+    return activity;
   }
 
   async findOneById(accessLogId: number): Promise<AccessLogEntity | null> {

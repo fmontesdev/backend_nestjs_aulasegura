@@ -9,6 +9,7 @@ describe('AccessService reasonStatus persistence', () => {
 
     const accessLogRepository = {
       findAll: jest.fn(),
+      getAnalyticsSummary: jest.fn(),
       findOneById: jest.fn(async () => savedAccessLog),
       save: jest.fn(async (accessLog: AccessLogEntity) => {
         savedAccessLog = { ...accessLog, accessLogId: 1 } as AccessLogEntity;

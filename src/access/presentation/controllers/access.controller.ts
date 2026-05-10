@@ -18,6 +18,8 @@ import { RfidNfcAccessCheckRequest } from '../dto/requests/rfid-nfc-access-check
 import { QrAccessCheckRequest } from '../dto/requests/qr-access-check.request.dto';
 import { AccessLogResponse } from '../dto/responses/access-log.response.dto';
 import { GetAccessLogsQueryRequest } from '../dto/requests/get-access-logs-query.request.dto';
+import { GetAccessAnalyticsSummaryQueryRequest } from '../dto/requests/get-access-analytics-summary-query.request.dto';
+import { AccessAnalyticsSummaryResponse } from '../dto/responses/access-analytics-summary.response.dto';
 import { PaginatedAccessLogsResponse } from '../dto/responses/paginated-access-logs.response.dto';
 import { AccessCheckResponse } from '../dto/responses/access-check.response.dto';
 import { AccessLogMapper } from '../mappers/access-log.mapper';
@@ -28,6 +30,7 @@ import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
 import { CurrentUser } from '../../../auth/infrastructure/decorators/current-user.decorator';
 import { RoleName } from '../../../users/domain/enums/rolename.enum';
+import { AccessAnalyticsDateFilter } from '../../application/dto/access-analytics-summary.dto';
 
 @ApiTags('access')
 @Controller('access')
@@ -55,6 +58,18 @@ export class AccessController {
 
     const result = await this.accessService.findAll(filters);
     return AccessLogMapper.toPaginatedResponse(result);
+  }
+
+  @ApiOperation({ summary: 'Devuelve un resumen agregado de analíticas de accesos' })
+  @ApiOkResponse({ type: AccessAnalyticsSummaryResponse })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'Prohibido. Requiere rol ADMIN' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
+  @Get('analytics/summary')
+  async getAnalyticsSummary(@Query() query: GetAccessAnalyticsSummaryQueryRequest): Promise<AccessAnalyticsSummaryResponse> {
+    return this.accessService.getAnalyticsSummary(query.date ?? AccessAnalyticsDateFilter.TODAY, query.limit ?? 5);
   }
 
   @ApiOperation({ summary: 'Stream en tiempo real de nuevos registros de acceso' })

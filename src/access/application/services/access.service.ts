@@ -12,6 +12,7 @@ import { TagService } from 'src/tags/application/services/tag.service';
 import { ReaderService } from 'src/readers/application/services/reader.service';
 import { PermissionService } from '../../../permissions/application/services/permission.service';
 import { PermissionEntity } from 'src/permissions/domain/entities/permission.entity';
+import { AccessEventEmitter } from './access-event-emitter.service';
 
 @Injectable()
 export class AccessService {
@@ -23,6 +24,7 @@ export class AccessService {
     private readonly readerService: ReaderService,
     private readonly permissionService: PermissionService,
     private readonly configService: ConfigService,
+    private readonly accessEventEmitter: AccessEventEmitter,
   ) {
     this.pepper = this.configService.get<string>('TAG_PEPPER') || '';
     if (!this.pepper) {
@@ -51,7 +53,12 @@ export class AccessService {
     accessLog.accessMethod = createDto.accessMethod;
     accessLog.accessStatus = createDto.accessStatus;
 
-    return await this.accessLogRepository.save(accessLog);
+    const savedAccessLog = await this.accessLogRepository.save(accessLog);
+    const accessLogWithRelations = await this.findAccessLogByIdOrFail(savedAccessLog.accessLogId);
+
+    this.accessEventEmitter.emit(accessLogWithRelations);
+
+    return accessLogWithRelations;
   }
 
   /// Verifica el acceso de un usuario a un aula y registra el intento a través de RFID/NFC

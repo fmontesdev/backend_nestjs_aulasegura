@@ -5,6 +5,7 @@ import { AccessLogEntity } from './domain/entities/access-log.entity';
 import { AccessLogRepository } from './domain/repositories/access-log.repository';
 import { TypeOrmAccessLogRepository } from './infrastructure/persistence/typeorm/typeorm-access-log.repository';
 import { AccessService } from './application/services/access.service';
+import { AccessEventEmitter } from './application/services/access-event-emitter.service';
 import { AccessController } from './presentation/controllers/access.controller';
 import { TagModule } from '../tags/tag.module';
 import { ReaderModule } from '../readers/reader.module';
@@ -21,6 +22,7 @@ import { PermissionModule } from '../permissions/permission.module';
   controllers: [AccessController],
   providers: [
     AccessService,
+    AccessEventEmitter,
     {
       provide: AccessLogRepository,
       useClass: TypeOrmAccessLogRepository,

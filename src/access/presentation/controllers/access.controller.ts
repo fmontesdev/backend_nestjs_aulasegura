@@ -1,8 +1,19 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiParam,
-  ApiBody, ApiUnauthorizedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiBadRequestResponse
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, ForbiddenException, Sse, MessageEvent } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
+import { interval, map, merge, Observable } from 'rxjs';
 import { AccessService } from '../../application/services/access.service';
+import { AccessEventEmitter } from '../../application/services/access-event-emitter.service';
 import { RfidNfcAccessCheckRequest } from '../dto/requests/rfid-nfc-access-check.request.dto';
 import { QrAccessCheckRequest } from '../dto/requests/qr-access-check.request.dto';
 import { AccessLogResponse } from '../dto/responses/access-log.response.dto';
@@ -18,7 +29,10 @@ import { RoleName } from '../../../users/domain/enums/rolename.enum';
 @ApiTags('access')
 @Controller('access')
 export class AccessController {
-  constructor(private readonly accessService: AccessService) {}
+  constructor(
+    private readonly accessService: AccessService,
+    private readonly accessEventEmitter: AccessEventEmitter,
+  ) {}
 
   @ApiOperation({ summary: 'Lista todos los registros de acceso' })
   @ApiOkResponse({ type: [AccessLogResponse] })
@@ -31,6 +45,31 @@ export class AccessController {
   async findAll(): Promise<AccessLogResponse[]> {
     const accessLogs = await this.accessService.findAll();
     return AccessLogMapper.toResponseList(accessLogs);
+  }
+
+  @ApiOperation({ summary: 'Stream en tiempo real de nuevos registros de acceso' })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'Prohibido. Requiere rol ADMIN' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN)
+  @Sse('events')
+  events(): Observable<MessageEvent> {
+    const accessLogEvents$ = this.accessEventEmitter.asObservable().pipe(
+      map((accessLog) => ({
+        type: 'access-log',
+        data: AccessLogMapper.toResponse(accessLog),
+      })),
+    );
+
+    const heartbeat$ = interval(30000).pipe(
+      map(() => ({
+        type: 'ping',
+        data: { timestamp: new Date().toISOString() },
+      })),
+    );
+
+    return merge(accessLogEvents$, heartbeat$);
   }
 
   @ApiOperation({ summary: 'Muestra un registro de acceso por ID' })

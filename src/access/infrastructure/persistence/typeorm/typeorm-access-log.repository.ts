@@ -11,7 +11,7 @@ import {
   TopDeniedUserDto,
 } from '../../../application/dto/access-analytics-summary.dto';
 import { AccessLogDateFilter, FindAccessLogFiltersDto, PaginatedResult } from '../../../application/dto/find-access-log-filters.dto';
-import { getMadridDayRange, getMadridHour, getMadridMonthRange, getMadridWeekRange } from 'src/common/utils/madrid-timezone.util';
+import { getMadridDayRange, getMadridHour } from 'src/common/utils/madrid-timezone.util';
 import { AccessStatus } from '../../../domain/enums/access-status.enum';
 
 const spanishAccessStatusMapping: Record<string, AccessStatus> = {
@@ -132,9 +132,9 @@ export class TypeOrmAccessLogRepository implements AccessLogRepository {
       case AccessLogDateFilter.TODAY:
         return getMadridDayRange();
       case AccessLogDateFilter.WEEK:
-        return getMadridWeekRange();
+        return this.getRollingDaysRange(7);
       case AccessLogDateFilter.MONTH:
-        return getMadridMonthRange();
+        return this.getRollingDaysRange(30);
       default:
         return getMadridDayRange();
     }

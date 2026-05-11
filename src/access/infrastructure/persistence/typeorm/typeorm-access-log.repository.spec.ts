@@ -6,17 +6,21 @@ import { AccessStatus } from '../../../domain/enums/access-status.enum';
 import { RoleName } from '../../../../users/domain/enums/rolename.enum';
 
 describe('TypeOrmAccessLogRepository analytics summary', () => {
-  const createRepository = (logs: AccessLogEntity[]) => {
+  const createRepositoryWithQueryBuilder = (logs: AccessLogEntity[]) => {
     const queryBuilder = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue(logs),
     };
 
-    return new TypeOrmAccessLogRepository({
+    const repository = new TypeOrmAccessLogRepository({
       createQueryBuilder: jest.fn(() => queryBuilder),
     } as any);
+
+    return { repository, queryBuilder };
   };
+
+  const createRepository = (logs: AccessLogEntity[]) => createRepositoryWithQueryBuilder(logs).repository;
 
   const createLog = (overrides: Partial<AccessLogEntity>): AccessLogEntity => ({
     accessLogId: 1,
@@ -135,5 +139,31 @@ describe('TypeOrmAccessLogRepository analytics summary', () => {
     });
     expect(summary.topDeniedRooms).toEqual([]);
     expect(summary.topDeniedUsers).toEqual([]);
+  });
+
+  it('filtra week como una ventana móvil de los últimos 7 días', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-05-11T10:30:00.000Z'));
+    const { repository, queryBuilder } = createRepositoryWithQueryBuilder([]);
+
+    await repository.getAnalyticsSummary(AccessAnalyticsDateFilter.WEEK, 5);
+
+    expect(queryBuilder.where).toHaveBeenCalledWith('accessLog.createdAt >= :startDate AND accessLog.createdAt < :endDate', {
+      startDate: new Date('2026-05-04T10:30:00.000Z'),
+      endDate: new Date('2026-05-11T10:30:00.000Z'),
+    });
+    jest.useRealTimers();
+  });
+
+  it('filtra month como una ventana móvil de los últimos 30 días', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-05-11T10:30:00.000Z'));
+    const { repository, queryBuilder } = createRepositoryWithQueryBuilder([]);
+
+    await repository.getAnalyticsSummary(AccessAnalyticsDateFilter.MONTH, 5);
+
+    expect(queryBuilder.where).toHaveBeenCalledWith('accessLog.createdAt >= :startDate AND accessLog.createdAt < :endDate', {
+      startDate: new Date('2026-04-11T10:30:00.000Z'),
+      endDate: new Date('2026-05-11T10:30:00.000Z'),
+    });
+    jest.useRealTimers();
   });
 });

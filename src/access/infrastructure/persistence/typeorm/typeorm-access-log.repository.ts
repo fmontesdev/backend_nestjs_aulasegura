@@ -145,12 +145,19 @@ export class TypeOrmAccessLogRepository implements AccessLogRepository {
       case AccessAnalyticsDateFilter.TODAY:
         return getMadridDayRange();
       case AccessAnalyticsDateFilter.WEEK:
-        return getMadridWeekRange();
+        return this.getRollingDaysRange(7);
       case AccessAnalyticsDateFilter.MONTH:
-        return getMadridMonthRange();
+        return this.getRollingDaysRange(30);
       default:
         return getMadridDayRange();
     }
+  }
+
+  private getRollingDaysRange(days: number): { start: Date; end: Date } {
+    const end = new Date();
+    const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+
+    return { start, end };
   }
 
   private buildAnalyticsSummary(logs: AccessLogEntity[], limit: number): AccessAnalyticsSummaryDto {

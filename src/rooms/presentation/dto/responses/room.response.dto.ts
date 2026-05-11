@@ -11,6 +11,9 @@ export class RoomResponse {
   @ApiProperty({ description: 'Nombre de la sala', example: 'Laboratorio 1' })
   name: string;
 
+  @ApiPropertyOptional({ description: 'ID del curso asignado a esta sala (si aplica)', example: 1, nullable: true })
+  courseId: number | null;
+
   @ApiPropertyOptional({ description: 'Nombre del curso asignado a esta sala (si aplica)', example: '2º DAM', nullable: true })
   courseName: string | null;
 

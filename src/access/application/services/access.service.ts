@@ -134,6 +134,10 @@ export class AccessService {
       }
 
       readerId = reader.readerId;
+      if (reader.roomId === null) {
+        reasonStatus = 'Reader is not assigned to a room';
+        throw new BadRequestException(reasonStatus);
+      }
       roomId = reader.roomId;
 
       //* Valida si el usuario tiene permiso activo en este momento para esta aula
@@ -199,6 +203,10 @@ export class AccessService {
       }
 
       readerId = reader.readerId;
+      if (reader.roomId === null) {
+        reasonStatus = 'Reader is not assigned to a room';
+        throw new BadRequestException(reasonStatus);
+      }
       roomId = reader.roomId;
 
       //* Valida si el usuario tiene permiso activo en este momento para esta aula

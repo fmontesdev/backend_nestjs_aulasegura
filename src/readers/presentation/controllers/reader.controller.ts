@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiParam, ApiBody, ApiBearerAuth, ApiUnauthorizedResponse,
   ApiForbiddenResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiCreatedResponse, ApiConflictResponse
 } from '@nestjs/swagger';
 import { ReaderService } from '../../application/services/reader.service';
 import { CreateReaderRequest } from '../dto/requests/create-reader.request.dto';
 import { UpdateReaderRequest } from '../dto/requests/update-reader.request.dto';
+import { GetReadersQueryRequest } from '../dto/requests/get-readers-query.request.dto';
 import { ReaderResponse } from '../dto/responses/reader.response.dto';
+import { PaginatedReadersResponse } from '../dto/responses/paginated-readers.response.dto';
 import { ReaderMapper } from '../mappers/reader.mapper';
+import { parseFiltersString } from '../utils/filters-parser.util';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -21,13 +24,20 @@ import { RoleName } from '../../../users/domain/enums/rolename.enum';
 export class ReaderController {
   constructor(private readonly readerService: ReaderService) {}
 
-  @ApiOperation({ summary: 'Lista todos los lectores' })
-  @ApiOkResponse({ type: [ReaderResponse] })
+  @ApiOperation({ summary: 'Lista todos los lectores con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedReadersResponse })
   @Roles(RoleName.ADMIN)
   @Get()
-  async findAll(): Promise<ReaderResponse[]> {
-    const readers = await this.readerService.findAll();
-    return ReaderMapper.toResponseList(readers);
+  async findAll(@Query() query: GetReadersQueryRequest): Promise<PaginatedReadersResponse> {
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      ...parsedFilters,
+    };
+
+    const result = await this.readerService.findAllWithFilters(filters);
+    return ReaderMapper.toPaginatedResponse(result);
   }
 
   @ApiOperation({ summary: 'Muestra un lector por ID' })

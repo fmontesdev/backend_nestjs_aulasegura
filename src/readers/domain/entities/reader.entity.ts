@@ -12,12 +12,12 @@ export class ReaderEntity {
   @Column({ name: 'reader_code', type: 'varchar', length: 50 })
   readerCode!: string;
 
-  @Column({ name: 'room_id', type: 'int' })
-  roomId!: number;
+  @Column({ name: 'room_id', type: 'int', nullable: true })
+  roomId!: number | null;
 
-  @ManyToOne(() => RoomEntity, (r) => r.readers, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => RoomEntity, (r) => r.readers, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'room_id' })
-  room!: RoomEntity;
+  room!: RoomEntity | null;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;

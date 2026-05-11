@@ -6,8 +6,11 @@ import { RoomService } from '../../application/services/room.service';
 import { CreateRoomRequest } from '../dto/requests/create-room.request.dto';
 import { UpdateRoomRequest } from '../dto/requests/update-room.request.dto';
 import { FindAvailableRoomsRequest } from '../dto/requests/find-available-rooms.request.dto';
+import { GetRoomsQueryRequest } from '../dto/requests/get-rooms-query.request.dto';
 import { RoomResponse } from '../dto/responses/room.response.dto';
+import { PaginatedRoomsResponse } from '../dto/responses/paginated-rooms.response.dto';
 import { RoomMapper } from '../mappers/room.mapper';
+import { parseFiltersString } from '../utils/filters-parser.util';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -22,13 +25,20 @@ import { RoleName } from '../../../users/domain/enums/rolename.enum';
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
-  @ApiOperation({ summary: 'Lista todas las aulas' })
-  @ApiOkResponse({ type: [RoomResponse] })
+  @ApiOperation({ summary: 'Lista todas las aulas con paginación y filtros' })
+  @ApiOkResponse({ type: PaginatedRoomsResponse })
   @Roles(RoleName.ADMIN)
   @Get()
-  async findAll(): Promise<RoomResponse[]> {
-    const rooms = await this.roomService.findAll();
-    return RoomMapper.toResponseList(rooms);
+  async findAll(@Query() query: GetRoomsQueryRequest): Promise<PaginatedRoomsResponse> {
+    const parsedFilters = query.filters ? parseFiltersString(query.filters) : {};
+    const filters = {
+      page: query.page || 1,
+      limit: query.limit || 10,
+      ...parsedFilters,
+    };
+
+    const result = await this.roomService.findAllWithFilters(filters);
+    return RoomMapper.toPaginatedResponse(result);
   }
 
   @ApiOperation({ 
@@ -101,9 +111,9 @@ export class RoomController {
   @ApiNotFoundResponse({ description: 'Aula no encontrada' })
   @ApiBadRequestResponse({ description: 'El parámetro id debe ser un entero' })
   @Roles(RoleName.ADMIN)
-  @Delete('/:id')
+  @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.roomService.delete(id);
-    return { message: 'Room deleted successfully' };
+    return { message: 'Aula eliminada con éxito' };
   }
 }

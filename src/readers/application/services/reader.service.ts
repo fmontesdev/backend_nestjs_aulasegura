@@ -3,6 +3,7 @@ import { ReaderEntity } from '../../domain/entities/reader.entity';
 import { ReaderRepository } from '../../domain/repositories/reader.repository';
 import { CreateReaderDto } from '../dto/create-reader.dto';
 import { UpdateReaderDto } from '../dto/update-reader.dto';
+import { FindReadersFiltersDto, PaginatedResult } from '../dto/find-readers-filters.dto';
 import { RoomService } from '../../../rooms/application/services/room.service';
 import { RoomEntity } from '../../../rooms/domain/entities/room.entity';
 
@@ -16,6 +17,10 @@ export class ReaderService {
   /// Busca todos los lectores activos
   async findAll(): Promise<ReaderEntity[]> {
     return await this.readerRepository.findAll();
+  }
+
+  async findAllWithFilters(filters: FindReadersFiltersDto): Promise<PaginatedResult<ReaderEntity>> {
+    return await this.readerRepository.findAllWithFilters(filters);
   }
 
   /// Busca un lector por readerId o lanza una excepción si no se encuentra

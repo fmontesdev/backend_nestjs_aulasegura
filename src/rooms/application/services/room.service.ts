@@ -4,6 +4,7 @@ import { RoomRepository } from '../../domain/repositories/room.repository';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { UpdateRoomDto } from '../dto/update-room.dto';
 import { FindAvailableRoomsDto } from '../dto/find-available-rooms.dto';
+import { FindRoomsFiltersDto, PaginatedResult } from '../dto/find-rooms-filters.dto';
 import { CourseService } from '../../../courses/application/services/course.service';
 import { PermissionService } from '../../../permissions/application/services/permission.service';
 import { CourseEntity } from '../../../courses/domain/entities/course.entity';
@@ -19,6 +20,10 @@ export class RoomService {
   /// Busca todas las aulas activas
   async findAll(): Promise<RoomEntity[]> {
     return await this.roomRepository.findAll();
+  }
+
+  async findAllWithFilters(filters: FindRoomsFiltersDto): Promise<PaginatedResult<RoomEntity>> {
+    return await this.roomRepository.findAllWithFilters(filters);
   }
 
   /// Busca un aula por roomId o lanza una excepción si no se encuentra
@@ -102,6 +107,16 @@ export class RoomService {
   async delete(roomId: number): Promise<void> {
     // Verifica que el aula existe antes de eliminar
     await this.findRoomByIdOrFail(roomId);
+
+    if (await this.roomRepository.hasPermissions(roomId)) {
+      throw new ConflictException('No se puede eliminar el aula porque tiene permisos asociados');
+    }
+
+    if (await this.roomRepository.hasAccessLogs(roomId)) {
+      throw new ConflictException('No se puede eliminar el aula porque tiene registros de acceso asociados');
+    }
+
+    await this.roomRepository.detachReaders(roomId);
     await this.roomRepository.delete(roomId);
   }
 
@@ -139,4 +154,5 @@ export class RoomService {
       throw new ConflictException(`Room with code ${roomCode} already exists`);
     }
   }
+
 }

@@ -57,6 +57,10 @@ export class TagService {
       }
     }
 
+    if (createDto.type === TagType.NFC_MOBILE) {
+      return this.createOrRegenerateMobileCredential(user);
+    }
+
     const { tagCode, mobileCredential } = this.generateCredential(createDto.type, createDto.rawUid);
 
     // Verificar que el tagCode sea único
@@ -123,6 +127,49 @@ export class TagService {
 
     const mobileCredential = randomBytes(32).toString('base64url');
     return { tagCode: this.hashCredential(mobileCredential), mobileCredential };
+  }
+
+  private async createOrRegenerateMobileCredential(user: any): Promise<CreateTagResultDto> {
+    const activeMobileTags = await this.tagRepository.findActiveByUserIdAndType(user.userId, TagType.NFC_MOBILE);
+    const tagToUse = activeMobileTags[0];
+    const duplicatedTags = activeMobileTags.slice(1);
+    const { tagCode, mobileCredential } = this.generateCredential(TagType.NFC_MOBILE);
+
+    await this.ensureTagCodeIsUnique(tagCode, tagToUse?.tagId);
+
+    for (const duplicatedTag of duplicatedTags) {
+      duplicatedTag.isActive = false;
+      await this.tagRepository.save(duplicatedTag);
+    }
+
+    if (tagToUse) {
+      tagToUse.tagCode = tagCode;
+      tagToUse.issuedAt = new Date();
+      tagToUse.isActive = true;
+      tagToUse.user = tagToUse.user ?? user;
+      tagToUse.userId = user.userId;
+
+      try {
+        const savedTag = await this.tagRepository.save(tagToUse);
+        return { tag: savedTag, mobileCredential };
+      } catch (error) {
+        throw new ConflictException(`Tag could not be updated`);
+      }
+    }
+
+    const tag = new TagEntity();
+    tag.tagCode = tagCode;
+    tag.user = user;
+    tag.userId = user.userId;
+    tag.type = TagType.NFC_MOBILE;
+    tag.isActive = true;
+
+    try {
+      const savedTag = await this.tagRepository.save(tag);
+      return { tag: savedTag, mobileCredential };
+    } catch (error) {
+      throw new ConflictException(`Tag could not be created`);
+    }
   }
 
   //? Calcula HMAC-SHA256 y guarda solo los primeros 16 bytes en base64url

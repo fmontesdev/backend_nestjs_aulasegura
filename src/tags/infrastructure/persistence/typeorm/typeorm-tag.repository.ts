@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { TagEntity } from '../../../domain/entities/tag.entity';
 import { TagRepository } from '../../../domain/repositories/tag.repository';
 import { FindTagsFiltersDto, PaginatedResult } from '../../../application/dto/find-tags-filters.dto';
+import { TagType } from '../../../domain/enums/tag-type.enum';
 
 @Injectable()
 export class TypeOrmTagRepository implements TagRepository {
@@ -98,6 +99,14 @@ export class TypeOrmTagRepository implements TagRepository {
     return this.repository.findOne({
       where: { tagCode },
       relations: ['user'],
+    });
+  }
+
+  async findActiveByUserIdAndType(userId: string, type: TagType): Promise<TagEntity[]> {
+    return this.repository.find({
+      where: { userId, type, isActive: true },
+      relations: ['user'],
+      order: { issuedAt: 'DESC', tagId: 'DESC' },
     });
   }
 

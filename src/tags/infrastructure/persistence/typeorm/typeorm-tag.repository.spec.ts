@@ -12,9 +12,13 @@ describe('TypeOrmTagRepository findAllWithFilters', () => {
       take: jest.fn().mockReturnThis(),
       getManyAndCount: jest.fn().mockResolvedValue([[{ tagId: 1 }], 11]),
     };
-    const repository = new TypeOrmTagRepository({ createQueryBuilder: jest.fn(() => queryBuilder) } as any);
+    const ormRepository = {
+      createQueryBuilder: jest.fn(() => queryBuilder),
+      find: jest.fn(),
+    };
+    const repository = new TypeOrmTagRepository(ormRepository as any);
 
-    return { repository, queryBuilder };
+    return { repository, queryBuilder, ormRepository };
   };
 
   it('joins user, applies pagination, and returns standard meta data', async () => {
@@ -46,5 +50,18 @@ describe('TypeOrmTagRepository findAllWithFilters', () => {
     expect(queryBuilder.andWhere).toHaveBeenCalledWith('tag.type = :type', { type: TagType.RFID });
     expect(queryBuilder.andWhere).toHaveBeenCalledWith(expect.stringContaining('LOWER(user.name)'), { user: '%Ruiz%' });
     expect(queryBuilder.andWhere).toHaveBeenCalledWith('LOWER(user.email) LIKE LOWER(:email)', { email: '%ana@example.com%' });
+  });
+
+  it('finds active tags by user and type ordered by newest credential first', async () => {
+    const { repository, ormRepository } = createRepository();
+    ormRepository.find.mockResolvedValue([{ tagId: 1 }]);
+
+    await expect(repository.findActiveByUserIdAndType('user-1', TagType.NFC_MOBILE)).resolves.toEqual([{ tagId: 1 }]);
+
+    expect(ormRepository.find).toHaveBeenCalledWith({
+      where: { userId: 'user-1', type: TagType.NFC_MOBILE, isActive: true },
+      relations: ['user'],
+      order: { issuedAt: 'DESC', tagId: 'DESC' },
+    });
   });
 });

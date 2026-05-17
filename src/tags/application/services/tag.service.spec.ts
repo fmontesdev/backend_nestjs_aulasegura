@@ -31,6 +31,7 @@ describe('TagService credentials', () => {
       findOneById: jest.fn(),
       findOneActiveById: jest.fn(),
       findOneByTagCode: jest.fn().mockResolvedValue(null),
+      findActiveByUserIdAndType: jest.fn().mockResolvedValue([]),
       save: jest.fn(async (tag: TagEntity) => ({ ...tag, tagId: tag.tagId ?? 1, issuedAt: new Date('2026-05-11T10:00:00.000Z') }) as TagEntity),
     };
     usersService = { findOne: jest.fn().mockResolvedValue(user) };
@@ -59,6 +60,48 @@ describe('TagService credentials', () => {
     expect(result.mobileCredential).not.toBe(result.tag.tagCode);
     expect(result.tag.tagCode).toBe(hashCredential(result.mobileCredential!));
     expect(Object.prototype.hasOwnProperty.call(result.tag, 'mobileCredential')).toBe(false);
+  });
+
+  it('creates a new active nfc_mobile credential when the user has none', async () => {
+    const result = await service.create({ userId: user.userId, type: TagType.NFC_MOBILE });
+
+    expect(usersService.findOne).toHaveBeenCalledWith(user.userId);
+    expect(tagRepository.findActiveByUserIdAndType).toHaveBeenCalledWith(user.userId, TagType.NFC_MOBILE);
+    expect(result.mobileCredential).toEqual(expect.any(String));
+    expect(result.tag.type).toBe(TagType.NFC_MOBILE);
+    expect(result.tag.user).toBe(user);
+    expect(result.tag.tagCode).toBe(hashCredential(result.mobileCredential!));
+  });
+
+  it('regenerates an existing active nfc_mobile credential and invalidates duplicates', async () => {
+    const existingTag = {
+      tagId: 7,
+      tagCode: 'old-mobile-hash',
+      type: TagType.NFC_MOBILE,
+      user,
+      userId: user.userId,
+      isActive: true,
+      issuedAt: new Date('2026-05-10T10:00:00.000Z'),
+    } as TagEntity;
+    const duplicateTag = {
+      tagId: 8,
+      tagCode: 'duplicated-mobile-hash',
+      type: TagType.NFC_MOBILE,
+      user,
+      userId: user.userId,
+      isActive: true,
+      issuedAt: new Date('2026-05-09T10:00:00.000Z'),
+    } as TagEntity;
+    tagRepository.findActiveByUserIdAndType.mockResolvedValue([existingTag, duplicateTag]);
+
+    const result = await service.create({ userId: user.userId, type: TagType.NFC_MOBILE });
+
+    expect(result.tag.tagId).toBe(7);
+    expect(result.mobileCredential).toEqual(expect.any(String));
+    expect(existingTag.tagCode).toBe(hashCredential(result.mobileCredential!));
+    expect(duplicateTag.isActive).toBe(false);
+    expect(tagRepository.save).toHaveBeenCalledWith(duplicateTag);
+    expect(tagRepository.save).toHaveBeenCalledWith(expect.objectContaining({ tagId: 7, isActive: true }));
   });
 
   it('regenerates only RFID credentials and ignores self-conflict', async () => {

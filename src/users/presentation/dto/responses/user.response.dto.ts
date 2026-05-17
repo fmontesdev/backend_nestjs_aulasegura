@@ -2,6 +2,31 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RoleName } from '../../../domain/enums/rolename.enum';
 import { DepartmentEntity } from 'src/departments/domain/entities/department.entity';
 
+export class UserCourseSubjectResponse {
+  @ApiProperty({ description: 'Identificador de la asignatura', example: 10 })
+  subjectId!: number;
+
+  @ApiProperty({ description: 'Código de la asignatura', example: 'MAT' })
+  subjectCode!: string;
+
+  @ApiProperty({ description: 'Nombre de la asignatura', example: 'Matemáticas' })
+  name!: string;
+}
+
+export class UserCourseResponse {
+  @ApiProperty({ description: 'Identificador del curso', example: 1 })
+  courseId!: number;
+
+  @ApiProperty({ description: 'Código del curso', example: '1ESO' })
+  courseCode!: string;
+
+  @ApiProperty({ description: 'Nombre del curso', example: '1º ESO' })
+  name!: string;
+
+  @ApiProperty({ description: 'Asignaturas asignadas al profesor en este curso', type: () => [UserCourseSubjectResponse] })
+  subjects!: UserCourseSubjectResponse[];
+}
+
 export class UserResponse {
   @ApiProperty({
     description: 'Identificador del usuario (UUID v4)',
@@ -61,4 +86,11 @@ export class UserResponse {
     nullable: true,
   })
   department!: DepartmentEntity | null;
+
+  @ApiPropertyOptional({
+    description: 'Cursos con asignaturas asignadas al profesor. Null para usuarios que no son teachers.',
+    type: () => [UserCourseResponse],
+    nullable: true,
+  })
+  courses!: UserCourseResponse[] | null;
 }

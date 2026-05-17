@@ -22,7 +22,7 @@ export class TeacherSubjectCourseEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @ManyToOne(() => TeacherEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => TeacherEntity, (teacher) => teacher.subjectCourseAssignments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   teacher!: TeacherEntity;
 

@@ -1,7 +1,8 @@
-import { Entity, Column, PrimaryColumn, Index, OneToOne, ManyToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index, OneToOne, ManyToOne, ManyToMany, JoinColumn, JoinTable, OneToMany } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { DepartmentEntity } from '../../../departments/domain/entities/department.entity';
 import { SubjectEntity } from '../../../subjects/domain/entities/subject.entity';
+import { TeacherSubjectCourseEntity } from './teacher-subject-course.entity';
 
 @Entity({ name: 'teacher' })
 @Index('idx_teacher_department', ['departmentId'])
@@ -27,4 +28,7 @@ export class TeacherEntity {
     inverseJoinColumn: { name: 'subject_id', referencedColumnName: 'subjectId' },
   })
   subjects!: SubjectEntity[];
+
+  @OneToMany(() => TeacherSubjectCourseEntity, (assignment) => assignment.teacher)
+  subjectCourseAssignments!: TeacherSubjectCourseEntity[];
 }

@@ -27,7 +27,12 @@ export class TypeormUsersRepository implements UsersRepository {
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.roles', 'role')
       .leftJoinAndSelect('user.teacher', 'teacher')
-      .leftJoinAndSelect('teacher.department', 'department');
+      .leftJoinAndSelect('teacher.department', 'department')
+      .leftJoinAndSelect('teacher.subjectCourseAssignments', 'teacherAssignment', 'teacherAssignment.isActive = :activeAssignment', {
+        activeAssignment: true,
+      })
+      .leftJoinAndSelect('teacherAssignment.course', 'assignmentCourse')
+      .leftJoinAndSelect('teacherAssignment.subject', 'assignmentSubject');
 
     // JOIN adicional solo para filtrar (no para cargar datos) - evita que se filtren las relaciones
     const needsRoleFilter = (globalSearch && globalSearch.length > 0) || (roles && roles.length > 0);
@@ -93,7 +98,10 @@ export class TypeormUsersRepository implements UsersRepository {
     }
 
     // Ordenar por fecha de creación descendente
-    query.orderBy('user.createdAt', 'DESC');
+    query
+      .orderBy('user.createdAt', 'DESC')
+      .addOrderBy('assignmentCourse.courseId', 'ASC')
+      .addOrderBy('assignmentSubject.subjectId', 'ASC');
 
     // Evitar duplicados cuando usamos el JOIN adicional para filtrar roles
     if (needsRoleFilter) {
@@ -122,17 +130,30 @@ export class TypeormUsersRepository implements UsersRepository {
   }
 
   async findOneById(userId: string): Promise<UserEntity | null> {
-    return await this.userRepo.findOne({ 
-      where: { userId },
-      relations: ['roles', 'teacher', 'teacher.department'] 
-    });
+    return await this.createUserResponseQuery()
+      .where('user.userId = :userId', { userId })
+      .getOne();
   }
 
   async findOneByEmail(email: string): Promise<UserEntity | null> {
-    return await this.userRepo.findOne({ 
-      where: { email },
-      relations: ['roles', 'teacher', 'teacher.department'] 
-    });
+    return await this.createUserResponseQuery()
+      .where('user.email = :email', { email })
+      .getOne();
+  }
+
+  private createUserResponseQuery() {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'role')
+      .leftJoinAndSelect('user.teacher', 'teacher')
+      .leftJoinAndSelect('teacher.department', 'department')
+      .leftJoinAndSelect('teacher.subjectCourseAssignments', 'teacherAssignment', 'teacherAssignment.isActive = :activeAssignment', {
+        activeAssignment: true,
+      })
+      .leftJoinAndSelect('teacherAssignment.course', 'assignmentCourse')
+      .leftJoinAndSelect('teacherAssignment.subject', 'assignmentSubject')
+      .orderBy('assignmentCourse.courseId', 'ASC')
+      .addOrderBy('assignmentSubject.subjectId', 'ASC');
   }
 
   async findActiveUserById(userId: string): Promise<UserEntity | null> {

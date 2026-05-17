@@ -37,6 +37,9 @@ class TeacherAssignmentSubjectResponse {
 }
 
 export class TeacherAssignmentResponse {
+  @ApiProperty({ example: 1 })
+  assignmentId!: number;
+
   @ApiProperty({ type: TeacherAssignmentTeacherResponse })
   teacher!: TeacherAssignmentTeacherResponse;
 

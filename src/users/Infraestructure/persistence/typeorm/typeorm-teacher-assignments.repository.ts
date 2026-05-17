@@ -149,6 +149,13 @@ export class TypeormTeacherAssignmentsRepository implements TeacherAssignmentsRe
     });
   }
 
+  async findByAssignmentId(assignmentId: number): Promise<TeacherSubjectCourseEntity | null> {
+    return this.assignmentRepo.findOne({
+      where: { assignmentId },
+      relations: ['teacher', 'teacher.user', 'course', 'subject'],
+    });
+  }
+
   async findOne(userId: string, courseId: number, subjectId: number): Promise<TeacherSubjectCourseEntity | null> {
     return this.assignmentRepo.findOne({
       where: { userId, courseId, subjectId },
@@ -160,7 +167,7 @@ export class TypeormTeacherAssignmentsRepository implements TeacherAssignmentsRe
     return this.assignmentRepo.save(assignment);
   }
 
-  async softDelete(userId: string, courseId: number, subjectId: number): Promise<void> {
-    await this.assignmentRepo.update({ userId, courseId, subjectId }, { isActive: false });
+  async softDeleteByAssignmentId(assignmentId: number): Promise<void> {
+    await this.assignmentRepo.update({ assignmentId }, { isActive: false });
   }
 }

@@ -33,6 +33,7 @@ describe('TeacherAssignmentsService', () => {
   } as SubjectEntity;
 
   const assignment = {
+    assignmentId: 1,
     userId: teacher.userId,
     teacher,
     courseId: course.courseId,
@@ -51,9 +52,10 @@ describe('TeacherAssignmentsService', () => {
       existsCourseSubject: jest.fn().mockResolvedValue(true),
       findAllWithFilters: jest.fn().mockResolvedValue({ data: [assignment], total: 1, page: 1, limit: 10, totalPages: 1 }),
       findByTeacherId: jest.fn().mockResolvedValue([assignment]),
+      findByAssignmentId: jest.fn().mockResolvedValue(assignment),
       findOne: jest.fn().mockResolvedValue(null),
       save: jest.fn().mockResolvedValue(assignment),
-      softDelete: jest.fn().mockResolvedValue(undefined),
+      softDeleteByAssignmentId: jest.fn().mockResolvedValue(undefined),
     };
 
     service = new TeacherAssignmentsService(repository);
@@ -65,6 +67,7 @@ describe('TeacherAssignmentsService', () => {
     expect(repository.findAllWithFilters).toHaveBeenCalledWith({ page: 1, limit: 10, teacherId: teacher.userId, teacher: 'Ana' });
     expect(result).toEqual({
       data: [{
+        assignmentId: assignment.assignmentId,
         teacher: {
           userId: teacher.userId,
           name: teacher.user.name,
@@ -105,6 +108,7 @@ describe('TeacherAssignmentsService', () => {
       isActive: true,
     }));
     expect(result).toEqual({
+      assignmentId: assignment.assignmentId,
       teacher: {
         userId: teacher.userId,
         name: teacher.user.name,
@@ -146,6 +150,7 @@ describe('TeacherAssignmentsService', () => {
     expect(inactiveAssignment.isActive).toBe(true);
     expect(repository.save).toHaveBeenCalledWith(inactiveAssignment);
     expect(result.isActive).toBe(true);
+    expect(result.assignmentId).toBe(assignment.assignmentId);
   });
 
   it('rejects subject not in course', async () => {
@@ -158,13 +163,10 @@ describe('TeacherAssignmentsService', () => {
     expect(repository.save).not.toHaveBeenCalled();
   });
 
-  it('soft deletes assignment', async () => {
-    repository.findOne.mockResolvedValue(assignment);
+  it('soft deletes assignment by stable assignmentId', async () => {
+    await service.deleteByAssignmentId(assignment.assignmentId);
 
-    await service.delete(teacher.userId, course.courseId, subject.subjectId);
-
-    expect(repository.findTeacherByUserId).toHaveBeenCalledWith(teacher.userId);
-    expect(repository.findOne).toHaveBeenCalledWith(teacher.userId, course.courseId, subject.subjectId);
-    expect(repository.softDelete).toHaveBeenCalledWith(teacher.userId, course.courseId, subject.subjectId);
+    expect(repository.findByAssignmentId).toHaveBeenCalledWith(assignment.assignmentId);
+    expect(repository.softDeleteByAssignmentId).toHaveBeenCalledWith(assignment.assignmentId);
   });
 });

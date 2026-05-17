@@ -11,7 +11,8 @@ export abstract class TeacherAssignmentsRepository {
   abstract existsCourseSubject(courseId: number, subjectId: number): Promise<boolean>;
   abstract findAllWithFilters(filters: FindTeacherAssignmentsFiltersDto): Promise<PaginatedResult<TeacherSubjectCourseEntity>>;
   abstract findByTeacherId(userId: string): Promise<TeacherSubjectCourseEntity[]>;
+  abstract findByAssignmentId(assignmentId: number): Promise<TeacherSubjectCourseEntity | null>;
   abstract findOne(userId: string, courseId: number, subjectId: number): Promise<TeacherSubjectCourseEntity | null>;
   abstract save(assignment: TeacherSubjectCourseEntity): Promise<TeacherSubjectCourseEntity>;
-  abstract softDelete(userId: string, courseId: number, subjectId: number): Promise<void>;
+  abstract softDeleteByAssignmentId(assignmentId: number): Promise<void>;
 }

@@ -14,6 +14,7 @@ describe('TypeormTeacherAssignmentsRepository', () => {
     const assignmentRepo = {
       createQueryBuilder: jest.fn(() => queryBuilder),
       find: jest.fn().mockResolvedValue([{ userId: 'teacher-1', isActive: true }]),
+      findOne: jest.fn().mockResolvedValue({ assignmentId: 1, userId: 'teacher-1', isActive: true }),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
     const repository = new TypeormTeacherAssignmentsRepository({} as never, {} as never, {} as never, assignmentRepo as never, {} as never);
@@ -51,13 +52,25 @@ describe('TypeormTeacherAssignmentsRepository', () => {
     expect(result).toEqual([{ userId: 'teacher-1', isActive: true }]);
   });
 
-  it('soft deletes assignments by marking them inactive', async () => {
+  it('finds assignments by stable assignmentId with relations', async () => {
     const { repository, assignmentRepo } = createRepository();
 
-    await repository.softDelete('teacher-1', 10, 20);
+    const result = await repository.findByAssignmentId(1);
+
+    expect(assignmentRepo.findOne).toHaveBeenCalledWith({
+      where: { assignmentId: 1 },
+      relations: ['teacher', 'teacher.user', 'course', 'subject'],
+    });
+    expect(result).toEqual({ assignmentId: 1, userId: 'teacher-1', isActive: true });
+  });
+
+  it('soft deletes assignments by stable assignmentId', async () => {
+    const { repository, assignmentRepo } = createRepository();
+
+    await repository.softDeleteByAssignmentId(1);
 
     expect(assignmentRepo.update).toHaveBeenCalledWith(
-      { userId: 'teacher-1', courseId: 10, subjectId: 20 },
+      { assignmentId: 1 },
       { isActive: false },
     );
   });

@@ -10,7 +10,7 @@ describe('TeacherAssignmentsController', () => {
       findAllWithFilters: jest.fn().mockResolvedValue({ data: [], total: 0, page: 2, limit: 5, totalPages: 0 }),
       findByTeacherId: jest.fn(),
       create: jest.fn(),
-      delete: jest.fn(),
+      deleteByAssignmentId: jest.fn(),
     } as unknown as jest.Mocked<TeacherAssignmentsService>;
 
     controller = new TeacherAssignmentsController(service);
@@ -41,17 +41,18 @@ describe('TeacherAssignmentsController', () => {
 
   it('creates assignments using identifiers from the request body', async () => {
     const dto = { teacherId: 'teacher-1', courseId: 10, subjectId: 20 };
-    const response = { teacher: {}, course: {}, subject: {}, createdAt: new Date(), isActive: true } as never;
+    const response = { assignmentId: 1, teacher: {}, course: {}, subject: {}, createdAt: new Date(), isActive: true } as never;
     service.create.mockResolvedValue(response);
 
     await expect(controller.create(dto)).resolves.toBe(response);
     expect(service.create).toHaveBeenCalledWith(dto);
   });
 
-  it('deletes assignments using identifiers from the request body', async () => {
-    const dto = { teacherId: 'teacher-1', courseId: 10, subjectId: 20 };
+  it('deletes assignments using stable assignmentId', async () => {
+    const assignmentId = 1;
 
-    await expect(controller.delete(dto)).resolves.toEqual({ message: 'Teacher assignment deleted' });
-    expect(service.delete).toHaveBeenCalledWith(dto.teacherId, dto.courseId, dto.subjectId);
+    await expect(controller.deleteByAssignmentId(assignmentId)).resolves.toEqual({ message: 'Teacher assignment deleted' });
+    expect(service.deleteByAssignmentId).toHaveBeenCalledWith(assignmentId);
   });
+
 });

@@ -76,14 +76,13 @@ export class TeacherAssignmentsService {
     return this.toResponse(saved);
   }
 
-  async delete(teacherId: string, courseId: number, subjectId: number): Promise<void> {
-    await this.findTeacherOrFail(teacherId);
-    const assignment = await this.assignmentsRepo.findOne(teacherId, courseId, subjectId);
+  async deleteByAssignmentId(assignmentId: number): Promise<void> {
+    const assignment = await this.assignmentsRepo.findByAssignmentId(assignmentId);
     if (!assignment) {
       throw new NotFoundException('Teacher assignment not found');
     }
 
-    await this.assignmentsRepo.softDelete(teacherId, courseId, subjectId);
+    await this.assignmentsRepo.softDeleteByAssignmentId(assignmentId);
   }
 
   private async findTeacherOrFail(teacherId: string) {
@@ -97,6 +96,7 @@ export class TeacherAssignmentsService {
 
   private toResponse(assignment: TeacherSubjectCourseEntity): TeacherAssignmentResponseDto {
     return {
+      assignmentId: assignment.assignmentId,
       teacher: {
         userId: assignment.teacher.userId,
         name: assignment.teacher.user.name,

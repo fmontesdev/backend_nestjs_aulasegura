@@ -1,4 +1,5 @@
 export interface TeacherAssignmentResponseDto {
+  assignmentId: number;
   teacher: {
     userId: string;
     name: string;

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { Roles } from '../../../auth/infrastructure/decorators/roles.decorator';
@@ -6,7 +6,6 @@ import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { RoleName } from '../../domain/enums/rolename.enum';
 import { TeacherAssignmentsService } from '../../application/services/teacher-assignments.service';
 import { CreateTeacherAssignmentRequest } from '../dto/requests/create-teacher-assignment.request.dto';
-import { DeleteTeacherAssignmentRequest } from '../dto/requests/delete-teacher-assignment.request.dto';
 import { GetTeacherAssignmentsQueryRequest } from '../dto/requests/get-teacher-assignments-query.request.dto';
 import { PaginatedTeacherAssignmentsResponse } from '../dto/responses/paginated-teacher-assignments.response.dto';
 import { TeacherAssignmentResponse } from '../dto/responses/teacher-assignment.response.dto';
@@ -54,14 +53,13 @@ export class TeacherAssignmentsController {
     return this.assignmentsService.create(dto);
   }
 
-  @ApiOperation({ summary: 'Elimina una asignación curso-asignatura de un profesor' })
-  @ApiBody({ type: DeleteTeacherAssignmentRequest })
+  @ApiOperation({ summary: 'Elimina una asignación profesor-curso-asignatura por su ID estable' })
   @ApiOkResponse({ description: 'Asignación eliminada' })
-  @ApiNotFoundResponse({ description: 'Profesor o asignación no encontrados' })
+  @ApiNotFoundResponse({ description: 'Asignación no encontrada' })
   @HttpCode(200)
-  @Delete('assignments')
-  async delete(@Body() dto: DeleteTeacherAssignmentRequest): Promise<{ message: string }> {
-    await this.assignmentsService.delete(dto.teacherId, dto.courseId, dto.subjectId);
+  @Delete('assignments/:assignmentId')
+  async deleteByAssignmentId(@Param('assignmentId', ParseIntPipe) assignmentId: number): Promise<{ message: string }> {
+    await this.assignmentsService.deleteByAssignmentId(assignmentId);
     return { message: 'Teacher assignment deleted' };
   }
 

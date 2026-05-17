@@ -1,19 +1,23 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { CourseEntity } from '../../../courses/domain/entities/course.entity';
 import { SubjectEntity } from '../../../subjects/domain/entities/subject.entity';
 import { TeacherEntity } from './teacher.entity';
 
 @Entity({ name: 'teacher_subject_course' })
+@Index('uq_teacher_subject_course_natural_assignment', ['userId', 'courseId', 'subjectId'], { unique: true })
 @Index('idx_teacher_subject_course_course_subject', ['courseId', 'subjectId'])
 @Index('idx_teacher_subject_course_subject', ['subjectId'])
 export class TeacherSubjectCourseEntity {
-  @PrimaryColumn({ name: 'user_id', type: 'char', length: 36 })
+  @PrimaryGeneratedColumn({ name: 'assignment_id', type: 'bigint' })
+  assignmentId!: number;
+
+  @Column({ name: 'user_id', type: 'char', length: 36 })
   userId!: string;
 
-  @PrimaryColumn({ name: 'subject_id', type: 'bigint' })
+  @Column({ name: 'subject_id', type: 'bigint' })
   subjectId!: number;
 
-  @PrimaryColumn({ name: 'course_id', type: 'int' })
+  @Column({ name: 'course_id', type: 'int' })
   courseId!: number;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

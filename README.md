@@ -246,7 +246,9 @@ Reglas actuales:
 
 Las credenciales RFID/NFC no se almacenan en claro. El sistema usa `TAG_PEPPER` para generar hashes con HMAC-SHA256.
 
-En el caso de NFC móvil, la credencial se genera y devuelve una sola vez. Después solo queda persistido el hash, así que el frontend debe tratar esa credencial como un secreto de uso inmediato.
+En el caso de NFC móvil, la app obtiene la credencial llamando a `POST /tags` con `{ "type": "nfc_mobile" }`. El backend devuelve `mobileCredential` una sola vez y después solo conserva su hash, así que el frontend debe guardarla inmediatamente en almacenamiento seguro del dispositivo.
+
+La app móvil solo debe pedir una nueva `mobileCredential` si no tiene una guardada en Secure Storage. Esto cubre el primer inicio de sesión, un dispositivo nuevo, una reinstalación o un dispositivo restablecido. Cada nueva llamada regenera la credencial móvil activa del usuario y deja inválida la anterior.
 
 ### Logs de acceso
 
@@ -333,7 +335,7 @@ Estos módulos siguen un patrón REST estándar con operaciones de listado, obte
 |--------|------|-------------|
 | `GET` | `/tags` | Lista tags paginados/filtrables sin exponer `tagCode`. |
 | `GET` | `/tags/:id` | Obtiene un tag. |
-| `POST` | `/tags` | Crea tag estándar. |
+| `POST` | `/tags` | Crea tag estándar o genera/regenera `nfc_mobile` para el usuario autenticado. |
 | `POST` | `/tags/admin` | Crea credenciales desde flujo administrador. |
 | `PATCH` | `/tags/:id` | Actualiza tag y regenera credencial física si aplica. |
 | `DELETE` | `/tags/:id` | Desactiva tag con soft delete. |

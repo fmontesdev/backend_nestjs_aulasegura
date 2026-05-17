@@ -18,6 +18,7 @@ import { CourseEntity } from './courses/domain/entities/course.entity';
 import { DepartmentEntity } from './departments/domain/entities/department.entity';
 import { SubjectEntity } from './subjects/domain/entities/subject.entity';
 import { ReaderEntity } from './readers/domain/entities/reader.entity';
+import { TeacherSubjectCourseEntity } from './users/domain/entities/teacher-subject-course.entity';
 import { config } from 'dotenv';
 
 // Importar seeders
@@ -32,7 +33,7 @@ import { seedAcademicYearCourse } from './db/seeding/seeds/07-academic-year-cour
 import { seedSubjects } from './db/seeding/seeds/07b-subject.seeder';
 import { seedCourseSubject } from './db/seeding/seeds/08-course-subject.seeder';
 import { seedTeacher } from './db/seeding/seeds/09-teacher.seeder';
-import { seedTeacherSubject } from './db/seeding/seeds/10-teacher-subject.seeder';
+import { seedTeacherSubjectCourse } from './db/seeding/seeds/10-teacher-subject-course.seeder';
 import { seedReaders } from './db/seeding/seeds/11-reader.seeder';
 import { seedTags } from './db/seeding/seeds/12-tag.seeder';
 import { seedSchedules } from './db/seeding/seeds/13-schedule.seeder';
@@ -71,6 +72,7 @@ const options: DataSourceOptions = {
     DepartmentEntity,
     SubjectEntity,
     ReaderEntity,
+    TeacherSubjectCourseEntity,
   ],
   synchronize: true, // Auto-create tables in development
 };
@@ -103,7 +105,7 @@ dataSource
     // 4. Teachers y asignaciones
     console.log('\nSeeding teachers...');
     await seedTeacher(dataSource);
-    await seedTeacherSubject(dataSource);
+    await seedTeacherSubjectCourse(dataSource);
     
     // 5. Infraestructura
     console.log('\nSeeding infrastructure...');
@@ -134,7 +136,7 @@ dataSource
       dataSource.query('SELECT COUNT(*) as c FROM `course_subject`'),
       dataSource.query('SELECT COUNT(*) as c FROM `academic_year_course`'),
       dataSource.query('SELECT COUNT(*) as c FROM `teacher`'),
-      dataSource.query('SELECT COUNT(*) as c FROM `teacher_subject`'),
+      dataSource.query('SELECT COUNT(*) as c FROM `teacher_subject_course`'),
       dataSource.query('SELECT COUNT(*) as c FROM `room`'),
       dataSource.query('SELECT COUNT(*) as c FROM `reader`'),
       dataSource.query('SELECT COUNT(*) as c FROM `tag`'),
@@ -146,7 +148,7 @@ dataSource
 
     const [
       roles, academicYears, departments, courses, users, roleUsers,
-      subjects, courseSubjects, academicYearCourses, teachers, teacherSubjects,
+      subjects, courseSubjects, academicYearCourses, teachers, teacherSubjectCourses,
       rooms, readers, tags, schedules, weeklySchedules, eventSchedules, permissions,
     ] = counts.map(r => Number(r[0].c));
 
@@ -161,7 +163,7 @@ dataSource
     console.log(`   - ${courseSubjects} Course-Subject relations`);
     console.log(`   - ${academicYearCourses} Academic Year-Course relations`);
     console.log(`   - ${teachers} Teachers`);
-    console.log(`   - ${teacherSubjects} Teacher-Subject assignments`);
+    console.log(`   - ${teacherSubjectCourses} Teacher-Course-Subject assignments`);
     console.log(`   - ${rooms} Rooms`);
     console.log(`   - ${readers} Readers`);
     console.log(`   - ${tags} Tags`);

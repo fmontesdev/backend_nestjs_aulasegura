@@ -51,25 +51,18 @@ export class CreateTeacherSubjectCourse20260517120000 implements MigrationInterf
       }),
     ]);
 
-    await queryRunner.query(`
-      INSERT IGNORE INTO teacher_subject_course (user_id, subject_id, course_id)
-      SELECT
-        ts.user_id,
-        ts.subject_id,
-        (
-          SELECT cs.course_id
-          FROM course_subject cs
-          WHERE cs.subject_id = ts.subject_id
-          ORDER BY RAND()
-          LIMIT 1
-        ) AS course_id
-      FROM teacher_subject ts
-      WHERE EXISTS (
-        SELECT 1
-        FROM course_subject cs
-        WHERE cs.subject_id = ts.subject_id
-      )
-    `);
+    if (await queryRunner.hasTable('teacher_subject')) {
+      await queryRunner.query(`
+        INSERT IGNORE INTO teacher_subject_course (user_id, subject_id, course_id)
+        SELECT
+          ts.user_id,
+          ts.subject_id,
+          MIN(cs.course_id) AS course_id
+        FROM teacher_subject ts
+        INNER JOIN course_subject cs ON cs.subject_id = ts.subject_id
+        GROUP BY ts.user_id, ts.subject_id
+      `);
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

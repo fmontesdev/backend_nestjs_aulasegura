@@ -115,9 +115,7 @@ export class PermissionService {
     const newUserId = updateDto.newUserId ?? userId;
     const newRoomId = updateDto.newRoomId ?? roomId;
     const newScheduleId = updateDto.newScheduleId ?? scheduleId;
-    const targetUser = updateDto.newUserId && updateDto.newUserId !== userId
-      ? await this.usersService.findOne(updateDto.newUserId)
-      : permission.user;
+    const targetUser = await this.usersService.findOne(newUserId);
     const targetSchedule = updateDto.newScheduleId && updateDto.newScheduleId !== scheduleId
       ? await this.scheduleService.findOne(updateDto.newScheduleId)
       : permission.schedule;
@@ -127,11 +125,6 @@ export class PermissionService {
       ? updateDto.newAssignmentId!
       : permission.assignmentId;
     const assignment = await this.validateWeeklyPermissionAssignment(targetUser, requestedAssignmentId ?? null);
-
-    // Si cambia el usuario, validar que existe
-    if (updateDto.newUserId && updateDto.newUserId !== userId) {
-      await this.usersService.findOne(updateDto.newUserId);
-    }
 
     // Si cambia el aula, validar que existe
     if (updateDto.newRoomId && updateDto.newRoomId !== roomId) {

@@ -5,6 +5,8 @@ import { TagEntity } from '../../domain/entities/tag.entity';
 import { TagRepository } from '../../domain/repositories/tag.repository';
 import { CreateTagDto } from '../dto/create-tag.dto';
 import { UpdateTagDto } from '../dto/update-tag.dto';
+import { CreateTagResultDto } from '../dto/create-tag-result.dto';
+import { FindTagsFiltersDto, PaginatedResult } from '../dto/find-tags-filters.dto';
 import { TagType } from '../../domain/enums/tag-type.enum';
 import { UsersService } from '../../../users/application/services/users.service';
 
@@ -28,6 +30,11 @@ export class TagService {
     return await this.tagRepository.findAll();
   }
 
+  /// Obtiene credenciales con paginación y filtros
+  async findAllWithFilters(filters: FindTagsFiltersDto): Promise<PaginatedResult<TagEntity>> {
+    return await this.tagRepository.findAllWithFilters(filters);
+  }
+
   /// Busca un tag por tagId o lanza una excepción si no se encuentra
   async findOne(tagId: number): Promise<TagEntity> {
     return await this.findTagByIdOrFail(tagId);
@@ -39,7 +46,7 @@ export class TagService {
   }
 
   /// Crea un nuevo tag generando el tagCode según el tipo
-  async create(createDto: CreateTagDto): Promise<TagEntity> {
+  async create(createDto: CreateTagDto): Promise<CreateTagResultDto> {
     // Verificar que el usuario exista
     const user = await this.usersService.findOne(createDto.userId);
 
@@ -50,8 +57,7 @@ export class TagService {
       }
     }
 
-    // Generar tagCode según el tipo
-    const tagCode = this.generateTagCode(createDto.type, createDto.rawUid);
+    const { tagCode, mobileCredential } = this.generateCredential(createDto.type, createDto.rawUid);
 
     // Verificar que el tagCode sea único
     await this.ensureTagCodeIsUnique(tagCode);
@@ -65,7 +71,8 @@ export class TagService {
 
     // Guardar en la base de datos
     try {
-      return await this.tagRepository.save(tag);
+      const savedTag = await this.tagRepository.save(tag);
+      return { tag: savedTag, mobileCredential };
     } catch (error) {
       throw new ConflictException(`Tag could not be created`);
     }
@@ -76,14 +83,17 @@ export class TagService {
     // Buscar el tag existente
     const tag = await this.findTagByIdOrFail(tagId);
 
-    // Validar rawUid si el tipo es RFID
-    if (tag.type === TagType.RFID && !updateDto.rawUid) {
-      throw new BadRequestException('rawUid is required when changing to RFID type');
+    if (tag.type === TagType.NFC_MOBILE) {
+      throw new BadRequestException('Las credenciales NFC móviles no se regeneran con rawUid');
+    }
+
+    if (!updateDto.rawUid) {
+      throw new BadRequestException('rawUid es obligatorio para regenerar una credencial NFC física');
     }
 
     // Generar nuevo tagCode
-    const newTagCode = this.generateTagCode(tag.type, updateDto.rawUid);
-    await this.ensureTagCodeIsUnique(newTagCode);
+    const newTagCode = this.hashCredential(updateDto.rawUid);
+    await this.ensureTagCodeIsUnique(newTagCode, tagId);
 
     tag.tagCode = newTagCode;
 
@@ -103,30 +113,24 @@ export class TagService {
 
   //? ================= Métodos auxiliares =================
 
-  //? Genera tagCode según el tipo (RFID o NFC)
-  private generateTagCode(type: TagType, rawUid?: string): string {
-    const hmac = createHmac('sha256', this.pepper);
-    let baseCode: Buffer | string;
-
+  private generateCredential(type: TagType, rawUid?: string): { tagCode: string; mobileCredential?: string } {
     if (type === TagType.RFID) {
       if (!rawUid) {
         throw new BadRequestException('rawUid is required for RFID tag generation');
       }
-      // RFID: tag_code = base64url( HMAC_SHA256(PEPPER, rawUid) )[0:16B] → ~22 chars
-      baseCode = rawUid;
-    } else {
-      // randomBuffer: Genera 16 bytes aleatorios
-      // NFC: tag_code = base64url( HMAC_SHA256(PEPPER, randomBuffer) )[0:16B] → ~22 char
-      baseCode = randomBytes(16).toString('hex');
-      console.log('Generated random buffer for NFC tag:', baseCode);
+      return { tagCode: this.hashCredential(rawUid) };
     }
 
-    hmac.update(baseCode);
+    const mobileCredential = randomBytes(32).toString('base64url');
+    return { tagCode: this.hashCredential(mobileCredential), mobileCredential };
+  }
+
+  //? Calcula HMAC-SHA256 y guarda solo los primeros 16 bytes en base64url
+  private hashCredential(rawCredential: string): string {
+    const hmac = createHmac('sha256', this.pepper);
+    hmac.update(rawCredential);
     const hash = hmac.digest();
-    
-    // Tomar primeros 16 bytes y convertir a base64url
-    const base64url = hash.subarray(0, 16).toString('base64url');
-    return base64url; // ~22 caracteres
+    return hash.subarray(0, 16).toString('base64url');
   }
 
   //? Busca un tag por tagId o lanza una excepción si no se encuentra
@@ -157,9 +161,9 @@ export class TagService {
   }
 
   //? Verifica que el tagCode sea único
-  private async ensureTagCodeIsUnique(tagCode: string): Promise<void> {
+  private async ensureTagCodeIsUnique(tagCode: string, exceptTagId?: number): Promise<void> {
     const existing = await this.tagRepository.findOneByTagCode(tagCode);
-    if (existing) {
+    if (existing && existing.tagId !== exceptTagId) {
       throw new ConflictException(`Tag with code ${tagCode} already exists`);
     }
   }

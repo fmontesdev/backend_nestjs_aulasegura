@@ -27,6 +27,10 @@ export class TeacherAssignmentsService {
     return assignments.map((assignment) => this.toResponse(assignment));
   }
 
+  async findEntityByAssignmentId(assignmentId: number): Promise<TeacherSubjectCourseEntity | null> {
+    return await this.assignmentsRepo.findByAssignmentId(assignmentId);
+  }
+
   async create(dto: CreateTeacherAssignmentDto): Promise<TeacherAssignmentResponseDto> {
     const teacher = await this.findTeacherOrFail(dto.teacherId);
     const course = await this.assignmentsRepo.findCourseById(dto.courseId);

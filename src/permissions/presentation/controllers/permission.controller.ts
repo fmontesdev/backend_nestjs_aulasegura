@@ -90,6 +90,7 @@ export class PermissionController {
       userId: requestDto.userId,
       roomId: requestDto.roomId,
       scheduleId: requestDto.scheduleId,
+      assignmentId: requestDto.assignmentId,
       createdById: currentUser.userId,
     });
     return PermissionMapper.toResponse(permission);
@@ -122,7 +123,7 @@ export class PermissionController {
   @ApiCreatedResponse({ description: 'Permiso creado con éxito', type: PermissionResponse })
   @ApiConflictResponse({ description: 'Ya existe un permiso con estos identificadores o solapamiento de horarios' })
   @ApiBadRequestResponse({ description: 'Datos inválidos' })
-  @Roles(RoleName.TEACHER, RoleName.JANITOR)
+  @Roles(RoleName.TEACHER, RoleName.JANITOR, RoleName.ADMIN)
   @Post('event-schedule')
   async createEventSchedule(@Body() requestDto: CreateEventSchedulePermissionRequest, @CurrentUser() currentUser: any): Promise<PermissionResponse> {
     const permission = await this.permissionService.createEventSchedule(requestDto, currentUser);

@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID, IsInt } from 'class-validator';
+import { IsOptional, IsUUID, IsInt, ValidateIf } from 'class-validator';
 
 export class UpdateWeeklySchedulePermissionRequest {
   @ApiPropertyOptional({ description: 'Nuevo ID del usuario', example: '123e4567-e89b-12d3-a456-426614174000' })
@@ -16,4 +16,9 @@ export class UpdateWeeklySchedulePermissionRequest {
   @IsOptional()
   @IsInt()
   newScheduleId?: number;
+
+  @ApiPropertyOptional({ description: 'Nueva asignación docente. Usa null para limpiar la asociación.', example: 1, nullable: true })
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsInt()
+  newAssignmentId?: number | null;
 }

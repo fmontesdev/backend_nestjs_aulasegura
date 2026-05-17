@@ -12,6 +12,18 @@ import { combineMadridDateAndTime } from 'src/common/utils/madrid-timezone.util'
 
 @Injectable()
 export class TypeOrmPermissionRepository implements PermissionRepository {
+  private readonly permissionRelations = [
+    'schedule',
+    'schedule.academicYear',
+    'schedule.weeklySchedule',
+    'schedule.eventSchedule',
+    'assignment',
+    'assignment.teacher',
+    'assignment.teacher.user',
+    'assignment.course',
+    'assignment.subject',
+  ];
+
   constructor(
     @InjectRepository(PermissionEntity)
     private readonly permissionRepo: Repository<PermissionEntity>,
@@ -20,7 +32,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
   async findAll(): Promise<PermissionEntity[]> {
     return await this.permissionRepo.find({
       where: { isActive: true },
-      relations: ['schedule', 'schedule.academicYear', 'schedule.weeklySchedule', 'schedule.eventSchedule'],
+      relations: this.permissionRelations,
       order: { userId: 'ASC', roomId: 'ASC', scheduleId: 'ASC' },
     });
   }
@@ -28,7 +40,7 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
   async findOne(userId: string, roomId: number, scheduleId: number): Promise<PermissionEntity | null> {
     return await this.permissionRepo.findOne({
       where: { userId, roomId, scheduleId },
-      relations: ['schedule', 'schedule.academicYear', 'schedule.weeklySchedule', 'schedule.eventSchedule'],
+      relations: this.permissionRelations,
     });
   }
 
@@ -41,6 +53,11 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .innerJoinAndSelect('schedule.academicYear', 'academicYear')
       .innerJoinAndSelect('permission.user', 'user')
       .innerJoinAndSelect('permission.room', 'room')
+      .leftJoinAndSelect('permission.assignment', 'assignment')
+      .leftJoinAndSelect('assignment.teacher', 'assignmentTeacher')
+      .leftJoinAndSelect('assignmentTeacher.user', 'assignmentTeacherUser')
+      .leftJoinAndSelect('assignment.course', 'assignmentCourse')
+      .leftJoinAndSelect('assignment.subject', 'assignmentSubject')
       .where('permission.userId = :userId', { userId })
       .andWhere('permission.isActive = :isActive', { isActive: true })
       .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
@@ -60,6 +77,11 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .innerJoinAndSelect('schedule.academicYear', 'academicYear')
       .innerJoinAndSelect('permission.user', 'user')
       .innerJoinAndSelect('permission.room', 'room')
+      .leftJoinAndSelect('permission.assignment', 'assignment')
+      .leftJoinAndSelect('assignment.teacher', 'assignmentTeacher')
+      .leftJoinAndSelect('assignmentTeacher.user', 'assignmentTeacherUser')
+      .leftJoinAndSelect('assignment.course', 'assignmentCourse')
+      .leftJoinAndSelect('assignment.subject', 'assignmentSubject')
       .where('permission.userId = :userId', { userId })
       .andWhere('permission.isActive = :isActive', { isActive: true })
       .andWhere('schedule.isActive = :scheduleActive', { scheduleActive: true })
@@ -135,6 +157,11 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .innerJoinAndSelect('schedule.academicYear', 'academicYear')
       .innerJoinAndSelect('permission.user', 'user')
       .innerJoinAndSelect('permission.room', 'room')
+      .leftJoinAndSelect('permission.assignment', 'assignment')
+      .leftJoinAndSelect('assignment.teacher', 'assignmentTeacher')
+      .leftJoinAndSelect('assignmentTeacher.user', 'assignmentTeacherUser')
+      .leftJoinAndSelect('assignment.course', 'assignmentCourse')
+      .leftJoinAndSelect('assignment.subject', 'assignmentSubject')
       .where('permission.userId = :userId', { userId })
       .andWhere('permission.roomId = :roomId', { roomId })
       .andWhere('permission.isActive = :isActive', { isActive: true })
@@ -163,6 +190,11 @@ export class TypeOrmPermissionRepository implements PermissionRepository {
       .innerJoinAndSelect('schedule.academicYear', 'academicYear')
       .innerJoinAndSelect('permission.user', 'user')
       .innerJoinAndSelect('permission.room', 'room')
+      .leftJoinAndSelect('permission.assignment', 'assignment')
+      .leftJoinAndSelect('assignment.teacher', 'assignmentTeacher')
+      .leftJoinAndSelect('assignmentTeacher.user', 'assignmentTeacherUser')
+      .leftJoinAndSelect('assignment.course', 'assignmentCourse')
+      .leftJoinAndSelect('assignment.subject', 'assignmentSubject')
       .where('permission.userId = :userId', { userId })
       .andWhere('permission.roomId = :roomId', { roomId })
       .andWhere('permission.isActive = :isActive', { isActive: true })

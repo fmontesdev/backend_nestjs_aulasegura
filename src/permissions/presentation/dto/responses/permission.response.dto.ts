@@ -4,6 +4,36 @@ import { RoomResponse } from 'src/rooms/presentation/dto/responses/room.response
 import { ScheduleResponse } from 'src/schedules/presentation/dto/responses/schedule.response.dto';
 import { ScheduleType } from 'src/schedules/domain/enums/schedule-type.enum';
 
+export class PermissionAssignmentResponse {
+  @ApiProperty({ description: 'ID estable de la asignación docente', example: 1 })
+  assignmentId: number;
+
+  @ApiProperty({ example: { userId: '123e4567-e89b-12d3-a456-426614174000', name: 'Juan', lastname: 'Pérez', email: 'juan@example.com' } })
+  teacher: {
+    userId: string;
+    name: string;
+    lastname: string;
+    email: string;
+  };
+
+  @ApiProperty({ example: { courseId: 1, courseCode: '1ESO-A', name: '1º ESO A' } })
+  course: {
+    courseId: number;
+    courseCode: string;
+    name: string;
+  };
+
+  @ApiProperty({ example: { subjectId: 1, subjectCode: 'MAT', name: 'Matemáticas' } })
+  subject: {
+    subjectId: number;
+    subjectCode: string;
+    name: string;
+  };
+
+  @ApiProperty({ description: 'Estado activo de la asignación docente', example: true })
+  isActive: boolean;
+}
+
 export class PermissionResponse {
   @ApiProperty({
     description: 'Usuario asociado al permiso',
@@ -29,6 +59,9 @@ export class PermissionResponse {
     },
   })
   schedule: ScheduleResponse;
+
+  @ApiProperty({ description: 'Asignación docente asociada al permiso semanal', type: () => PermissionAssignmentResponse, nullable: true })
+  assignment?: PermissionAssignmentResponse | null;
 
   @ApiProperty({ description: 'ID del usuario que creó el permiso', type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
   createdById: string;

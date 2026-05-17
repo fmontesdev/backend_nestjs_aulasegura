@@ -24,6 +24,6 @@ import { TypeormTeacherAssignmentsRepository } from './Infraestructure/persisten
     { provide: UsersRepository, useClass: TypeormUsersRepository }, // binding
     { provide: TeacherAssignmentsRepository, useClass: TypeormTeacherAssignmentsRepository },
   ],
-  exports: [UsersService],
+  exports: [UsersService, TeacherAssignmentsService],
 })
 export class UsersModule {}

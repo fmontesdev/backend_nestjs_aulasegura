@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID, IsInt } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsUUID, IsInt, IsOptional } from 'class-validator';
 
 export class CreateWeeklySchedulePermissionRequest {
   @ApiProperty({ description: 'ID del usuario', example: '123e4567-e89b-12d3-a456-426614174000' })
@@ -16,4 +16,9 @@ export class CreateWeeklySchedulePermissionRequest {
   @IsNotEmpty()
   @IsInt()
   scheduleId: number;
+
+  @ApiPropertyOptional({ description: 'ID de la asignación docente asociada', example: 1 })
+  @IsOptional()
+  @IsInt()
+  assignmentId?: number;
 }

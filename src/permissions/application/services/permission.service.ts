@@ -17,6 +17,9 @@ import { ScheduleService } from '../../../schedules/application/services/schedul
 import { EventScheduleType } from '../../../schedules/domain/enums/event-schedule-type.enum';
 import { EventStatus } from '../../../schedules/domain/enums/event-status.enum';
 import { ScheduleType } from '../../../schedules/domain/enums/schedule-type.enum';
+import { RoleName } from '../../../users/domain/enums/rolename.enum';
+import { TeacherAssignmentsService } from '../../../users/application/services/teacher-assignments.service';
+import { TeacherSubjectCourseEntity } from '../../../users/domain/entities/teacher-subject-course.entity';
 import { getMadridDayOfWeek, getMadridTimeString, parseMadridDateTime } from 'src/common/utils/madrid-timezone.util';
 
 @Injectable()
@@ -29,6 +32,7 @@ export class PermissionService {
     private readonly academicYearService: AcademicYearService,
     private readonly eventScheduleService: EventScheduleService,
     private readonly scheduleService: ScheduleService,
+    private readonly teacherAssignmentsService: TeacherAssignmentsService,
   ) {}
 
   /// Obtiene todos los permisos activos
@@ -65,6 +69,9 @@ export class PermissionService {
 
     // Valida que el horario exista
     const weeklySchedule = await this.scheduleService.findOne(createDto.scheduleId);
+    this.ensureWeeklySchedule(weeklySchedule);
+
+    const assignment = await this.validateWeeklyPermissionAssignment(user, createDto.assignmentId ?? null);
 
     // Valida que no exista solapamiento de horarios para esta aula
     const overlapDto: ValidateWeeklySchedulePermissionOverlapDto = {
@@ -78,6 +85,8 @@ export class PermissionService {
     permission.user = user;
     permission.room = room;
     permission.schedule = weeklySchedule;
+    permission.assignment = assignment;
+    permission.assignmentId = assignment?.assignmentId ?? null;
     permission.createdById = createDto.createdById;
     permission.isActive = true;
 
@@ -106,6 +115,18 @@ export class PermissionService {
     const newUserId = updateDto.newUserId ?? userId;
     const newRoomId = updateDto.newRoomId ?? roomId;
     const newScheduleId = updateDto.newScheduleId ?? scheduleId;
+    const targetUser = updateDto.newUserId && updateDto.newUserId !== userId
+      ? await this.usersService.findOne(updateDto.newUserId)
+      : permission.user;
+    const targetSchedule = updateDto.newScheduleId && updateDto.newScheduleId !== scheduleId
+      ? await this.scheduleService.findOne(updateDto.newScheduleId)
+      : permission.schedule;
+    this.ensureWeeklySchedule(targetSchedule);
+
+    const requestedAssignmentId = Object.prototype.hasOwnProperty.call(updateDto, 'newAssignmentId')
+      ? updateDto.newAssignmentId!
+      : permission.assignmentId;
+    const assignment = await this.validateWeeklyPermissionAssignment(targetUser, requestedAssignmentId ?? null);
 
     // Si cambia el usuario, validar que existe
     if (updateDto.newUserId && updateDto.newUserId !== userId) {
@@ -146,6 +167,18 @@ export class PermissionService {
       }
     }
 
+    if (Object.prototype.hasOwnProperty.call(updateDto, 'newAssignmentId') || updateDto.newUserId) {
+      const updatedPermission = await this.findPermissionOrFail(newUserId, newRoomId, newScheduleId);
+      updatedPermission.assignment = assignment;
+      updatedPermission.assignmentId = assignment?.assignmentId ?? null;
+
+      try {
+        await this.permissionRepository.save(updatedPermission);
+      } catch (error) {
+        throw new BadRequestException(`Error updating permission assignment userId: ${newUserId}, roomId: ${newRoomId}, scheduleId: ${newScheduleId}: ${error.message}`);
+      }
+    }
+
     // Devuelve el permiso actualizado
     return await this.findPermissionOrFail(newUserId, newRoomId, newScheduleId);
   }
@@ -155,7 +188,7 @@ export class PermissionService {
     // Valida que el usuario existe y asigna tipo de evento
     let user: any;
     let type: EventScheduleType;
-    if (currentUser.roles.includes('teacher')) {
+    if (currentUser.roles.includes('teacher') || currentUser.roles.includes('admin')) {
       user = await this.usersService.findOne(currentUser.userId);
       type = EventScheduleType.RESERVATION;
     } else if (currentUser.roles.includes('janitor')) {
@@ -311,6 +344,43 @@ export class PermissionService {
       throw new NotFoundException('Permission not found');
     }
     return permission;
+  }
+
+  private ensureWeeklySchedule(schedule: { type: ScheduleType }): void {
+    if (schedule.type !== ScheduleType.WEEKLY) {
+      throw new BadRequestException('Schedule must be weekly');
+    }
+  }
+
+  private async validateWeeklyPermissionAssignment(user: any, assignmentId: number | null): Promise<TeacherSubjectCourseEntity | null> {
+    const isTeacher = user.roles?.some(role => role.name === RoleName.TEACHER) ?? false;
+
+    if (!isTeacher) {
+      if (assignmentId !== null) {
+        throw new BadRequestException('Only teachers can have a teacher assignment associated with weekly permissions');
+      }
+
+      return null;
+    }
+
+    if (assignmentId === null) {
+      throw new BadRequestException('Teacher weekly permissions require an active teacher assignment');
+    }
+
+    const assignment = await this.teacherAssignmentsService.findEntityByAssignmentId(assignmentId);
+    if (!assignment) {
+      throw new BadRequestException('Teacher assignment not found');
+    }
+
+    if (!assignment.isActive) {
+      throw new BadRequestException('Teacher assignment must be active');
+    }
+
+    if (assignment.userId !== user.userId) {
+      throw new BadRequestException('Teacher assignment must belong to the permission user');
+    }
+
+    return assignment;
   }
 
   //? Verifica que exista un permiso y lanza ConflictException
